@@ -33,7 +33,7 @@ if [[ -n "$1" ]]; then
 fi
 
 # shellcheck source=/dev/null
-source "$chip_dir"/src/test_driver/esp32/idf.sh
+source $IDF_PATH/export.sh
 "$chip_dir"/src/test_driver/esp32/qemu_setup.sh
 
 if [ $? -ne 0 ]; then
