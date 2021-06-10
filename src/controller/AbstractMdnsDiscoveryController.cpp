@@ -17,14 +17,6 @@
  *    limitations under the License.
  */
 
-/**
- *    @file
- *      Implementation of CHIP Device Controller, a common class
- *      that implements discovery, pairing and provisioning of CHIP
- *      devices.
- *
- */
-
 #ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
 #endif
@@ -39,26 +31,8 @@
 #include <platform/CHIPDeviceLayer.h>
 #endif
 
-#include <core/CHIPCore.h>
 #include <core/CHIPEncoding.h>
-#include <core/CHIPSafeCasts.h>
-#include <support/CHIPArgParser.hpp>
-#include <support/CHIPMem.h>
-#include <support/CodeUtils.h>
 #include <support/logging/CHIPLogging.h>
-
-#if CONFIG_NETWORK_LAYER_BLE
-#include <ble/BleLayer.h>
-#include <transport/raw/BLE.h>
-#endif
-
-#include <app/util/af-enums.h>
-
-#include <errno.h>
-#include <inttypes.h>
-#include <memory>
-#include <stdint.h>
-#include <stdlib.h>
 
 namespace chip {
 namespace Controller {

@@ -1402,12 +1402,7 @@ CHIP_ERROR DeviceCommissioner::DiscoverCommissioningLongDiscriminator(uint16_t l
 
 const Mdns::DiscoveredNodeData * DeviceCommissioner::GetDiscoveredDevice(int idx)
 {
-    // TODO(cecille): Add assertion about main loop.
-    if (mCommissionableNodes[idx].IsValid())
-    {
-        return &mCommissionableNodes[idx];
-    }
-    return nullptr;
+    return GetDiscoveredNode(idx);
 }
 #endif // CHIP_DEVICE_CONFIG_ENABLE_MDNS
 

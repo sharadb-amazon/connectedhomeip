@@ -635,7 +635,7 @@
 /**
  * CHIP_DEVICE_CONFIG_MAX_DISCOVERED_NODES
  *
- * Maximum number of CHIP Commissioners that a Commissionable Node will discover
+ * Maximum number of CHIP Commissioners or Commissionable Nodes that can be discovered
  */
 #ifndef CHIP_DEVICE_CONFIG_MAX_DISCOVERED_NODES
 #define CHIP_DEVICE_CONFIG_MAX_DISCOVERED_NODES 10

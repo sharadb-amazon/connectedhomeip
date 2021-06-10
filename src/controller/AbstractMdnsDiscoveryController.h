@@ -21,7 +21,6 @@
 
 #include <mdns/Resolver.h>
 #include <platform/CHIPDeviceConfig.h>
-#include <support/logging/CHIPLogging.h>
 
 namespace chip {
 

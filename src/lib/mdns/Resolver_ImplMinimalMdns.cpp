@@ -109,10 +109,10 @@ private:
     bool mHasNodePort = false;
     bool mHasIP       = false;
 
-    void OnCommissionableNodeSrvRecord(SerializedQNameIterator name, const SrvRecord & srv);
+    void OnDiscoveredNodeSrvRecord(SerializedQNameIterator name, const SrvRecord & srv);
     void OnOperationalSrvRecord(SerializedQNameIterator name, const SrvRecord & srv);
 
-    void OnCommissionableNodeIPAddress(const chip::Inet::IPAddress & addr);
+    void OnDiscoveredNodeIPAddress(const chip::Inet::IPAddress & addr);
     void OnOperationalIPAddress(const chip::Inet::IPAddress & addr);
 };
 
@@ -179,7 +179,7 @@ void PacketDataReporter::OnOperationalSrvRecord(SerializedQNameIterator name, co
     }
 }
 
-void PacketDataReporter::OnCommissionableNodeSrvRecord(SerializedQNameIterator name, const SrvRecord & srv)
+void PacketDataReporter::OnDiscoveredNodeSrvRecord(SerializedQNameIterator name, const SrvRecord & srv)
 {
     // Host name is the first part of the qname
     mdns::Minimal::SerializedQNameIterator it = srv.GetName();
@@ -207,7 +207,7 @@ void PacketDataReporter::OnOperationalIPAddress(const chip::Inet::IPAddress & ad
     }
 }
 
-void PacketDataReporter::OnCommissionableNodeIPAddress(const chip::Inet::IPAddress & addr)
+void PacketDataReporter::OnDiscoveredNodeIPAddress(const chip::Inet::IPAddress & addr)
 {
     if (mDiscoveredNodeData.numIPs >= DiscoveredNodeData::kMaxIPAddresses)
     {
@@ -243,7 +243,7 @@ void PacketDataReporter::OnResource(ResourceType type, const ResourceData & data
         }
         else if (mDiscoveryType == DiscoveryType::kCommissionableNode || mDiscoveryType == DiscoveryType::kCommissionerNode)
         {
-            OnCommissionableNodeSrvRecord(data.GetName(), srv);
+            OnDiscoveredNodeSrvRecord(data.GetName(), srv);
         }
         break;
     }
@@ -269,7 +269,7 @@ void PacketDataReporter::OnResource(ResourceType type, const ResourceData & data
             }
             else if (mDiscoveryType == DiscoveryType::kCommissionableNode || mDiscoveryType == DiscoveryType::kCommissionerNode)
             {
-                OnCommissionableNodeIPAddress(addr);
+                OnDiscoveredNodeIPAddress(addr);
             }
         }
         break;
@@ -289,7 +289,7 @@ void PacketDataReporter::OnResource(ResourceType type, const ResourceData & data
             }
             else if (mDiscoveryType == DiscoveryType::kCommissionableNode || mDiscoveryType == DiscoveryType::kCommissionerNode)
             {
-                OnCommissionableNodeIPAddress(addr);
+                OnDiscoveredNodeIPAddress(addr);
             }
         }
         break;
