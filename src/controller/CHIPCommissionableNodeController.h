@@ -36,20 +36,20 @@ public:
 
     CHIP_ERROR Init();
 
-    CHIP_ERROR DiscoverAllCommissioners(uint16_t long_discriminator);
+    CHIP_ERROR DiscoverCommissionersLongDiscriminator(uint16_t long_discriminator);
 
-    CHIP_ERROR DiscoverAllCommissioners();
+    CHIP_ERROR DiscoverCommissioners();
 
     const Mdns::DiscoveredNodeData * GetDiscoveredCommissioner(int idx);
 
     void OnNodeIdResolved(const chip::Mdns::ResolvedNodeData & nodeData) override
     {
-        ChipLogError(chipTool, "Unsupported operation CommissionableNodeController::OnNodeIdResolved");
+        ChipLogError(Controller, "Unsupported operation CommissionableNodeController::OnNodeIdResolved");
     };
 
     void OnNodeIdResolutionFailed(const chip::PeerId & peerId, CHIP_ERROR error) override
     {
-        ChipLogError(chipTool, "Unsupported operation CommissionableNodeController::OnNodeIdResolutionFailed");
+        ChipLogError(Controller, "Unsupported operation CommissionableNodeController::OnNodeIdResolutionFailed");
     };
 
 protected:

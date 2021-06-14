@@ -1393,7 +1393,7 @@ CHIP_ERROR DeviceCommissioner::DiscoverAllCommissioning()
 CHIP_ERROR DeviceCommissioner::DiscoverCommissioningLongDiscriminator(uint16_t long_discriminator)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    if ((err = SetUpNodeDiscovery(long_discriminator)) == CHIP_NO_ERROR)
+    if ((err = SetUpNodeDiscoveryLongDiscriminator(long_discriminator)) == CHIP_NO_ERROR)
     {
         return chip::Mdns::Resolver::Instance().FindCommissionableNodes(filter);
     }

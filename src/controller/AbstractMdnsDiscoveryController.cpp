@@ -79,7 +79,7 @@ CHIP_ERROR AbstractMdnsDiscoveryController::SetUpNodeDiscovery()
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR AbstractMdnsDiscoveryController::SetUpNodeDiscovery(uint16_t long_discriminator)
+CHIP_ERROR AbstractMdnsDiscoveryController::SetUpNodeDiscoveryLongDiscriminator(uint16_t long_discriminator)
 {
     filter = Mdns::DiscoveryFilter(Mdns::DiscoveryFilterType::kLong, long_discriminator);
     return SetUpNodeDiscovery();

@@ -75,7 +75,7 @@ CHIP_ERROR CommissionableNodeController::Init()
     return err;
 }
 
-CHIP_ERROR CommissionableNodeController::DiscoverAllCommissioners()
+CHIP_ERROR CommissionableNodeController::DiscoverCommissioners()
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     if ((err = SetUpNodeDiscovery()) == CHIP_NO_ERROR)
@@ -85,10 +85,10 @@ CHIP_ERROR CommissionableNodeController::DiscoverAllCommissioners()
     return err;
 }
 
-CHIP_ERROR CommissionableNodeController::DiscoverAllCommissioners(uint16_t long_discriminator)
+CHIP_ERROR CommissionableNodeController::DiscoverCommissionersLongDiscriminator(uint16_t long_discriminator)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    if ((err = SetUpNodeDiscovery(long_discriminator)) == CHIP_NO_ERROR)
+    if ((err = SetUpNodeDiscoveryLongDiscriminator(long_discriminator)) == CHIP_NO_ERROR)
     {
         return chip::Mdns::Resolver::Instance().FindCommissioners(filter);
     }

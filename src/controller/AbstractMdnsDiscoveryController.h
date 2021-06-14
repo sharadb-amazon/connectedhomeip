@@ -28,6 +28,13 @@ namespace Controller {
 
 constexpr uint16_t kMdnsPort = 5353;
 
+/**
+ * @brief
+ *   Convenient superclass for controller implementations that need to discover Commissioners or CommissionableNodes using mDNS.
+ *   This Abstract class provides base implementations for logic to setup mDNS discovery requests, handling of received
+ *   DiscoveredNodeData, etc. while expecting child classes to maintain a list of DiscoveredNodes and providing the implementation
+ *   of the template GetDiscoveredNodes() method.
+ */
 class DLL_EXPORT AbstractMdnsDiscoveryController : public Mdns::ResolverDelegate
 {
 public:
@@ -38,7 +45,7 @@ public:
 
 protected:
     CHIP_ERROR SetUpNodeDiscovery();
-    CHIP_ERROR SetUpNodeDiscovery(uint16_t long_discriminator);
+    CHIP_ERROR SetUpNodeDiscoveryLongDiscriminator(uint16_t long_discriminator);
     const Mdns::DiscoveredNodeData * GetDiscoveredNode(int idx);
     virtual Mdns::DiscoveredNodeData * GetDiscoveredNodes() = 0;
 

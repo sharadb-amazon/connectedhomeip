@@ -27,7 +27,7 @@ using namespace ::chip;
 CHIP_ERROR DiscoverCommissionersCommand::Run(PersistentStorage & storage, NodeId localId, NodeId remoteId)
 {
     mCommissionableNodeController.Init();
-    mCommissionableNodeController.DiscoverAllCommissioners();
+    mCommissionableNodeController.DiscoverCommissioners();
 
     uint32_t waitTime     = 500;
     System::Timer * timer = nullptr;
