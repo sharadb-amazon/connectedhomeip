@@ -26,7 +26,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import chip.setuppayload.SetupPayloadParser
 import com.google.chip.chiptool.attestation.AttestationTestFragment
-import com.google.chip.chiptool.clusterclient.OnOffClientFragment
 import com.google.chip.chiptool.commissioner.CommissionerActivity
 import com.google.chip.chiptool.echoclient.EchoClientFragment
 import com.google.chip.chiptool.provisioning.DeviceProvisioningFragment
@@ -36,6 +35,8 @@ import com.google.chip.chiptool.setuppayloadscanner.CHIPDeviceDetailsFragment
 import com.google.chip.chiptool.setuppayloadscanner.CHIPDeviceInfo
 import com.google.chip.chiptool.setuppayloadscanner.QrCodeInfo
 import chip.devicecontroller.PersistentStorage
+import com.google.chip.chiptool.casting.CastingFragment
+import com.google.chip.chiptool.clusterclient.OnOffClientFragment
 
 class CHIPToolActivity :
     AppCompatActivity(),
@@ -109,6 +110,10 @@ class CHIPToolActivity :
 
   override fun handleOnOffClicked() {
     showFragment(OnOffClientFragment.newInstance())
+  }
+
+  override fun handleCastingClicked() {
+    showFragment(CastingFragment())
   }
 
   override fun handleAttestationTestClicked() {

@@ -23,6 +23,8 @@
 #import "QRCodeViewController.h"
 #import "TemperatureSensorViewController.h"
 #import "UnpairDevicesViewController.h"
+#import "CastingViewController.h"
+#import "CastingViewController.h"
 #import "WifiViewController.h"
 
 @implementation RootViewController
@@ -42,7 +44,7 @@
     [self.view addSubview:self.tableView];
     self.options = @[
         @"QRCode scanner", @"Echo client", @"Light on / off cluster", @"Temperature Sensor", @"Bindings", @"Wifi Configuration",
-        @"Enable Pairing", @"Unpair Devices"
+        @"Enable Pairing", @"Unpair Devices", @"Casting"
     ];
 }
 
@@ -91,6 +93,9 @@
         break;
     case 7:
         [self pushUnpairDevices];
+        break;
+    case 8:
+        [self pushCasting];
         break;
     default:
         break;
@@ -142,6 +147,12 @@
 - (void)pushUnpairDevices
 {
     UnpairDevicesViewController * controller = [UnpairDevicesViewController new];
+    [self.navigationController pushViewController:controller animated:YES];
+}
+
+- (void)pushCasting
+{
+    CastingViewController * controller = [CastingViewController new];
     [self.navigationController pushViewController:controller animated:YES];
 }
 @end

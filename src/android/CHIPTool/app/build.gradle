@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.0"
+    buildToolsVersion '30.0.0'
 
     defaultConfig {
         applicationId "com.google.chip.chiptool"
@@ -30,6 +30,7 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    ndkVersion '21.0.6113669'
 
     configurations.all {
         resolutionStrategy.eachDependency {DependencyResolveDetails details ->

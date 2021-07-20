@@ -53,6 +53,7 @@ class SelectActionFragment : Fragment() {
       otCommissioningBtn.setOnClickListener { getCallback()?.handleCommissioningClicked() }
       echoClientBtn.setOnClickListener { getCallback()?.handleEchoClientClicked() }
       onOffClusterBtn.setOnClickListener { getCallback()?.handleOnOffClicked() }
+      castingBtn.setOnClickListener { getCallback()?.handleCastingClicked() }
       attestationTestBtn.setOnClickListener { getCallback()?.handleAttestationTestClicked() }
     }
   }
@@ -112,6 +113,8 @@ class SelectActionFragment : Fragment() {
     fun handleEchoClientClicked()
     /** Notifies listener of send command button click. */
     fun handleOnOffClicked()
+    /** Notifies listener of send command button click. */
+    fun handleCastingClicked()
     /** Notifies listener of attestation command button clicked. */
     fun handleAttestationTestClicked()
   }

@@ -11,6 +11,7 @@
 		2C21071525D1A8F200DDA4AD /* MultiAdminViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C21071325D1A8F200DDA4AD /* MultiAdminViewController.m */; };
 		2C460C2425D7594B000512D6 /* DeviceSelector.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C460C2325D7594B000512D6 /* DeviceSelector.m */; };
 		2C460C3225D97CB3000512D6 /* UnpairDevicesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C460C3025D97CB3000512D6 /* UnpairDevicesViewController.m */; };
+		3C030B1C261E774800450F51 /* CastingViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C030B1B261E774800450F51 /* CastingViewController.m */; };
 		991DC091247747F500C13860 /* EchoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 991DC090247747F500C13860 /* EchoViewController.m */; };
 		997A639C253F93F7005C64E6 /* CHIP.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* CHIP.framework */; };
 		997A639D253F93F7005C64E6 /* CHIP.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 997A639B253F93F7005C64E6 /* CHIP.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -61,6 +62,8 @@
 		2C460C2325D7594B000512D6 /* DeviceSelector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DeviceSelector.m; sourceTree = "<group>"; };
 		2C460C3025D97CB3000512D6 /* UnpairDevicesViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UnpairDevicesViewController.m; sourceTree = "<group>"; };
 		2C460C3125D97CB3000512D6 /* UnpairDevicesViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UnpairDevicesViewController.h; sourceTree = "<group>"; };
+		3C030B1B261E774800450F51 /* CastingViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CastingViewController.m; sourceTree = "<group>"; };
+		3C030B1F261E780900450F51 /* CastingViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CastingViewController.h; sourceTree = "<group>"; };
 		991DC08F247747F500C13860 /* EchoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EchoViewController.h; sourceTree = "<group>"; };
 		991DC090247747F500C13860 /* EchoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EchoViewController.m; sourceTree = "<group>"; };
 		997A639B253F93F7005C64E6 /* CHIP.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CHIP.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -156,6 +159,15 @@
 			path = UnpairDevices;
 			sourceTree = "<group>";
 		};
+		3CC71C1A260041EB00EB6F54 /* Casting */ = {
+			isa = PBXGroup;
+			children = (
+				3C030B1B261E774800450F51 /* CastingViewController.m */,
+				3C030B1F261E780900450F51 /* CastingViewController.h */,
+			);
+			path = Casting;
+			sourceTree = "<group>";
+		};
 		B20252DE2459EC7600F97062 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -218,6 +230,7 @@
 		B232D8BF251A0EC500792CB4 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				3CC71C1A260041EB00EB6F54 /* Casting */,
 				2C460C2F25D97CB3000512D6 /* UnpairDevices */,
 				2C460C2225D7594B000512D6 /* DeviceSelector.h */,
 				2C460C2325D7594B000512D6 /* DeviceSelector.m */,
@@ -378,6 +391,7 @@
 				2C21071525D1A8F200DDA4AD /* MultiAdminViewController.m in Sources */,
 				B204A627244E1D0600C7C0E1 /* QRCodeViewController.m in Sources */,
 				2C460C3225D97CB3000512D6 /* UnpairDevicesViewController.m in Sources */,
+				3C030B1C261E774800450F51 /* CastingViewController.m in Sources */,
 				B232D8BA2514BD0800792CB4 /* CHIPUIViewUtils.m in Sources */,
 				B2946A9B24C9A7BF005C87D0 /* DefaultsUtils.m in Sources */,
 				991DC091247747F500C13860 /* EchoViewController.m in Sources */,
@@ -544,7 +558,7 @@
 				CODE_SIGN_ENTITLEMENTS = CHIPTool/CHIPTool.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = R7NUZ7N74U;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = CHIPTool/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -552,7 +566,7 @@
 					"@executable_path/Frameworks",
 				);
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.chip.CHIPTool;
+				PRODUCT_BUNDLE_IDENTIFIER = demo.com.chip.CHIPTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
@@ -567,7 +581,7 @@
 				CODE_SIGN_ENTITLEMENTS = CHIPTool/CHIPTool.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = R7NUZ7N74U;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = CHIPTool/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -575,7 +589,7 @@
 					"@executable_path/Frameworks",
 				);
 				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.chip.CHIPTool;
+				PRODUCT_BUNDLE_IDENTIFIER = demo.com.chip.CHIPTool;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
