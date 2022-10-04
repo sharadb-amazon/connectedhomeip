@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2021 Project CHIP Authors
+ *    Copyright (c) 2021-2022 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -135,7 +135,8 @@ gboolean OnBrowseTimeout(void * userData)
 
 void OnBrowseAdd(BrowseContext * context, const char * type, const char * name, uint32_t interfaceId)
 {
-    ChipLogDetail(DeviceLayer, "DNSsd %s: name: %s, type: %s, interfaceId: %u", __func__, name, type, interfaceId);
+    ChipLogDetail(DeviceLayer, "DNSsd %s: name: %s, type: %s, interfaceId: %u", __func__, StringOrNullMarker(name),
+                  StringOrNullMarker(type), interfaceId);
 
     char * tokens  = strdup(type);
     char * regtype = strtok(tokens, ".");
@@ -153,7 +154,8 @@ void OnBrowseAdd(BrowseContext * context, const char * type, const char * name, 
 
 void OnBrowseRemove(BrowseContext * context, const char * type, const char * name, uint32_t interfaceId)
 {
-    ChipLogDetail(DeviceLayer, "DNSsd %s: name: %s, type: %s, interfaceId: %u", __func__, name, type, interfaceId);
+    ChipLogDetail(DeviceLayer, "DNSsd %s: name: %s, type: %s, interfaceId: %u", __func__, StringOrNullMarker(name),
+                  StringOrNullMarker(type), interfaceId);
     context->mServices.erase(std::remove_if(
         context->mServices.begin(), context->mServices.end(), [name, type, interfaceId](const DnssdService & service) {
             return strcmp(name, service.mName) == 0 && type == GetFullType(service.mType, service.mProtocol) &&
@@ -340,7 +342,8 @@ void OnResolve(dnssd_error_e result, dnssd_service_h service, void * data)
     }
 #endif
 
-    ChipLogDetail(DeviceLayer, "DNSsd %s: IPv4: %s, IPv6: %s, ret: %d", __func__, ipv4, ipv6, ret);
+    ChipLogDetail(DeviceLayer, "DNSsd %s: IPv4: %s, IPv6: %s, ret: %d", __func__, StringOrNullMarker(ipv4),
+                  StringOrNullMarker(ipv6), ret);
 
     g_free(ipv4);
     g_free(ipv6);
@@ -766,11 +769,14 @@ CHIP_ERROR ChipDnssdFinalizeServiceUpdate()
 }
 
 CHIP_ERROR ChipDnssdBrowse(const char * type, DnssdServiceProtocol protocol, chip::Inet::IPAddressType addressType,
-                           chip::Inet::InterfaceId interface, DnssdBrowseCallback callback, void * context)
+                           chip::Inet::InterfaceId interface, DnssdBrowseCallback callback, void * context,
+                           intptr_t * browseIdentifier)
 {
     VerifyOrReturnError(type != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrReturnError(IsSupportedProtocol(protocol), CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrReturnError(callback != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
+
+    *browseIdentifier = reinterpret_cast<intptr_t>(nullptr);
 
 #if CHIP_DEVICE_CONFIG_ENABLE_THREAD_SRP_CLIENT && CHIP_DEVICE_CONFIG_ENABLE_THREAD_DNS_CLIENT
     if (DeviceLayer::ThreadStackMgr().IsThreadEnabled())
@@ -781,6 +787,11 @@ CHIP_ERROR ChipDnssdBrowse(const char * type, DnssdServiceProtocol protocol, chi
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD_SRP_CLIENT && CHIP_DEVICE_CONFIG_ENABLE_THREAD_DNS_CLIENT
 
     return DnssdTizen::GetInstance().Browse(type, protocol, addressType, interface, callback, context);
+}
+
+CHIP_ERROR ChipDnssdStopBrowse(intptr_t browseIdentifier)
+{
+    return CHIP_ERROR_NOT_IMPLEMENTED;
 }
 
 CHIP_ERROR ChipDnssdResolve(DnssdService * browseResult, chip::Inet::InterfaceId interface, DnssdResolveCallback callback,
@@ -799,6 +810,13 @@ CHIP_ERROR ChipDnssdResolve(DnssdService * browseResult, chip::Inet::InterfaceId
 #endif // CHIP_DEVICE_CONFIG_ENABLE_THREAD_SRP_CLIENT && CHIP_DEVICE_CONFIG_ENABLE_THREAD_DNS_CLIENT
 
     return DnssdTizen::GetInstance().Resolve(*browseResult, interface, callback, context);
+}
+
+void ChipDnssdResolveNoLongerNeeded(const char * instanceName) {}
+
+CHIP_ERROR ChipDnssdReconfirmRecord(const char * hostname, chip::Inet::IPAddress address, chip::Inet::InterfaceId interface)
+{
+    return CHIP_ERROR_NOT_IMPLEMENTED;
 }
 
 } // namespace Dnssd

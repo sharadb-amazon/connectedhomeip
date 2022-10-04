@@ -61,8 +61,6 @@ static_library("Darwin") {
     "DnssdImpl.h",
     "InetPlatformConfig.h",
     "Logging.cpp",
-    "MDnsProvider.cpp",
-    "MDnsProvider.h",
     "MdnsError.cpp",
     "MdnsError.h",
     "NetworkCommissioningDriver.h",

@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2020 Project CHIP Authors
+ *    Copyright (c) 2020-2022 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ static TXTRecordRef PublishTxtRecord;
 
 void ChipDnssdMdnsLog(const char * level, const char * msg)
 {
-    ChipLogProgress(ServiceProvisioning, "%s %s", level, msg);
+    ChipLogProgress(ServiceProvisioning, "%s %s", StringOrNullMarker(level), StringOrNullMarker(msg));
 }
 
 /**
@@ -205,21 +205,22 @@ void ChipDNSServiceBrowseReply(DNSServiceRef sdRef, DNSServiceFlags flags, uint3
     DnssdBrowseCallback ChipBrowseHandler = (DnssdBrowseCallback) context;
     DnssdService service;
 
-    ChipLogProgress(ServiceProvisioning, "ChipDNSServiceBrowseReply %s", serviceName);
+    ChipLogProgress(ServiceProvisioning, "ChipDNSServiceBrowseReply %s", StringOrNullMarker(serviceName));
     strcpy(service.mName, serviceName);
 
     ChipBrowseHandler(NULL, &service, 1, true, CHIP_NO_ERROR);
 }
 
 CHIP_ERROR ChipDnssdBrowse(const char * type, DnssdServiceProtocol protocol, chip::Inet::IPAddressType addressType,
-                           chip::Inet::InterfaceId interface, DnssdBrowseCallback callback, void * context)
+                           chip::Inet::InterfaceId interface, DnssdBrowseCallback callback, void * context,
+                           intptr_t * browseIdentifier)
 {
     CHIP_ERROR error = CHIP_NO_ERROR;
     DNSServiceErrorType err;
     char ServiceType[kDnssdTypeMaxSize + 10] = { 0 };
 
     (void) addressType;
-    ChipLogProgress(ServiceProvisioning, "ChipDnssdBrowse %s", type);
+    ChipLogProgress(ServiceProvisioning, "ChipDnssdBrowse %s", StringOrNullMarker(type));
     strcpy(ServiceType, type);
     strcat(ServiceType, ".");
     strcat(ServiceType, GetProtocolString(protocol));
@@ -229,7 +230,16 @@ CHIP_ERROR ChipDnssdBrowse(const char * type, DnssdServiceProtocol protocol, chi
     {
         error = CHIP_ERROR_INTERNAL;
     }
+    else
+    {
+        *browseIdentifier = reinterpret_cast<intptr_t>(nullptr);
+    }
     return error;
+}
+
+CHIP_ERROR ChipDnssdStopBrowse(intptr_t browseIdentifier)
+{
+    return CHIP_ERROR_NOT_IMPLEMENTED;
 }
 
 static DNSServiceRef ResolveClient = NULL;
@@ -261,6 +271,13 @@ CHIP_ERROR ChipDnssdResolve(DnssdService * service, chip::Inet::InterfaceId inte
         error = CHIP_ERROR_INTERNAL;
     }
     return error;
+}
+
+void ChipDnssdResolveNoLongerNeeded(const char * instanceName) {}
+
+CHIP_ERROR ChipDnssdReconfirmRecord(const char * hostname, chip::Inet::IPAddress address, chip::Inet::InterfaceId interface)
+{
+    return CHIP_ERROR_NOT_IMPLEMENTED;
 }
 
 } // namespace Dnssd
