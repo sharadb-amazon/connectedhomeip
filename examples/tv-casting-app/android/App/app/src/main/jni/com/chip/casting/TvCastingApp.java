@@ -29,6 +29,46 @@ public class TvCastingApp {
 
   public native boolean sendUserDirectedCommissioningRequest(String address, int port);
 
+  /**
+   * Send a request to Discover commissioners using DNS-SD
+   *
+   * @param discoverySuccessCallback
+   * @param discoveryFailureCallback
+   * @return true, if the discovery request was sent successfully, false otherwise
+   */
+  public boolean discoverCommissioners(
+      SuccessCallback<DiscoveredNodeData> discoverySuccessCallback,
+      FailureCallback discoveryFailureCallback);
+
+  /**
+   * Send a User Directed Commissioning request to a commissioner
+   *
+   * @param commissioner
+   * @return
+   */
+  public boolean sendUserDirectedCommissioningRequest(DiscoveredNodeData commissioner);
+
+  /**
+   * @return List of VideoPlayers actively connected and available for targeting. If no such Video
+   *     Players are found, this returns an empty list
+   */
+  public native List<TargetVideoPlayer> getActiveTargetVideoPlayers();
+
+  /**
+   * @return Read all VideoPlayers the TvCastingApp knows about, from previous connections (may not
+   *     be actively connected to some/any of them)
+   */
+  public native List<TargetVideoPlayer> readAllTargetVideoPlayers();
+
+  /**
+   * Verify if a connection exists or establishes one to a TargetVideoPlayer
+   *
+   * @param targetVideoPlayer
+   * @return targetVideoPlayer a connected TargetVideoPlayer with potential updates to the
+   *     TargetContentApps field
+   */
+  public native TargetVideoPlayer verifyOrEstablishConnection(TargetVideoPlayer targetVideoPlayer);
+
   public native boolean discoverCommissioners();
 
   public native void init();
@@ -42,6 +82,8 @@ public class TvCastingApp {
       String contentUrl, String contentDisplayStr, Object launchURLHandler);
 
   public native boolean contentLauncher_launchContent(
+      TargetVideoPlayer targetVideoPlayer, // New params, repeated for each
+      TargetContentApp targetContentApp, // media command/subscription API below
       ContentLauncherTypes.ContentSearch search,
       boolean autoPlay,
       String data,
