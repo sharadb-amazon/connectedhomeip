@@ -46,28 +46,28 @@ public class TvCastingApp {
    * @param commissioner
    * @return
    */
-  public boolean sendUserDirectedCommissioningRequest(DiscoveredNodeData commissioner);
+  public boolean sendCommissioningRequest(DiscoveredNodeData commissioner);
 
   /**
    * @return List of VideoPlayers actively connected and available for targeting. If no such Video
    *     Players are found, this returns an empty list
    */
-  public native List<TargetVideoPlayer> getActiveTargetVideoPlayers();
+  public native List<VideoPlayer> getActiveTargetVideoPlayers();
 
   /**
    * @return Read all VideoPlayers the TvCastingApp knows about, from previous connections (may not
    *     be actively connected to some/any of them)
    */
-  public native List<TargetVideoPlayer> readAllTargetVideoPlayers();
+  public native List<VideoPlayer> readAllVideoPlayers();
 
   /**
-   * Verify if a connection exists or establishes one to a TargetVideoPlayer
+   * Verify if a connection exists or establishes one to a Target VideoPlayer
    *
-   * @param targetVideoPlayer
-   * @return targetVideoPlayer a connected TargetVideoPlayer with potential updates to the
-   *     TargetContentApps field
+   * @param videoPlayer
+   * @return videoPlayer a connected TargetVideoPlayer with potential updates to the ContentApps
+   *     field
    */
-  public native TargetVideoPlayer verifyOrEstablishConnection(TargetVideoPlayer targetVideoPlayer);
+  public native VideoPlayer verifyOrEstablishConnection(VideoPlayer targetVideoPlayer);
 
   public native boolean discoverCommissioners();
 

@@ -1,7 +1,7 @@
 /** a.k.a content app like the PV app on a TV */
-public class TargetContentApp {
+public class ContentApp {
   private long endpointID;
-  private List<Long> clusterIDs;
+  private List<Integer> clusterIDs;
 
   private Short vendorID;
   private Short productID;
