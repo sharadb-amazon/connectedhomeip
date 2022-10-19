@@ -24,7 +24,8 @@ CASEClientPool<CHIP_CONFIG_DEVICE_MAX_ACTIVE_CASE_CLIENTS> gCASEClientPool;
 CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIndex,
                                              std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                              std::function<void(CHIP_ERROR)> onConnectionFailure, uint16_t vendorId,
-                                             uint16_t productId, uint16_t deviceType, const char * deviceName)
+                                             uint16_t productId, uint16_t deviceType, const char * deviceName,
+                                             size_t numIPs, chip::Inet::IPAddress *ipAddress)
 {
     ChipLogProgress(NotSpecified, "TargetVideoPlayerInfo nodeId=0x" ChipLogFormatX64 " fabricIndex=%d", ChipLogValueX64(nodeId),
                     fabricIndex);
@@ -33,6 +34,12 @@ CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIn
     mVendorId    = vendorId;
     mProductId   = productId;
     mDeviceType  = deviceType;
+    mNumIPs = numIPs;
+    for(size_t i = 0; i < numIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
+    {
+        mIpAddress[i] = ipAddress[i];
+    }
+
     chip::Platform::CopyString(mDeviceName, chip::Dnssd::kMaxDeviceNameLen + 1, deviceName);
     for (auto & endpointInfo : mEndpoints)
     {
@@ -117,4 +124,35 @@ void TargetVideoPlayerInfo::PrintInfo()
             endpointInfo.PrintInfo();
         }
     }
+}
+
+bool TargetVideoPlayerInfo::IsSameAs(const chip::Dnssd::DiscoveredNodeData * discoveredNodeData)
+{
+    if(discoveredNodeData == nullptr)
+    {
+        return false;
+    }
+
+    if(strcmp(mDeviceName, discoveredNodeData->commissionData.deviceName) != 0)
+    {
+        return false;
+    }
+
+    if(mNumIPs != discoveredNodeData->resolutionData.numIPs)
+    {
+        return false;
+    }
+
+    if(mNumIPs > 0)
+    {
+        for(size_t i = 0; i < mNumIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
+        {
+            if(mIpAddress[i] != discoveredNodeData->resolutionData.ipAddress[i])
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
 }

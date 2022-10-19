@@ -47,11 +47,15 @@ public class TvCastingApp {
     multicastLock.setReferenceCounted(true);
     multicastLock.acquire();
 
+    List<VideoPlayer> preCommissionedVideoPlayers = readCachedVideoPlayers();
+    //List<VideoPlayer> preCommissionedVideoPlayers = new ArrayList<>();
+
     NsdDiscoveryListener nsdDiscoveryListener =
         new NsdDiscoveryListener(
             nsdManager,
             TARGET_SERVICE_TYPE,
             DEVICE_TYPE_FILTER,
+            preCommissionedVideoPlayers,
             discoverySuccessCallback,
             discoveryFailureCallback);
 

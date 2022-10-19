@@ -139,11 +139,11 @@ int main(int argc, char * argv[])
     VerifyOrDie(CHIP_NO_ERROR == initParams.InitializeStaticResourcesBeforeServerInit());
     VerifyOrDie(CHIP_NO_ERROR == chip::Server::GetInstance().Init(initParams));
 
-    if (ConnectToCachedVideoPlayer() == CHIP_NO_ERROR)
+    /*if (ConnectToCachedVideoPlayer() == CHIP_NO_ERROR)
     {
         ChipLogProgress(AppServer, "Skipping commissioner discovery / User directed commissioning flow.");
     }
-    else
+    else*/
     {
         // Send discover commissioners request
         SuccessOrExit(err = CastingServer::GetInstance()->DiscoverCommissioners());

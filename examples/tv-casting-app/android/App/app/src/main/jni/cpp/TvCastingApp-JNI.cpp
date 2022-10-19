@@ -103,7 +103,7 @@ exit:
 
 JNI_METHOD(jobject, readCachedVideoPlayers)(JNIEnv * env, jobject)
 {
-    chip::DeviceLayer::StackLock lock;
+    //chip::DeviceLayer::StackLock lock;
 
     ChipLogProgress(AppServer, "JNI_METHOD readCachedVideoPlayers called");
 

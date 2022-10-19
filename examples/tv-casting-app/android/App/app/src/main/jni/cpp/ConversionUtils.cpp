@@ -152,7 +152,7 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
         ReturnErrorOnFailure(
             chip::JniReferences::GetInstance().GetClassRef(env, "com/chip/casting/VideoPlayer", jVideoPlayerClass));
         jmethodID jVideoPlayerConstructor =
-            env->GetMethodID(jVideoPlayerClass, "<init>", "(JBLjava/lang/String;IIILjava/util/List;Z)V");
+            env->GetMethodID(jVideoPlayerClass, "<init>", "(JBLjava/lang/String;IIILjava/util/List;ILjava/util/List;Z)V");
 
         jobject jContentAppList        = nullptr;
         TargetEndpointInfo * endpoints = targetVideoPlayerInfo->GetEndpoints();
@@ -167,10 +167,31 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
             }
         }
         jstring deviceName = env->NewStringUTF(targetVideoPlayerInfo->GetDeviceName());
+        
+        jobject jIPAddressList = nullptr;
+        const chip::Inet::IPAddress * ipAddresses = targetVideoPlayerInfo->GetIpAddresses();
+        if(ipAddresses != nullptr)
+        {
+            chip::JniReferences::GetInstance().CreateArrayList(jIPAddressList);
+            for (size_t i = 0; i < targetVideoPlayerInfo->GetNumIPs() && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
+            {
+                char addrCString[chip::Inet::IPAddress::kMaxStringLength];
+                ipAddresses[i].ToString(addrCString, chip::Inet::IPAddress::kMaxStringLength);
+                jstring jIPAddressStr = env->NewStringUTF(addrCString);
+
+                jclass jIPAddressClass;
+                ReturnErrorOnFailure(chip::JniReferences::GetInstance().GetClassRef(env, "java/net/InetAddress", jIPAddressClass));
+                jmethodID jGetByNameMid = env->GetStaticMethodID(jIPAddressClass, "getByName", "(Ljava/lang/String;)Ljava/net/InetAddress;");
+                jobject jIPAddress        = env->CallStaticObjectMethod(jIPAddressClass, jGetByNameMid, jIPAddressStr);
+
+                chip::JniReferences::GetInstance().AddToList(jIPAddressList, jIPAddress);
+            }
+        }
+
         outVideoPlayer     = env->NewObject(jVideoPlayerClass, jVideoPlayerConstructor, targetVideoPlayerInfo->GetNodeId(),
                                         targetVideoPlayerInfo->GetFabricIndex(), deviceName, targetVideoPlayerInfo->GetVendorId(),
                                         targetVideoPlayerInfo->GetProductId(), targetVideoPlayerInfo->GetDeviceType(),
-                                        jContentAppList, targetVideoPlayerInfo->GetOperationalDeviceProxy() != nullptr);
+                                        jContentAppList, targetVideoPlayerInfo->GetNumIPs(), jIPAddressList, targetVideoPlayerInfo->GetOperationalDeviceProxy() != nullptr);
     }
     return CHIP_NO_ERROR;
 }

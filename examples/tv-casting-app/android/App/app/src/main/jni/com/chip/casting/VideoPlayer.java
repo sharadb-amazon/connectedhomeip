@@ -17,10 +17,16 @@
  */
 package com.chip.casting;
 
+import android.util.Log;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.HashSet;
+import java.net.InetAddress;
 
 public class VideoPlayer {
+  private static final String TAG = VideoPlayer.class.getSimpleName();
+
   private long nodeId;
   private byte fabricIndex;
   private String deviceName;
@@ -29,6 +35,9 @@ public class VideoPlayer {
   private int deviceType;
   private List<ContentApp> contentApps;
   private boolean isConnected = false;
+
+  private int numIPs;
+  private List<InetAddress> ipAddresses;
 
   private boolean isInitialized = false;
 
@@ -40,6 +49,8 @@ public class VideoPlayer {
       int productId,
       int deviceType,
       List<ContentApp> contentApps,
+      int numIPs,
+      List<InetAddress> ipAddresses,
       boolean isConnected) {
     this.nodeId = nodeId;
     this.fabricIndex = fabricIndex;
@@ -49,7 +60,51 @@ public class VideoPlayer {
     this.deviceType = deviceType;
     this.contentApps = contentApps;
     this.isConnected = isConnected;
+    this.numIPs = numIPs;
+    this.ipAddresses = ipAddresses;
     this.isInitialized = true;
+  }
+
+  public boolean isSameAs(DiscoveredNodeData discoveredNodeData)
+  {
+    Log.d(TAG, "isSameAs called");
+    // return false because 'this' VideoPlayer is not null
+    if(discoveredNodeData == null)
+    {
+      Log.d(TAG, "isSameAs discoveredNodeData == null");
+      return false;
+    }
+
+    // return false because deviceNames are different
+    if(Objects.equals(deviceName, discoveredNodeData.getDeviceName()) == false)
+    {
+      Log.d(TAG, "isSameAs Objects.equals(deviceName, discoveredNodeData.getDeviceName()) == false");
+      return false;
+    }
+
+    // return false because numIPs or ipAddress list lengths are different
+    if((numIPs != discoveredNodeData.getNumIPs()) || (ipAddresses.size() != discoveredNodeData.getIpAddresses().size()))
+    {
+      Log.d(TAG, "isSameAs numIPs != discoveredNodeData.getNumIPs())");
+      return false;
+    }
+
+    // return false because the sets of IP Addresses are different
+    if(ipAddresses != null)
+    {
+      Log.d(TAG, "isSameAs ipAddresses != null");
+      Set<InetAddress> videoPlayerIpAddressSet = new HashSet<InetAddress>(ipAddresses);
+      Set<InetAddress> discoveredNodeDataIpAddressSet = new HashSet<InetAddress>(discoveredNodeData.getIpAddresses());
+      if(!videoPlayerIpAddressSet.containsAll(discoveredNodeDataIpAddressSet) || !discoveredNodeDataIpAddressSet.containsAll(videoPlayerIpAddressSet))
+      {
+        Log.d(TAG, "isSameAs containsAll");
+        return false;
+      }
+    }
+
+    // otherwise, return true
+    Log.d(TAG, "isSameAs otherwise, return true");
+    return true;
   }
 
   public boolean equals(Object object) {
@@ -66,21 +121,19 @@ public class VideoPlayer {
 
   @java.lang.Override
   public java.lang.String toString() {
-    return "VideoPlayer{"
-        + "nodeId="
-        + nodeId
-        + ", fabricIndex="
-        + fabricIndex
-        + ", deviceName='"
-        + deviceName
-        + '\''
-        + ", vendorId="
-        + vendorId
-        + ", productId="
-        + productId
-        + ", isConnected="
-        + isConnected
-        + '}';
+    return "VideoPlayer{" +
+            "nodeId=" + nodeId +
+            ", fabricIndex=" + fabricIndex +
+            ", deviceName='" + deviceName + '\'' +
+            ", vendorId=" + vendorId +
+            ", productId=" + productId +
+            ", deviceType=" + deviceType +
+            ", contentApps=" + contentApps +
+            ", isConnected=" + isConnected +
+            ", numIPs=" + numIPs +
+            ", ipAddresses=" + ipAddresses +
+            ", isInitialized=" + isInitialized +
+            '}';
   }
 
   public long getNodeId() {
