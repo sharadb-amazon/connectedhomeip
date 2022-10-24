@@ -24,11 +24,7 @@
 #define MATTER_PLUGINS_INIT                                                                                                        \
     MatterIdentifyPluginServerInitCallback();                                                                                      \
     MatterGroupsPluginServerInitCallback();                                                                                        \
-    MatterScenesPluginServerInitCallback();                                                                                        \
-    MatterOnOffPluginClientInitCallback();                                                                                         \
-    MatterOnOffPluginServerInitCallback();                                                                                         \
     MatterLevelControlPluginClientInitCallback();                                                                                  \
-    MatterLevelControlPluginServerInitCallback();                                                                                  \
     MatterBinaryInputBasicPluginServerInitCallback();                                                                              \
     MatterDescriptorPluginClientInitCallback();                                                                                    \
     MatterDescriptorPluginServerInitCallback();                                                                                    \
@@ -54,11 +50,13 @@
     MatterFixedLabelPluginServerInitCallback();                                                                                    \
     MatterUserLabelPluginServerInitCallback();                                                                                     \
     MatterBarrierControlPluginServerInitCallback();                                                                                \
+    MatterWakeOnLanPluginClientInitCallback();                                                                                     \
     MatterWakeOnLanPluginServerInitCallback();                                                                                     \
     MatterChannelPluginClientInitCallback();                                                                                       \
     MatterTargetNavigatorPluginClientInitCallback();                                                                               \
     MatterMediaPlaybackPluginClientInitCallback();                                                                                 \
     MatterMediaInputPluginClientInitCallback();                                                                                    \
+    MatterLowPowerPluginClientInitCallback();                                                                                      \
     MatterKeypadInputPluginClientInitCallback();                                                                                   \
     MatterContentLauncherPluginClientInitCallback();                                                                               \
     MatterAudioOutputPluginClientInitCallback();                                                                                   \
