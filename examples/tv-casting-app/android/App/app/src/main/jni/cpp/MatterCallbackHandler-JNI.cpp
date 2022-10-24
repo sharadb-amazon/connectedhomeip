@@ -50,7 +50,7 @@ exit:
 
 void FailureHandlerJNI::Handle(CHIP_ERROR callbackErr)
 {
-    ChipLogProgress(AppServer, "FailureHandlerJNI::Handle called");
+    ChipLogProgress(AppServer, "Handle(CHIP_ERROR) called");
 
     JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
     UtfString jniCallbackErrString(env, callbackErr.AsString());
@@ -63,7 +63,7 @@ void FailureHandlerJNI::Handle(CHIP_ERROR callbackErr)
 exit:
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogError(AppServer, "FailureHandlerJNI::Handle status error: %s", err.AsString());
+        ChipLogError(AppServer, "Handle(CHIP_ERROR) status error: %s", err.AsString());
     }
 }
 

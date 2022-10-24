@@ -95,6 +95,10 @@ public class TvCastingApp {
       FailureCallback onConnectionFailure,
       SuccessCallback<ContentApp> onNewOrUpdatedEndpointCallback);
 
+  public native void shutdownAllSubscriptions();
+
+  public native void disconnect();
+
   public native List<VideoPlayer> getActiveTargetVideoPlayers();
 
   /*
