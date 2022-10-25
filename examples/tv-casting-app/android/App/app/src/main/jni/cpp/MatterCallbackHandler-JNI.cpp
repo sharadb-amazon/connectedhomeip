@@ -34,7 +34,7 @@ CHIP_ERROR CallbackBaseJNI::SetUp(JNIEnv * env, jobject inHandler)
     mMethod = env->GetMethodID(mClazz, "handle", mMethodSignature);
     if (mMethod == nullptr)
     {
-        ChipLogError(AppServer, "Failed to access 'handle' method");
+        ChipLogError(AppServer, "Failed to access 'handle' method with signature %s", mMethodSignature);
         env->ExceptionClear();
     }
 
@@ -332,9 +332,9 @@ jobject TargetListSuccessHandlerJNI::ConvertToJObject(
             return nullptr;
         }
 
-        jmethodID constructor = env->GetMethodID(responseTypeClass, "<init>", "(Ljava/lang/Integer;java/lang/String;)V");
+        jmethodID constructor = env->GetMethodID(responseTypeClass, "<init>", "(Ljava/lang/Integer;Ljava/lang/String;)V");
         chip::UtfString targetInfoName(env, targetInfo.name);
-        jobject jTargetInfo = env->NewObject(responseTypeClass, constructor, targetInfo.identifier, targetInfoName.jniValue());
+        jobject jTargetInfo = env->NewObject(responseTypeClass, constructor, ConvertToIntegerJObject(targetInfo.identifier), targetInfoName.jniValue());
 
         chip::JniReferences::GetInstance().AddToList(jArrayList, jTargetInfo);
     }
