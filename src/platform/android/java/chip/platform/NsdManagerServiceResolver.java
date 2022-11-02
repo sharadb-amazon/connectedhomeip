@@ -28,6 +28,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Semaphore;
 
 public class NsdManagerServiceResolver implements ServiceResolver {
   private static final String TAG = NsdManagerServiceResolver.class.getSimpleName();
@@ -38,6 +39,8 @@ public class NsdManagerServiceResolver implements ServiceResolver {
   private List<NsdManager.RegistrationListener> registrationListeners = new ArrayList<>();
   private final CopyOnWriteArrayList<String> mMFServiceName = new CopyOnWriteArrayList<>();
 
+  private Semaphore nsdResolveSemaphore;
+
   public NsdManagerServiceResolver(Context context) {
     this.nsdManager = (NsdManager) context.getSystemService(Context.NSD_SERVICE);
     this.mainThreadHandler = new Handler(Looper.getMainLooper());
@@ -46,6 +49,11 @@ public class NsdManagerServiceResolver implements ServiceResolver {
         ((WifiManager) context.getSystemService(Context.WIFI_SERVICE))
             .createMulticastLock("chipMulticastLock");
     this.multicastLock.setReferenceCounted(true);
+  }
+
+  public void setNsdResolveSemaphore(Semaphore nsdResolveSemaphore)
+  {
+    this.nsdResolveSemaphore = nsdResolveSemaphore;
   }
 
   @Override
@@ -82,6 +90,14 @@ public class NsdManagerServiceResolver implements ServiceResolver {
           }
         };
 
+        try {
+          Log.d(TAG, "NsdManagerServiceResolver: calling nsdResolveSemaphore.acquire()");
+          nsdResolveSemaphore.acquire();
+          Log.d(TAG, "NsdManagerServiceResolver: after calling nsdResolveSemaphore.acquire()");
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+
     this.nsdManager.resolveService(
         serviceInfo,
         new NsdManager.ResolveListener() {
@@ -97,6 +113,8 @@ public class NsdManagerServiceResolver implements ServiceResolver {
               multicastLock.release();
             }
             mainThreadHandler.removeCallbacks(timeoutRunnable);
+            Log.d(TAG, "NsdManagerServiceResolver: calling nsdResolveSemaphore.release()");
+            nsdResolveSemaphore.release();
           }
 
           @Override
@@ -122,6 +140,8 @@ public class NsdManagerServiceResolver implements ServiceResolver {
               multicastLock.release();
             }
             mainThreadHandler.removeCallbacks(timeoutRunnable);
+            Log.d(TAG, "NsdManagerServiceResolver: calling nsdResolveSemaphore.release()");
+            nsdResolveSemaphore.release();
           }
         });
     mainThreadHandler.postDelayed(timeoutRunnable, RESOLVE_SERVICE_TIMEOUT);

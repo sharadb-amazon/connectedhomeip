@@ -21,6 +21,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   private static final String TAG = NsdDiscoveryListener.class.getSimpleName();
@@ -31,20 +32,23 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   private final List<VideoPlayer> preCommissionedVideoPlayers;
   private final SuccessCallback<DiscoveredNodeData> successCallback;
   private final FailureCallback failureCallback;
+  private Semaphore nsdResolveSemaphore;
 
   public NsdDiscoveryListener(
-      NsdManager nsdManager,
-      String targetServiceType,
-      List<Long> deviceTypeFilter,
-      List<VideoPlayer> preCommissionedVideoPlayers,
-      SuccessCallback<DiscoveredNodeData> successCallback,
-      FailureCallback failureCallback) {
+          NsdManager nsdManager,
+          String targetServiceType,
+          List<Long> deviceTypeFilter,
+          List<VideoPlayer> preCommissionedVideoPlayers,
+          SuccessCallback<DiscoveredNodeData> successCallback,
+          FailureCallback failureCallback,
+          Semaphore nsdResolveSemaphore) {
     this.nsdManager = nsdManager;
     this.targetServiceType = targetServiceType;
     this.deviceTypeFilter = deviceTypeFilter;
     this.preCommissionedVideoPlayers = preCommissionedVideoPlayers;
     this.successCallback = successCallback;
     this.failureCallback = failureCallback;
+    this.nsdResolveSemaphore = nsdResolveSemaphore;
   }
 
   @Override
@@ -56,6 +60,13 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   public void onServiceFound(NsdServiceInfo service) {
     Log.d(TAG, "Service discovery success. " + service);
     if (service.getServiceType().equals(targetServiceType)) {
+      try {
+        Log.d(TAG, "NsdDiscoveryListener: calling nsdResolveSemaphore.acquire()");
+        nsdResolveSemaphore.acquire();
+        Log.d(TAG, "NsdDiscoveryListener: after calling nsdResolveSemaphore.acquire()");
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       nsdManager.resolveService(
           service,
           new NsdResolveListener(
@@ -63,7 +74,7 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
               deviceTypeFilter,
               preCommissionedVideoPlayers,
               successCallback,
-              failureCallback));
+              failureCallback, nsdResolveSemaphore));
     } else {
       Log.d(TAG, "Ignoring discovered service: " + service.toString());
     }

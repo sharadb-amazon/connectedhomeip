@@ -111,12 +111,22 @@ public class CommissionerDiscoveryFragment extends Fragment {
           }
         };
 
-    tvCastingApp.discoverVideoPlayerCommissioners(
-        (WifiManager) context.getSystemService(Context.WIFI_SERVICE),
-        (NsdManager) applicationContext.getSystemService(Context.NSD_SERVICE),
-        DISCOVERY_DURATION_SECS,
-        successCallback,
-        failureCallback);
+    Button discoverButton = getView().findViewById(R.id.discoverButton);
+    discoverButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            // remove all video player commissioner buttons from previous discoveries, start afresh
+            ((LinearLayout) getActivity().findViewById(R.id.castingCommissioners)).removeAllViews();
+
+            tvCastingApp.discoverVideoPlayerCommissioners(
+                (WifiManager) context.getSystemService(Context.WIFI_SERVICE),
+                (NsdManager) applicationContext.getSystemService(Context.NSD_SERVICE),
+                DISCOVERY_DURATION_SECS,
+                successCallback,
+                failureCallback);
+          }
+        });
   }
 
   @VisibleForTesting

@@ -29,7 +29,6 @@ public class MainActivity extends AppCompatActivity
 
   private static final String TAG = MainActivity.class.getSimpleName();
 
-  private ChipAppServer chipAppServer;
   private TvCastingApp tvCastingApp;
 
   @Override
@@ -78,31 +77,13 @@ public class MainActivity extends AppCompatActivity
    */
   private void initJni() {
     tvCastingApp = new TvCastingApp();
-
     tvCastingApp.setDACProvider(new DACProviderStub());
-    Context applicationContext = this.getApplicationContext();
-    AndroidChipPlatform chipPlatform =
-        new AndroidChipPlatform(
-            new AndroidBleManager(),
-            new PreferencesKeyValueStoreManager(applicationContext),
-            new PreferencesConfigurationManager(applicationContext),
-            new NsdManagerServiceResolver(applicationContext),
-            new NsdManagerServiceBrowser(applicationContext),
-            new ChipMdnsCallbackImpl(),
-            new DiagnosticDataProviderImpl(applicationContext));
-
-    chipPlatform.updateCommissionableDataProviderData(
-        null, null, 0, GlobalCastingConstants.SetupPasscode, GlobalCastingConstants.Discriminator);
-
-    chipAppServer = new ChipAppServer();
-    chipAppServer.startApp();
-
     AppParameters appParameters = new AppParameters();
     byte[] rotatingDeviceIdUniqueId =
         new byte[AppParameters.MIN_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH];
     new Random().nextBytes(rotatingDeviceIdUniqueId);
     appParameters.setRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueId);
-    tvCastingApp.init(appParameters);
+    tvCastingApp.initApp(appParameters, getApplicationContext());
   }
 
   private void showFragment(Fragment fragment, boolean showOnBack) {

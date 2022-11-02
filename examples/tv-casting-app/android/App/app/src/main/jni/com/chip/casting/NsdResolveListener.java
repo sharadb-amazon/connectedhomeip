@@ -21,6 +21,7 @@ import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 public class NsdResolveListener implements NsdManager.ResolveListener {
 
@@ -31,23 +32,20 @@ public class NsdResolveListener implements NsdManager.ResolveListener {
   private final List<VideoPlayer> preCommissionedVideoPlayers;
   private final SuccessCallback<DiscoveredNodeData> successCallback;
   private final FailureCallback failureCallback;
+  private Semaphore nsdResolveSemaphore;
 
   public NsdResolveListener(
       NsdManager nsdManager,
       List<Long> deviceTypeFilter,
       List<VideoPlayer> preCommissionedVideoPlayers,
       SuccessCallback<DiscoveredNodeData> successCallback,
-      FailureCallback failureCallback) {
+      FailureCallback failureCallback, Semaphore nsdResolveSemaphore) {
     this.nsdManager = nsdManager;
     this.deviceTypeFilter = deviceTypeFilter;
     this.preCommissionedVideoPlayers = preCommissionedVideoPlayers;
-    if (preCommissionedVideoPlayers != null) {
-      for (VideoPlayer videoPlayer : preCommissionedVideoPlayers) {
-        Log.d(TAG, "Precommissioned video player: " + videoPlayer);
-      }
-    }
     this.successCallback = successCallback;
     this.failureCallback = failureCallback;
+    this.nsdResolveSemaphore = nsdResolveSemaphore;
   }
 
   @Override
@@ -64,6 +62,8 @@ public class NsdResolveListener implements NsdManager.ResolveListener {
           "DiscoveredNodeData ignored because it did not pass the device type filter  "
               + discoveredNodeData);
     }
+    Log.d(TAG, "NsdResolveListener: calling nsdResolveSemaphore.release()");
+    nsdResolveSemaphore.release();
   }
 
   @Override
@@ -87,6 +87,8 @@ public class NsdResolveListener implements NsdManager.ResolveListener {
             new MatterError(19, "NsdResolveListener FAILURE_MAX_LIMIT - Service: " + serviceInfo));
         break;
     }
+    Log.d(TAG, "NsdResolveListener: calling nsdResolveSemaphore.release()");
+    nsdResolveSemaphore.release();
   }
 
   private boolean isPassingDeviceTypeFilter(DiscoveredNodeData discoveredNodeData) {

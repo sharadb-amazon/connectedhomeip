@@ -17,14 +17,28 @@
  */
 package com.chip.casting;
 
+import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.wifi.WifiManager;
 import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import chip.appserver.ChipAppServer;
+import chip.platform.AndroidBleManager;
+import chip.platform.AndroidChipPlatform;
+import chip.platform.ChipMdnsCallbackImpl;
+import chip.platform.DiagnosticDataProviderImpl;
+import chip.platform.NsdManagerServiceBrowser;
+import chip.platform.NsdManagerServiceResolver;
+import chip.platform.PreferencesConfigurationManager;
+import chip.platform.PreferencesKeyValueStoreManager;
+
+import java.util.concurrent.Semaphore;
 
 public class TvCastingApp {
   private static final String TAG = TvCastingApp.class.getSimpleName();
@@ -32,7 +46,37 @@ public class TvCastingApp {
   private final String TARGET_SERVICE_TYPE = "_matterd._udp.";
   private final List<Long> DEVICE_TYPE_FILTER = Arrays.asList(35L); // Video player = 35;
 
+  private ChipAppServer chipAppServer;
+  private NsdManagerServiceResolver nsdManagerServiceResolver;
+  private NsdManagerServiceBrowser nsdManagerServiceBrowser;
+  private Semaphore nsdResolveSemaphore = new Semaphore(1);
+
   public native boolean init(AppParameters appParameters);
+
+  public boolean initApp(AppParameters appParameters, Context applicationContext)
+  {
+    nsdManagerServiceResolver = new NsdManagerServiceResolver(applicationContext);
+    nsdManagerServiceResolver.setNsdResolveSemaphore(nsdResolveSemaphore);
+    nsdManagerServiceBrowser = new NsdManagerServiceBrowser(applicationContext);
+
+    AndroidChipPlatform chipPlatform =
+            new AndroidChipPlatform(
+                    new AndroidBleManager(),
+                    new PreferencesKeyValueStoreManager(applicationContext),
+                    new PreferencesConfigurationManager(applicationContext),
+                    nsdManagerServiceResolver,
+                    nsdManagerServiceBrowser,
+                    new ChipMdnsCallbackImpl(),
+                    new DiagnosticDataProviderImpl(applicationContext));
+
+    chipPlatform.updateCommissionableDataProviderData(
+            null, null, 0, 20202021, 0xF00);
+
+    chipAppServer = new ChipAppServer();
+    chipAppServer.startApp();
+
+    return init(appParameters);
+  }
 
   public native void setDACProvider(DACProvider provider);
 
@@ -43,6 +87,7 @@ public class TvCastingApp {
       SuccessCallback<DiscoveredNodeData> discoverySuccessCallback,
       FailureCallback discoveryFailureCallback) {
     Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners called");
+
     WifiManager.MulticastLock multicastLock = wifiManager.createMulticastLock("multicastLock");
     multicastLock.setReferenceCounted(true);
     multicastLock.acquire();
@@ -56,7 +101,8 @@ public class TvCastingApp {
             DEVICE_TYPE_FILTER,
             preCommissionedVideoPlayers,
             discoverySuccessCallback,
-            discoveryFailureCallback);
+            discoveryFailureCallback,
+                nsdResolveSemaphore);
 
     nsdManager.discoverServices(
         TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
@@ -68,6 +114,8 @@ public class TvCastingApp {
               public void run() {
                 Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
                 nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
+                Log.d(TAG, "TvCastingApp: calling nsdResolveSemaphore.release()");
+                nsdResolveSemaphore.release();
                 multicastLock.release();
               }
             },
