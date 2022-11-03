@@ -268,7 +268,7 @@ public class TvCastingApp {
 
   public native boolean targetNavigator_subscribeToTargetList(
       ContentApp contentApp,
-      SuccessCallback<ArrayList<TargetNavigatorTypes.TargetInfo>> readSuccessHandler,
+      SuccessCallback<Object> readSuccessHandler,
       FailureCallback readFailureHandler,
       int minInterval,
       int maxInterval,
