@@ -76,7 +76,12 @@ public:
     CHECK_RETURN_VALUE
     Optional<SessionHandle> CreateNewSecureSession(SecureSession::Type secureSessionType, ScopedNodeId sessionEvictionHint);
 
-    void ReleaseSession(SecureSession * session) { mEntries.ReleaseObject(session); }
+    void ReleaseSession(SecureSession * session)
+    {
+        ChipLogProgress(NotSpecified, "SecureSessionTable::ReleaseSession called with Local Session Id: %d, PeerSession ID: %d",
+                        session->GetLocalSessionId(), session->GetPeerSessionId());
+        mEntries.ReleaseObject(session);
+    }
 
     template <typename Function>
     Loop ForEachSession(Function && function)

@@ -23,6 +23,8 @@ namespace Transport {
 
 void SecureSessionDeleter::Release(SecureSession * entry)
 {
+    ChipLogProgress(NotSpecified, "SecureSessionDeleter::Release called with Local Session Id: %d, PeerSession ID: %d",
+                    entry->GetLocalSessionId(), entry->GetPeerSessionId());
     entry->mTable.ReleaseSession(entry);
 }
 
@@ -197,6 +199,8 @@ void SecureSession::Release()
 #if CHIP_CONFIG_SECURE_SESSION_REFCOUNT_LOGGING
     ChipLogProgress(SecureChannel, "SecureSession[%p]: -- %d -> %d", this, GetReferenceCount(), GetReferenceCount() - 1);
 #endif
+    ChipLogProgress(NotSpecified, "SecureSession::Release called with Local Session Id: %d, PeerSession ID: %d",
+                    GetLocalSessionId(), GetPeerSessionId());
 
     ReferenceCounted<SecureSession, SecureSessionDeleter, 0, uint16_t>::Release();
 }
