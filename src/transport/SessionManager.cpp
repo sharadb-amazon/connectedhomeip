@@ -724,9 +724,12 @@ void SessionManager::SecureUnicastMessageDispatch(const PacketHeader & packetHea
     // TODO: once mDNS address resolution is available reconsider if this is required
     // This updates the peer address once a packet is received from a new address
     // and serves as a way to auto-detect peer changing IPs.
+    ChipLogProgress(Inet, "SessionManager::SecureUnicastMessageDispatch - secureSession.PeerAddress.Port: %d, peerAddress.Port %d",
+                    secureSession->GetPeerAddress().GetPort(), peerAddress.GetPort());
     if (secureSession->GetPeerAddress() != peerAddress)
     {
-        secureSession->SetPeerAddress(peerAddress);
+        ChipLogProgress(Inet, "secureSession.PeerAddress and peerAddress were different");
+        // secureSession->SetPeerAddress(peerAddress);
     }
 
     if (mCB != nullptr)
