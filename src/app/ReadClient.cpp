@@ -858,7 +858,16 @@ void ReadClient::OnLivenessTimeoutCallback(System::Layer * apSystemLayer, void *
     const auto & holder = _this->mReadPrepareParams.mSessionHolder;
     if (holder)
     {
+        ChipLogError(
+            DataManagement,
+            "ReadClient::OnLivenessTimeoutCallback before calculating lastPeerActivity on SecureSession [LSID: %d] [PSID: %d]",
+            holder->AsSecureSession()->GetLocalSessionId(), holder->AsSecureSession()->GetPeerSessionId());
         System::Clock::Timestamp lastPeerActivity = holder->AsSecureSession()->GetLastPeerActivityTime();
+        ChipLogDetail(DataManagement, "ReadClient::OnLivenessTimeoutCallback lastPeerActivity is %" PRIu64 "ms", lastPeerActivity.count());
+
+        System::Clock::Timestamp now = System::SystemClock().GetMonotonicTimestamp();
+        ChipLogDetail(DataManagement, "ReadClient::OnLivenessTimeoutCallback now is %" PRIu64 "ms", now.count());
+
         _this->mpImEngine->GetExchangeManager()->GetSessionManager()->ForEachMatchingSession(
             _this->mPeer, [&lastPeerActivity](auto * session) {
                 if (!session->IsCASESession())
@@ -866,11 +875,22 @@ void ReadClient::OnLivenessTimeoutCallback(System::Layer * apSystemLayer, void *
                     return;
                 }
 
+                ChipLogDetail(DataManagement, "ReadClient::OnLivenessTimeoutCallback session->GetLastPeerActivityTime() is %" PRIu64 "ms", session->GetLastPeerActivityTime().count());
+
                 if (session->GetLastPeerActivityTime() > lastPeerActivity)
                 {
+                    ChipLogProgress(DataManagement,
+                                    "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime MORE "
+                                    "RECENT than lastPeerActivity",
+                                    session->GetLocalSessionId(), session->GetPeerSessionId());
                     return;
                 }
 
+                ChipLogError(DataManagement,
+                             "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime OLDER than or SAME AS  "
+                             "lastPeerActivity!",
+                             session->GetLocalSessionId(), session->GetPeerSessionId());
+                ChipLogError(DataManagement, "Marking session as defunct!");
                 session->MarkAsDefunct();
             });
     }
