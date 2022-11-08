@@ -32,6 +32,8 @@ public:
     {
         VerifyOrDieWithMsg(mTargetVideoPlayerInfo != nullptr, AppServer, "Target unknown");
 
+        DebugLogs();
+
         auto deviceProxy = mTargetVideoPlayerInfo->GetOperationalDeviceProxy();
         ReturnErrorCodeIf(deviceProxy == nullptr || !deviceProxy->ConnectionReady(), CHIP_ERROR_PEER_NODE_NOT_FOUND);
 

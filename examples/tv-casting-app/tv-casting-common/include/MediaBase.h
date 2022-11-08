@@ -52,6 +52,32 @@ public:
     };
 
 protected:
+    void DebugLogs()
+    {
+        auto deviceProxy = mTargetVideoPlayerInfo->GetOperationalDeviceProxy();
+        if (deviceProxy->GetSecureSession().HasValue())
+        {
+            const chip::SessionHandle & sessionHandle = deviceProxy->GetSecureSession().Value();
+            ChipLogProgress(AppServer, "Media*Base SessionHandle [IsActiveSession: %d]", sessionHandle->IsActiveSession());
+            if (sessionHandle->IsSecureSession())
+            {
+                chip::Transport::SecureSession * secureSession = sessionHandle->AsSecureSession();
+                ChipLogProgress(AppServer, "Media*Base SecureSession [LocalSessionId: %d] [PeerSessionId: %d] [IsPeerActive: %d]",
+                                secureSession->GetLocalSessionId(), secureSession->GetPeerSessionId(),
+                                secureSession->IsPeerActive());
+                ChipLogProgress(AppServer,
+                                "Media*Base SecureSession state [IsActiveSession: %d] [IsEstablishing: %d] [IsPendingEviction: %d] "
+                                "[IsDefunct: %d]",
+                                secureSession->IsActiveSession(), secureSession->IsEstablishing(),
+                                secureSession->IsPendingEviction(), secureSession->IsDefunct());
+            }
+        }
+        else
+        {
+            ChipLogError(AppServer, "Media*Base called but SecureSession in the Operational device proxy does NOT have a value!");
+        }
+    }
+
     chip::ClusterId mClusterId;
     TargetVideoPlayerInfo * mTargetVideoPlayerInfo = nullptr;
     chip::EndpointId mTvEndpoint;
