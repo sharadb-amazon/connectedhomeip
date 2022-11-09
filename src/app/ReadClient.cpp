@@ -881,9 +881,10 @@ void ReadClient::OnLivenessTimeoutCallback(System::Layer * apSystemLayer, void *
 
                 ChipLogError(DataManagement,
                              "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime OLDER than "
-                             "lastPeerActivity! Marking session as defunct!",
+                             "lastPeerActivity!",
                              session->GetLocalSessionId(), session->GetPeerSessionId());
-                session->MarkAsDefunct();
+                // ChipLogError(DataManagement, "Marking session as defunct!");
+                // session->MarkAsDefunct();
             });
     }
 
