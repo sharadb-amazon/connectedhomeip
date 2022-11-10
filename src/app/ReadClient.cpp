@@ -877,17 +877,17 @@ void ReadClient::OnLivenessTimeoutCallback(System::Layer * apSystemLayer, void *
 
                 ChipLogDetail(DataManagement, "ReadClient::OnLivenessTimeoutCallback session->GetLastPeerActivityTime() is %" PRIu64 "ms", session->GetLastPeerActivityTime().count());
 
-                if (session->GetLastPeerActivityTime() > lastPeerActivity)
+                if (session->GetLastPeerActivityTime() >= lastPeerActivity)
                 {
                     ChipLogProgress(DataManagement,
                                     "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime MORE "
-                                    "RECENT than lastPeerActivity",
+                                    "RECENT than OR AS RECENT AS lastPeerActivity",
                                     session->GetLocalSessionId(), session->GetPeerSessionId());
                     return;
                 }
 
                 ChipLogError(DataManagement,
-                             "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime OLDER than or SAME AS  "
+                             "ReadClient::OnLivenessTimeoutCallback session[LSID: %d, PSID: %d].LastPeerActivityTime OLDER than "
                              "lastPeerActivity!",
                              session->GetLocalSessionId(), session->GetPeerSessionId());
                 ChipLogError(DataManagement, "Marking session as defunct!");
