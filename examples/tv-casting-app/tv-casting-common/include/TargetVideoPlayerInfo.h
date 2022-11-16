@@ -63,6 +63,9 @@ public:
                           chip::Inet::IPAddress * ipAddressList = nullptr);
     CHIP_ERROR FindOrEstablishCASESession(std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                           std::function<void(CHIP_ERROR)> onConnectionFailure);
+    CHIP_ERROR FindOrEstablishCASESession(void * connectionContext,
+                                          std::function<void(TargetVideoPlayerInfo *, void *)> onConnectionSuccess,
+                                          std::function<void(CHIP_ERROR)> onConnectionFailure);
     TargetEndpointInfo * GetOrAddEndpoint(chip::EndpointId endpointId);
     TargetEndpointInfo * GetEndpoint(chip::EndpointId endpointId);
     TargetEndpointInfo * GetEndpoints();
@@ -80,6 +83,12 @@ private:
                         "HandleDeviceConnected created an instance of OperationalDeviceProxy for nodeId: 0x" ChipLogFormatX64
                         ", fabricIndex: %d",
                         ChipLogValueX64(_this->GetNodeId()), _this->GetFabricIndex());
+
+        if (_this->mConnectionContext != nullptr && _this->mOnConnectionSuccessClientCallbackWithContext)
+        {
+            ChipLogProgress(AppServer, "HandleDeviceConnected calling mOnConnectionSuccessClientCallbackWithContext");
+            _this->mOnConnectionSuccessClientCallbackWithContext(_this, _this->mConnectionContext);
+        }
 
         if (_this->mOnConnectionSuccessClientCallback)
         {
@@ -118,6 +127,8 @@ private:
     chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnConnectionFailureCallback;
     std::function<void(TargetVideoPlayerInfo *)> mOnConnectionSuccessClientCallback;
     std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
+    std::function<void(TargetVideoPlayerInfo *, void *)> mOnConnectionSuccessClientCallbackWithContext;
+    void * mConnectionContext;
 
     bool mInitialized = false;
 };
