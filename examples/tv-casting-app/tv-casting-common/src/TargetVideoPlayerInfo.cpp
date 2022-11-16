@@ -58,9 +58,25 @@ CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIn
 CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                              std::function<void(CHIP_ERROR)> onConnectionFailure)
 {
-    mOnConnectionSuccessClientCallback = onConnectionSuccess;
-    mOnConnectionFailureClientCallback = onConnectionFailure;
-    Server * server                    = &(chip::Server::GetInstance());
+    mOnConnectionSuccessClientCallback            = onConnectionSuccess;
+    mOnConnectionFailureClientCallback            = onConnectionFailure;
+    mOnConnectionSuccessClientCallbackWithContext = nullptr;
+    Server * server                               = &(chip::Server::GetInstance());
+    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), &mOnConnectedCallback,
+                                                            &mOnConnectionFailureCallback);
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR
+TargetVideoPlayerInfo::FindOrEstablishCASESession(void * connectionContext,
+                                                  std::function<void(TargetVideoPlayerInfo *, void *)> onConnectionSuccess,
+                                                  std::function<void(CHIP_ERROR)> onConnectionFailure)
+{
+    mOnConnectionSuccessClientCallback            = nullptr;
+    mOnConnectionFailureClientCallback            = onConnectionFailure;
+    mOnConnectionSuccessClientCallbackWithContext = onConnectionSuccess;
+    mConnectionContext                            = connectionContext;
+    Server * server                               = &(chip::Server::GetInstance());
     server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), &mOnConnectedCallback,
                                                             &mOnConnectionFailureCallback);
     return CHIP_NO_ERROR;
