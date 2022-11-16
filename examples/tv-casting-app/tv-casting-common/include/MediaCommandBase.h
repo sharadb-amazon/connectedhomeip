@@ -29,17 +29,48 @@ public:
 
     CHIP_ERROR Invoke(RequestType request, std::function<void(CHIP_ERROR)> responseCallback)
     {
-        VerifyOrDieWithMsg(mTargetVideoPlayerInfo != nullptr, AppServer, "Target unknown");
-
-        auto deviceProxy = mTargetVideoPlayerInfo->GetOperationalDeviceProxy();
-        ReturnErrorCodeIf(deviceProxy == nullptr || !deviceProxy->ConnectionReady(), CHIP_ERROR_PEER_NODE_NOT_FOUND);
-
+        ReturnErrorCodeIf(mTargetVideoPlayerInfo == nullptr, CHIP_ERROR_PEER_NODE_NOT_FOUND);
+        mRequest          = request;
         sResponseCallback = responseCallback;
-
-        MediaClusterBase cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(), mClusterId,
-                                 mTvEndpoint);
-        return cluster.InvokeCommand(request, nullptr, OnSuccess, OnFailure);
+        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
     }
+
+    static void OnConnectionSuccess(TargetVideoPlayerInfo * connectedVideoPlayer, void * context)
+    {
+        auto deviceProxy = connectedVideoPlayer->GetOperationalDeviceProxy();
+
+        if (deviceProxy == nullptr || !deviceProxy->ConnectionReady())
+        {
+            sResponseCallback(CHIP_ERROR_PEER_NODE_NOT_FOUND);
+            return;
+        }
+
+        if (!deviceProxy->GetSecureSession().HasValue())
+        {
+            sResponseCallback(CHIP_ERROR_MISSING_SECURE_SESSION);
+            return;
+        }
+
+        const chip::SessionHandle & sessionHandle = deviceProxy->GetSecureSession().Value();
+        if (!sessionHandle->IsSecureSession())
+        {
+            sResponseCallback(CHIP_ERROR_MISSING_SECURE_SESSION);
+            return;
+        }
+
+        if (sessionHandle->AsSecureSession()->IsDefunct())
+        {
+            sResponseCallback(CHIP_ERROR_CONNECTION_CLOSED_UNEXPECTEDLY);
+            return;
+        }
+
+        MediaCommandBase * _this = static_cast<MediaCommandBase *>(context);
+        MediaClusterBase cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(), _this->mClusterId,
+                                 _this->mTvEndpoint);
+        sResponseCallback(cluster.InvokeCommand(_this->mRequest, nullptr, OnSuccess, OnFailure));
+    }
+
+    static void OnConnectionFailure(CHIP_ERROR err) { sResponseCallback(err); }
 
     static void OnSuccess(void * context, const ResponseType & response) { sResponseCallback(CHIP_NO_ERROR); }
 
@@ -47,6 +78,7 @@ public:
 
 protected:
     static std::function<void(CHIP_ERROR)> sResponseCallback;
+    RequestType mRequest;
 };
 
 template <typename RequestType, typename ResponseType>
