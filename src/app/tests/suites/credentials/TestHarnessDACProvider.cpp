@@ -122,7 +122,7 @@ void TestHarnessDACProvider::Init(const char * filepath)
     std::ifstream json(filepath, std::ifstream::binary);
     if (!json)
     {
-        ChipLogError(AppServer, "Error opening json file: %s", filepath);
+        ChipLogError(AppServer, "Error opening json file: %s", StringOrNullMarker(filepath));
         return;
     }
 
@@ -130,7 +130,7 @@ void TestHarnessDACProvider::Init(const char * filepath)
     Json::Value root;
     if (!reader.parse(json, root))
     {
-        ChipLogError(AppServer, "Error parsing json file: %s", filepath);
+        ChipLogError(AppServer, "Error parsing json file: %s", StringOrNullMarker(filepath));
         return;
     }
 
