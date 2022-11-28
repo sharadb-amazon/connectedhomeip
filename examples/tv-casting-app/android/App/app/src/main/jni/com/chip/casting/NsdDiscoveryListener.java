@@ -22,6 +22,7 @@ import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import chip.platform.NsdManagerServiceResolver;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   private static final String TAG = NsdDiscoveryListener.class.getSimpleName();
@@ -49,6 +50,7 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
     this.successCallback = successCallback;
     this.failureCallback = failureCallback;
     this.nsdManagerResolverAvailState = nsdManagerResolverAvailState;
+    // this.nsdManagerResolverAvailState = null;
   }
 
   @Override
@@ -58,24 +60,33 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
 
   @Override
   public void onServiceFound(NsdServiceInfo service) {
-    Log.d(TAG, "Service discovery success. " + service);
-    if (service.getServiceType().equals(targetServiceType)) {
-      if (nsdManagerResolverAvailState != null) {
-        nsdManagerResolverAvailState.acquireResolver();
-      }
-      nsdManager.resolveService(
-          service,
-          new NsdResolveListener(
-              nsdManager,
-              deviceTypeFilter,
-              preCommissionedVideoPlayers,
-              successCallback,
-              failureCallback,
-              nsdManagerResolverAvailState,
-              1));
-    } else {
-      Log.d(TAG, "Ignoring discovered service: " + service.toString());
-    }
+    Executors.newSingleThreadExecutor()
+        .execute(
+            new Runnable() {
+              @Override
+              public void run() {
+                Log.d(TAG, "Service discovery success. " + service);
+                if (service.getServiceType().equals(targetServiceType)) {
+                  if (nsdManagerResolverAvailState != null) {
+                    nsdManagerResolverAvailState.acquireResolver();
+                  }
+
+                  Log.d(TAG, "Calling NsdManager.resolveService for " + service);
+                  nsdManager.resolveService(
+                      service,
+                      new NsdResolveListener(
+                          nsdManager,
+                          deviceTypeFilter,
+                          preCommissionedVideoPlayers,
+                          successCallback,
+                          failureCallback,
+                          nsdManagerResolverAvailState,
+                          1));
+                } else {
+                  Log.d(TAG, "Ignoring discovered service: " + service.toString());
+                }
+              }
+            });
   }
 
   @Override
