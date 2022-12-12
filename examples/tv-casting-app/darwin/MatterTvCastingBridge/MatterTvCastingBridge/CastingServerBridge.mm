@@ -524,22 +524,11 @@
 
         // Now reconnect to the VideoPlayer the casting app was previously connected to (if any)
         if (self->_previouslyConnectedVideoPlayer != nil) {
-            // capture pointer to previouslyConnectedVideoPlayer to be deleted (allocated in stopMatterServer())
-            TargetVideoPlayerInfo * oldConnectedVideoPlayerForDeletion = self->_previouslyConnectedVideoPlayer;
-
             ChipLogProgress(
                 AppServer, "CastingServerBridge().initMatterServer() reconnecting to previously connected VideoPlayer...");
             err = CastingServer::GetInstance()->VerifyOrEstablishConnection(
-                *(self->_previouslyConnectedVideoPlayer),
-                { [&oldConnectedVideoPlayerForDeletion](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
-                    // Delete the old previouslyConnectedVideoPlayer, if non-nil
-                    delete oldConnectedVideoPlayerForDeletion;
-                } },
-                [&oldConnectedVideoPlayerForDeletion](CHIP_ERROR err) {
-                    // Delete the old previouslyConnectedVideoPlayer, if non-nil
-                    delete oldConnectedVideoPlayerForDeletion;
-                },
-                [](TargetEndpointInfo * cppTargetEndpointInfo) {});
+                *(self->_previouslyConnectedVideoPlayer), [](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {},
+                [](CHIP_ERROR err) {}, [](TargetEndpointInfo * cppTargetEndpointInfo) {});
         }
     });
 }
@@ -549,6 +538,10 @@
     ChipLogProgress(AppServer, "CastingServerBridge().stopMatterServer() called");
 
     dispatch_sync(_chipWorkQueue, ^{
+        // capture pointer to previouslyConnectedVideoPlayer, to be deleted
+        TargetVideoPlayerInfo * videoPlayerForDeletion
+            = self->_previouslyConnectedVideoPlayer == nil ? nil : self->_previouslyConnectedVideoPlayer;
+
         // On shutting down the Matter server, the casting app will be automatically disconnected from any Video Players it was
         // connected to. Save the VideoPlayer that the casting app was targetting and connected to, so we can reconnect to it on
         // re-starting the Matter server.
@@ -582,6 +575,11 @@
 
         // Now shutdown the Matter server
         chip::Server::GetInstance().Shutdown();
+
+        // Delete the old previouslyConnectedVideoPlayer, if non-nil
+        if (videoPlayerForDeletion != nil) {
+            delete videoPlayerForDeletion;
+        }
     });
 }
 
