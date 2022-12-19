@@ -23,7 +23,7 @@ shared_library("jni") {
   output_name = "libTvCastingApp"
 
   sources = [
-    "${chip_root}/examples/tv-casting-app/tv-casting-common/include/CHIPProjectAppConfig.h",
+    #    "${chip_root}/examples/tv-casting-app/tv-casting-common/include/CHIPProjectAppConfig.h",
     "App/app/src/main/jni/cpp/Constants.h",
     "App/app/src/main/jni/cpp/ConversionUtils.cpp",
     "App/app/src/main/jni/cpp/ConversionUtils.h",

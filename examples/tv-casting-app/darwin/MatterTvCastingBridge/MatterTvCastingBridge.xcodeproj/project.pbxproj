@@ -15,6 +15,7 @@
 		3C4E53B228E5184C00F293E8 /* TargetNavigatorTypes.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C4E53B128E5184C00F293E8 /* TargetNavigatorTypes.mm */; };
 		3C4E53B628E5595A00F293E8 /* ContentLauncherTypes.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C4E53B528E5595A00F293E8 /* ContentLauncherTypes.mm */; };
 		3C66FBFC290327BB00B63FE7 /* AppParameters.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C66FBFB290327BB00B63FE7 /* AppParameters.mm */; };
+		3C71800C2949408F008751F7 /* CHIPProjectAppConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C71800B2949408F008751F7 /* CHIPProjectAppConfig.h */; };
 		3C81C74C28F7A777001CB9D1 /* ContentApp.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C81C74B28F7A777001CB9D1 /* ContentApp.mm */; };
 		3C81C75028F7A7D3001CB9D1 /* VideoPlayer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C81C74F28F7A7D3001CB9D1 /* VideoPlayer.m */; };
 		3CCB87212869085400771BAD /* MatterTvCastingBridge.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CCB87202869085400771BAD /* MatterTvCastingBridge.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -45,6 +46,7 @@
 		3C4E53B528E5595A00F293E8 /* ContentLauncherTypes.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ContentLauncherTypes.mm; sourceTree = "<group>"; };
 		3C66FBFA2903279A00B63FE7 /* AppParameters.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppParameters.h; sourceTree = "<group>"; };
 		3C66FBFB290327BB00B63FE7 /* AppParameters.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AppParameters.mm; sourceTree = "<group>"; };
+		3C71800B2949408F008751F7 /* CHIPProjectAppConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CHIPProjectAppConfig.h; sourceTree = "<group>"; };
 		3C81C74B28F7A777001CB9D1 /* ContentApp.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = ContentApp.mm; sourceTree = "<group>"; };
 		3C81C74E28F7A7AE001CB9D1 /* ContentApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ContentApp.h; sourceTree = "<group>"; };
 		3C81C74F28F7A7D3001CB9D1 /* VideoPlayer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoPlayer.m; sourceTree = "<group>"; };
@@ -128,6 +130,7 @@
 				3C26AC8F2927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm */,
 				3C0D9CDF2920A30C00D3332B /* CommissionableDataProviderImpl.hpp */,
 				3CE868F32946D76200FCB92B /* CommissionableDataProviderImpl.mm */,
+				3C71800B2949408F008751F7 /* CHIPProjectAppConfig.h */,
 			);
 			path = MatterTvCastingBridge;
 			sourceTree = "<group>";
@@ -139,6 +142,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C71800C2949408F008751F7 /* CHIPProjectAppConfig.h in Headers */,
 				3C26AC8C2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp in Headers */,
 				3CCB8740286A593700771BAD /* CastingServerBridge.h in Headers */,
 				3CCB8742286A593700771BAD /* ConversionUtils.hpp in Headers */,

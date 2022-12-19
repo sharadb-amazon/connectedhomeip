@@ -26,7 +26,6 @@
 #include <lib/support/CodeUtils.h>
 #include <lib/support/Span.h>
 #include <lib/support/logging/CHIPLogging.h>
-#include <platform/CHIPDeviceConfig.h>
 
 using namespace chip;
 using namespace chip::Crypto;

@@ -22,7 +22,7 @@ assert(chip_build_tools)
 
 executable("chip-tv-casting-app") {
   sources = [
-    "${chip_root}/examples/tv-casting-app/tv-casting-common/include/CHIPProjectAppConfig.h",
+    "${chip_root}/examples/tv-casting-app/linux/CHIPProjectAppConfig.h",
     "CastingShellCommands.cpp",
     "CastingShellCommands.h",
     "CastingUtils.cpp",
