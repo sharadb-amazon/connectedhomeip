@@ -22,7 +22,7 @@ import com.chip.casting.TvCastingApp;
 /** A {@link Fragment} to discover commissioners on the network */
 public class CommissionerDiscoveryFragment extends Fragment {
   private static final String TAG = CommissionerDiscoveryFragment.class.getSimpleName();
-  private static final long DISCOVERY_DURATION_SECS = 10;
+  private static final long DISCOVERY_DURATION_SECS = 3;
   private final TvCastingApp tvCastingApp;
 
   public CommissionerDiscoveryFragment(TvCastingApp tvCastingApp) {

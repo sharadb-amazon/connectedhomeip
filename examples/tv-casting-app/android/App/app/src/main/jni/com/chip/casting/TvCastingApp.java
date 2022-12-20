@@ -19,6 +19,7 @@ package com.chip.casting;
 
 import android.content.Context;
 import android.net.nsd.NsdManager;
+import android.net.nsd.NsdServiceInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 import chip.appserver.ChipAppServer;
@@ -32,13 +33,15 @@ import chip.platform.PreferencesConfigurationManager;
 import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class TvCastingApp {
   private static final String TAG = TvCastingApp.class.getSimpleName();
   private static final String DISCOVERY_TARGET_SERVICE_TYPE = "_matterd._udp.";
-  private static final List<Long> DISCOVERY_TARGET_DEVICE_TYPE_FILTER =
+  public static final List<Long> DISCOVERY_TARGET_DEVICE_TYPE_FILTER =
       Arrays.asList(35L); // Video player = 35;
 
   private Context applicationContext;
@@ -98,6 +101,11 @@ public class TvCastingApp {
     multicastLock.acquire();
 
     NsdManager nsdManager = (NsdManager) applicationContext.getSystemService(Context.NSD_SERVICE);
+
+    ExecutorService resolutionExecutor = Executors.newSingleThreadExecutor();
+
+    ConcurrentLinkedQueue<NsdServiceInfo> servicesPendingResolution = new ConcurrentLinkedQueue<NsdServiceInfo>();
+
     NsdDiscoveryListener nsdDiscoveryListener =
         new NsdDiscoveryListener(
             nsdManager,
@@ -106,7 +114,8 @@ public class TvCastingApp {
             preCommissionedVideoPlayers,
             discoverySuccessCallback,
             discoveryFailureCallback,
-            nsdManagerResolverAvailState);
+            nsdManagerResolverAvailState,
+                servicesPendingResolution);
 
     nsdManager.discoverServices(
         DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
@@ -118,9 +127,35 @@ public class TvCastingApp {
               public void run() {
                 Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
                 nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
-                multicastLock.release();
+
+                for(NsdServiceInfo serviceInfo: servicesPendingResolution)
+                {
+                  resolutionExecutor.execute(
+                          new Runnable() {
+                            @Override
+                            public void run() {
+                              Log.d(TAG, "Calling NsdManager.resolveService for " + serviceInfo);
+                              if (nsdManagerResolverAvailState != null) {
+                                nsdManagerResolverAvailState.acquireResolver();
+                              }
+                              nsdManager.resolveService(
+                                      serviceInfo,
+                                      new NsdResolveListener(
+                                              nsdManager,
+                                              DISCOVERY_TARGET_DEVICE_TYPE_FILTER,
+                                              preCommissionedVideoPlayers,
+                                              discoverySuccessCallback,
+                                              discoveryFailureCallback,
+                                              nsdManagerResolverAvailState,
+                                              1));
+                            }
+
+                          });
+
+
               }
-            },
+                multicastLock.release();
+            }},
             discoveryDurationSeconds,
             TimeUnit.SECONDS);
     Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners ended");

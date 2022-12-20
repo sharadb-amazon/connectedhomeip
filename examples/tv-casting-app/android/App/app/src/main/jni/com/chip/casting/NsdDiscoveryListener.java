@@ -22,6 +22,7 @@ import android.net.nsd.NsdServiceInfo;
 import android.util.Log;
 import chip.platform.NsdManagerServiceResolver;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,29 +31,30 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
 
   private final NsdManager nsdManager;
   private final String targetServiceType;
-  private final List<Long> deviceTypeFilter;
-  private final List<VideoPlayer> preCommissionedVideoPlayers;
+//  private final List<Long> deviceTypeFilter;
+  //private final List<VideoPlayer> preCommissionedVideoPlayers;
   private final SuccessCallback<DiscoveredNodeData> successCallback;
   private final FailureCallback failureCallback;
-  private final NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
-  private final ExecutorService resolutionExecutor;
+
+  private ConcurrentLinkedQueue<NsdServiceInfo> servicesPendingResolution;
 
   public NsdDiscoveryListener(
       NsdManager nsdManager,
       String targetServiceType,
-      List<Long> deviceTypeFilter,
-      List<VideoPlayer> preCommissionedVideoPlayers,
+//      List<Long> deviceTypeFilter,
+//      List<VideoPlayer> preCommissionedVideoPlayers,
       SuccessCallback<DiscoveredNodeData> successCallback,
       FailureCallback failureCallback,
-      NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState) {
+//      NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState,
+      ConcurrentLinkedQueue<NsdServiceInfo> servicesPendingResolution) {
     this.nsdManager = nsdManager;
     this.targetServiceType = targetServiceType;
-    this.deviceTypeFilter = deviceTypeFilter;
-    this.preCommissionedVideoPlayers = preCommissionedVideoPlayers;
+//    this.deviceTypeFilter = deviceTypeFilter;
+    //this.preCommissionedVideoPlayers = preCommissionedVideoPlayers;
     this.successCallback = successCallback;
     this.failureCallback = failureCallback;
-    this.nsdManagerResolverAvailState = nsdManagerResolverAvailState;
-    this.resolutionExecutor = Executors.newSingleThreadExecutor();
+    //this.resolutionExecutor = Executors.newSingleThreadExecutor();
+    this.servicesPendingResolution = servicesPendingResolution;
   }
 
   @Override
@@ -62,32 +64,12 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
 
   @Override
   public void onServiceFound(NsdServiceInfo service) {
-    this.resolutionExecutor.execute(
-        new Runnable() {
-          @Override
-          public void run() {
-            Log.d(TAG, "Service discovery success. " + service);
-            if (service.getServiceType().equals(targetServiceType)) {
-              if (nsdManagerResolverAvailState != null) {
-                nsdManagerResolverAvailState.acquireResolver();
-              }
-
-              Log.d(TAG, "Calling NsdManager.resolveService for " + service);
-              nsdManager.resolveService(
-                  service,
-                  new NsdResolveListener(
-                      nsdManager,
-                      deviceTypeFilter,
-                      preCommissionedVideoPlayers,
-                      successCallback,
-                      failureCallback,
-                      nsdManagerResolverAvailState,
-                      1));
-            } else {
-              Log.d(TAG, "Ignoring discovered service: " + service.toString());
-            }
-          }
-        });
+    Log.d(TAG, "Service discovery success. " + service);
+    if (service.getServiceType().equals(targetServiceType)) {
+      servicesPendingResolution.add(service);
+    } else {
+      Log.d(TAG, "Ignoring discovered service: " + service.toString());
+    }
   }
 
   @Override
@@ -100,9 +82,9 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   @Override
   public void onDiscoveryStopped(String serviceType) {
     Log.i(TAG, "Discovery stopped: " + serviceType);
-    if (nsdManagerResolverAvailState != null) {
+    /*if (nsdManagerResolverAvailState != null) {
       nsdManagerResolverAvailState.signalFree();
-    }
+    }*/
   }
 
   @Override
@@ -117,9 +99,6 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   @Override
   public void onStopDiscoveryFailed(String serviceType, int errorCode) {
     Log.e(TAG, "Discovery failed to stop: Error code:" + errorCode);
-    if (nsdManagerResolverAvailState != null) {
-      nsdManagerResolverAvailState.signalFree();
-    }
     failureCallback.handle(
         new MatterError(
             3, "NsdDiscoveryListener Discovery failed to stop: Nsd Error code:" + errorCode));
