@@ -13,6 +13,7 @@ import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.FailureCallback;
 import com.chip.casting.MatterCallbackHandler;
 import com.chip.casting.MatterError;
+import com.chip.casting.SubscriptionEstablishedCallback;
 import com.chip.casting.SuccessCallback;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.VideoPlayer;
@@ -55,11 +56,66 @@ public class ConnectionFragment extends Fragment {
       LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     Callback callback = (ConnectionFragment.Callback) this.getActivity();
 
+    // read vendor id
+    // in subscribe target list success callback, send launch url command
+    // in launch url response call back, log output
+    ContentApp myContentApp = new ContentApp((short)4, null);
+    SuccessCallback<Integer> readSuccessHandler = new SuccessCallback<Integer>() {
+      @Override
+      public void handle(Integer response) {
+        // in read vendorID success callback, subscribe to target list
+        Log.d(TAG, "ConnectionFragment test: applicationBasic_readVendorID: readSuccessHandler called with " + response);
+        if(response == 65521)
+        {
+          tvCastingApp.targetNavigator_subscribeToTargetList(myContentApp, new SuccessCallback<Object>() {
+                    @Override
+                    public void handle(Object response) {
+                      Log.d(TAG, "ConnectionFragment test: targetNavigator_subscribeToTargetList: subscribeSuccessHandler called with " + response);
+
+                      tvCastingApp.contentLauncherLaunchURL(myContentApp, "my_url", "my_display_string", new MatterCallbackHandler() {
+                        @Override
+                        public void handle(MatterError err) {
+                          Log.d(TAG, "ConnectionFragment test: contentLauncherLaunchURL: MatterCallbackHandler called with " + err);
+                        }
+                      });
+                    }
+                  },
+                  new FailureCallback() {
+                    @Override
+                    public void handle(MatterError err) {
+                      Log.d(TAG, "ConnectionFragment test: targetNavigator_subscribeToTargetList: FailureCallback called with " + err);
+                    }
+                  },
+                  0, 5,
+                  new SubscriptionEstablishedCallback() {
+                    @Override
+                    public void handle() {
+                      Log.d(TAG, "ConnectionFragment test: targetNavigator_subscribeToTargetList: SubscriptionEstablishedCallback called");
+                    }
+                  });
+        }
+      }
+    };
+
+    FailureCallback readFailureHandler = new FailureCallback() {
+      @Override
+      public void handle(MatterError err) {
+        Log.e(TAG, "ConnectionFragment test: applicationBasic_readVendorID: readFailureHandler called with " + err);
+      }
+    };
+
+
     SuccessCallback<VideoPlayer> onConnectionSuccess =
         new SuccessCallback<VideoPlayer>() {
           @Override
           public void handle(VideoPlayer videoPlayer) {
             Log.d(TAG, "handle() called on OnConnectionSuccess with " + videoPlayer);
+
+            if(videoPlayer.getContentApps() != null && !videoPlayer.getContentApps().isEmpty())
+            {
+              tvCastingApp.applicationBasic_readVendorID(myContentApp, readSuccessHandler, readFailureHandler);
+            }
+
             callback.handleCommissioningComplete();
           }
         };
@@ -77,6 +133,8 @@ public class ConnectionFragment extends Fragment {
           @Override
           public void handle(ContentApp contentApp) {
             Log.d(TAG, "handle() called on OnNewOrUpdatedEndpoint with " + contentApp);
+
+            tvCastingApp.applicationBasic_readVendorID(myContentApp, readSuccessHandler, readFailureHandler);
           }
         };
 
