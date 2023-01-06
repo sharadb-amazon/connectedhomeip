@@ -52,14 +52,14 @@ class CommissioningViewModel: ObservableObject {
                     DispatchQueue.main.async {
                         self.connectionSuccess = true
                         self.connectionStatus = "Connected to \(String(describing: videoPlayer))"
-                        self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
+                        self.Log.info("ConnectionViewModel.openBasicCommissioningWindow.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
                     }
                 },
                 onConnectionFailureCallback: { (error: MatterError) -> () in
                     DispatchQueue.main.async {
                         self.connectionSuccess = false
                         self.connectionStatus = "Failed to connect to video player!"
-                        self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionFailureCallback called with \(error)")
+                        self.Log.info("ConnectionViewModel.openBasicCommissioningWindow.onConnectionFailureCallback called with \(error)")
                     }
                 },
                 onNewOrUpdatedEndpointCallback: { (contentApp: ContentApp) -> () in

@@ -30,6 +30,7 @@ class ConnectionViewModel: ObservableObject {
     @Published var connectionStatus: String?;
 
     func verifyOrEstablishConnection(selectedVideoPlayer: VideoPlayer?) {
+        var myContentApp: ContentApp = ContentApp(endpointId: 4, clusterIds: nil)
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.verifyOrEstablishConnection(selectedVideoPlayer!, clientQueue: DispatchQueue.main,
@@ -44,6 +45,61 @@ class ConnectionViewModel: ObservableObject {
                         self.connectionSuccess = true
                         self.connectionStatus = "Connected to \(String(describing: videoPlayer))"
                         self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
+                        
+                        // start test
+                        // read vendor id
+                        self.Log.info("ConnectionViewModel.sending read vendor ID request")
+                        castingServerBridge.applicationBasic_readVendorID(myContentApp, clientQueue: DispatchQueue.main,
+                        requestSentHandler: { (result: MatterError) -> () in
+                            self.Log.info("applicationBasic_readVendorID.requestSentHandler result \(result)")
+                        },
+                        successCallback: { (result: NSNumber) -> () in
+                            DispatchQueue.main.async {
+                                self.Log.info("applicationBasic_readVendorID.successCallback called with result \(result)")
+                                
+                                // subscribe
+                                castingServerBridge.mediaPlayback_subscribeCurrentState(myContentApp, minInterval: 0, maxInterval: 5, clientQueue: DispatchQueue.main,
+                                                                                        requestSentHandler: { (result: MatterError) -> () in
+                                    self.Log.info("mediaPlayback_subscribeCurrentState.requestSentHandler result \(result)")
+                                },
+                                                                                        successCallback: { (result: MediaPlayback_PlaybackState) -> () in
+                                    DispatchQueue.main.async {
+                                        self.Log.info("mediaPlayback_subscribeCurrentState.successCallback called")
+                                    }
+                                },
+                                                                                        failureCallback: { (result: MatterError) -> () in
+                                    DispatchQueue.main.async {
+                                        self.Log.info("mediaPlayback_subscribeCurrentState.failureCallback called with \(result)")
+                                    }
+                                },
+                                                                                        subscriptionEstablishedCallback: { () -> () in
+                                    DispatchQueue.main.async {
+                                        self.Log.info("mediaPlayback_subscribeCurrentState.subscriptionEstablishedCallback called")
+                                        
+                                        // send command
+                                        castingServerBridge
+                                            .contentLauncher_launchUrl(myContentApp, contentUrl: "contentUrl",
+                                                                      contentDisplayStr: "contentDisplayStr",
+                                                                      responseCallback:
+                                                                        { (result: Bool) -> () in
+                                                self.Log.info("contentLauncher_launchUrl.launchUrlResponseCallback result \(result)")
+                                            },
+                                            clientQueue: DispatchQueue.main,
+                                            requestSentHandler: { (result: Bool) -> () in
+                                                self.Log.info("contentLauncher_launchUrl.launcUrlRequestSentHandler result \(result)")
+                                            })
+                                        
+                                    }
+                                }
+                                )
+                            }
+                        },
+                        failureCallback: { (result: MatterError) -> () in
+                            DispatchQueue.main.async {
+                                self.Log.info("applicationBasic_readVendorID.failureCallback called with \(result)")
+                            }
+                        }
+                        )
                     }
                 },
                 onConnectionFailureCallback: { (error: MatterError) -> () in
