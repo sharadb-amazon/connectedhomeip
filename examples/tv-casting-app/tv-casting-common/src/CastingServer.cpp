@@ -47,12 +47,14 @@ CHIP_ERROR CastingServer::Init(AppParams * AppParams)
     // if this class's client provided a RotatingDeviceIdUniqueId, use that
     if (AppParams != nullptr && AppParams->GetRotatingDeviceIdUniqueId().HasValue())
     {
+        ChipLogProgress(AppServer, "Setting unique ID (for generating rotating device ID) received from client app");
         ByteSpan rotatingDeviceIdUniqueId(AppParams->GetRotatingDeviceIdUniqueId().Value());
         chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueId);
     }
 #ifdef CHIP_DEVICE_CONFIG_ROTATING_DEVICE_ID_UNIQUE_ID
     else
     {
+        ChipLogProgress(AppServer, "Setting a random unique ID (for generating rotating device ID)");
         // otherwise, generate and set a random uniqueId for generating rotatingId
         uint8_t rotatingDeviceIdUniqueId[chip::DeviceLayer::ConfigurationManager::kRotatingDeviceIDUniqueIDLength];
         for (size_t i = 0; i < sizeof(rotatingDeviceIdUniqueId); i++)
