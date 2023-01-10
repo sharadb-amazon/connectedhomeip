@@ -132,7 +132,7 @@ CHIP_ERROR convertJVideoPlayerToTargetVideoPlayerInfo(jobject videoPlayer, Targe
     jfieldID getDeviceNameField = env->GetFieldID(jVideoPlayerClass, "deviceName", "Ljava/lang/String;");
     jstring jDeviceName         = static_cast<jstring>(env->GetObjectField(videoPlayer, getDeviceNameField));
     const char * deviceName     = env->GetStringUTFChars(jDeviceName, 0);
-    outTargetVideoPlayerInfo.Initialize(nodeId, fabricIndex, nullptr, nullptr, vendorId, productId, deviceType, deviceName);
+    outTargetVideoPlayerInfo.Initialize(nodeId, fabricIndex, nullptr, nullptr, nullptr, vendorId, productId, deviceType, deviceName);
 
     jfieldID jContentAppsField = env->GetFieldID(jVideoPlayerClass, "contentApps", "Ljava/util/List;");
     jobject jContentApps       = env->GetObjectField(videoPlayer, jContentAppsField);
@@ -217,7 +217,7 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
                                         targetVideoPlayerInfo->GetFabricIndex(), deviceName, targetVideoPlayerInfo->GetVendorId(),
                                         targetVideoPlayerInfo->GetProductId(), targetVideoPlayerInfo->GetDeviceType(),
                                         jContentAppList, targetVideoPlayerInfo->GetNumIPs(), jIPAddressList,
-                                        targetVideoPlayerInfo->GetOperationalDeviceProxy() != nullptr);
+                                        targetVideoPlayerInfo->IsConnected());
     }
     return CHIP_NO_ERROR;
 }

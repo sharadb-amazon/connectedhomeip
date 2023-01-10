@@ -28,15 +28,6 @@ public:
 
     CHIP_ERROR SetTarget(TargetVideoPlayerInfo & targetVideoPlayerInfo, chip::EndpointId tvEndpoint)
     {
-        auto deviceProxy = targetVideoPlayerInfo.GetOperationalDeviceProxy();
-        if (deviceProxy == nullptr)
-        {
-            ChipLogError(AppServer,
-                         "Failed in getting an instance of OperationalDeviceProxy for nodeId: 0x" ChipLogFormatX64
-                         ", fabricIndex: %d",
-                         ChipLogValueX64(targetVideoPlayerInfo.GetNodeId()), targetVideoPlayerInfo.GetFabricIndex());
-            return CHIP_ERROR_PEER_NODE_NOT_FOUND;
-        }
         mTargetVideoPlayerInfo = &targetVideoPlayerInfo;
         mTvEndpoint            = tvEndpoint;
         return CHIP_NO_ERROR;

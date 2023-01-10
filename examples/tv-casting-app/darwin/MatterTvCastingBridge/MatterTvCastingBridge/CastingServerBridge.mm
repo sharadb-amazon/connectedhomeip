@@ -547,10 +547,10 @@
         // re-starting the Matter server.
         TargetVideoPlayerInfo * currentTargetVideoPlayerInfo = CastingServer::GetInstance()->GetActiveTargetVideoPlayer();
         if (currentTargetVideoPlayerInfo != nil && currentTargetVideoPlayerInfo->IsInitialized()
-            && currentTargetVideoPlayerInfo->GetOperationalDeviceProxy() != nil) {
+            && currentTargetVideoPlayerInfo->IsConnected()) {
             self->_previouslyConnectedVideoPlayer = new TargetVideoPlayerInfo();
             self->_previouslyConnectedVideoPlayer->Initialize(currentTargetVideoPlayerInfo->GetNodeId(),
-                currentTargetVideoPlayerInfo->GetFabricIndex(), nullptr, nullptr, currentTargetVideoPlayerInfo->GetVendorId(),
+                currentTargetVideoPlayerInfo->GetFabricIndex(), nullptr, nullptr, nullptr, currentTargetVideoPlayerInfo->GetVendorId(),
                 currentTargetVideoPlayerInfo->GetProductId(), currentTargetVideoPlayerInfo->GetDeviceType(),
                 currentTargetVideoPlayerInfo->GetDeviceName(), currentTargetVideoPlayerInfo->GetNumIPs(),
                 const_cast<chip::Inet::IPAddress *>(currentTargetVideoPlayerInfo->GetIpAddresses()));

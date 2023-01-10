@@ -77,7 +77,7 @@
                            outTargetVideoPlayerInfo:(TargetVideoPlayerInfo &)outTargetVideoPlayerInfo
 {
     VerifyOrReturnError(objCVideoPlayer.isInitialized, CHIP_ERROR_INVALID_ARGUMENT);
-    ReturnErrorOnFailure(outTargetVideoPlayerInfo.Initialize(objCVideoPlayer.nodeId, objCVideoPlayer.fabricIndex, nullptr, nullptr,
+    ReturnErrorOnFailure(outTargetVideoPlayerInfo.Initialize(objCVideoPlayer.nodeId, objCVideoPlayer.fabricIndex, nullptr, nullptr, nullptr,
         objCVideoPlayer.vendorId, objCVideoPlayer.productId, objCVideoPlayer.deviceType, [objCVideoPlayer.deviceName UTF8String]));
     for (ContentApp * contentApp in objCVideoPlayer.contentApps) {
         TargetEndpointInfo * endpoint = outTargetVideoPlayerInfo.GetOrAddEndpoint(contentApp.endpointId);
@@ -146,7 +146,7 @@
         objCVideoPlayer.vendorId = cppTargetVideoPlayerInfo->GetVendorId();
         objCVideoPlayer.productId = cppTargetVideoPlayerInfo->GetProductId();
         objCVideoPlayer.deviceType = cppTargetVideoPlayerInfo->GetDeviceType();
-        objCVideoPlayer.isConnected = (cppTargetVideoPlayerInfo->GetOperationalDeviceProxy() != nil);
+        objCVideoPlayer.isConnected = cppTargetVideoPlayerInfo->IsConnected();
         objCVideoPlayer.deviceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetDeviceName()
                                                         encoding:NSASCIIStringEncoding];
         objCVideoPlayer.contentApps = [NSMutableArray new];

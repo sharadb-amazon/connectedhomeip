@@ -294,7 +294,7 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
 
         if (videoPlayersContainerTagNum == kContentAppEndpointsContainerTag)
         {
-            outVideoPlayers[videoPlayerIndex].Initialize(nodeId, fabricIndex, nullptr, nullptr, vendorId, productId, deviceType,
+            outVideoPlayers[videoPlayerIndex].Initialize(nodeId, fabricIndex, nullptr, nullptr, nullptr, vendorId, productId, deviceType,
                                                          deviceName, numIPs, ipAddress);
             // Entering Content App Endpoints container
             TLV::TLVType contentAppEndpointArrayContainerType = TLV::kTLVType_Array;

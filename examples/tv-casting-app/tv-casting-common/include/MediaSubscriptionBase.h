@@ -41,24 +41,9 @@ public:
         return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
     }
 
-    static void OnConnectionSuccess(TargetVideoPlayerInfo * connectedVideoPlayer, void * context)
+    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
     {
         MediaSubscriptionBase * _this = static_cast<MediaSubscriptionBase *>(context);
-        auto deviceProxy              = connectedVideoPlayer->GetOperationalDeviceProxy();
-
-        if (deviceProxy == nullptr || !deviceProxy->ConnectionReady())
-        {
-            _this->mFailureFn(_this->mSubscriptionContext, CHIP_ERROR_PEER_NODE_NOT_FOUND);
-            return;
-        }
-
-        if (!deviceProxy->GetSecureSession().HasValue())
-        {
-            _this->mFailureFn(_this->mSubscriptionContext, CHIP_ERROR_MISSING_SECURE_SESSION);
-            return;
-        }
-
-        const chip::SessionHandle & sessionHandle = deviceProxy->GetSecureSession().Value();
         if (!sessionHandle->IsSecureSession())
         {
             _this->mFailureFn(_this->mSubscriptionContext, CHIP_ERROR_MISSING_SECURE_SESSION);
@@ -71,7 +56,7 @@ public:
             return;
         }
 
-        MediaClusterBase cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(), _this->mClusterId,
+        MediaClusterBase cluster(exchangeMgr, sessionHandle, _this->mClusterId,
                                  _this->mTvEndpoint);
         CHIP_ERROR err = cluster.template SubscribeAttribute<TypeInfo>(_this->mSubscriptionContext, _this->mSuccessFn,
                                                                        _this->mFailureFn, _this->mMinInterval, _this->mMaxInterval,

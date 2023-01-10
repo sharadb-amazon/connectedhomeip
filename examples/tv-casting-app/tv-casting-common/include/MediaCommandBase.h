@@ -35,23 +35,8 @@ public:
         return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
     }
 
-    static void OnConnectionSuccess(TargetVideoPlayerInfo * connectedVideoPlayer, void * context)
+    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
     {
-        auto deviceProxy = connectedVideoPlayer->GetOperationalDeviceProxy();
-
-        if (deviceProxy == nullptr || !deviceProxy->ConnectionReady())
-        {
-            sResponseCallback(CHIP_ERROR_PEER_NODE_NOT_FOUND);
-            return;
-        }
-
-        if (!deviceProxy->GetSecureSession().HasValue())
-        {
-            sResponseCallback(CHIP_ERROR_MISSING_SECURE_SESSION);
-            return;
-        }
-
-        const chip::SessionHandle & sessionHandle = deviceProxy->GetSecureSession().Value();
         if (!sessionHandle->IsSecureSession())
         {
             sResponseCallback(CHIP_ERROR_MISSING_SECURE_SESSION);
@@ -65,7 +50,7 @@ public:
         }
 
         MediaCommandBase * _this = static_cast<MediaCommandBase *>(context);
-        MediaClusterBase cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(), _this->mClusterId,
+        MediaClusterBase cluster(exchangeMgr, sessionHandle, _this->mClusterId,
                                  _this->mTvEndpoint);
         sResponseCallback(cluster.InvokeCommand(_this->mRequest, nullptr, OnSuccess, OnFailure));
     }

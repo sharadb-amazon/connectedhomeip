@@ -31,12 +31,47 @@ public:
     {
         VerifyOrDieWithMsg(mTargetVideoPlayerInfo != nullptr, AppServer, "Target unknown");
 
-        auto deviceProxy = mTargetVideoPlayerInfo->GetOperationalDeviceProxy();
-        ReturnErrorCodeIf(deviceProxy == nullptr || !deviceProxy->ConnectionReady(), CHIP_ERROR_PEER_NODE_NOT_FOUND);
-
-        MediaClusterBase cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(), mClusterId,
-                                 mTvEndpoint);
-
-        return cluster.template ReadAttribute<TypeInfo>(context, successFn, failureFn);
+        mReadContext       = context;
+        mSuccessFn                 = successFn;
+        mFailureFn                 = failureFn;
+        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
+        
+        VerifyOrDieWithMsg(mTargetVideoPlayerInfo != nullptr, AppServer, "Target unknown");
     }
+
+    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
+    {
+        MediaReadBase * _this = static_cast<MediaReadBase *>(context);
+        if (!sessionHandle->IsSecureSession())
+        {
+            _this->mFailureFn(_this->mReadContext, CHIP_ERROR_MISSING_SECURE_SESSION);
+            return;
+        }
+
+        if (sessionHandle->AsSecureSession()->IsDefunct())
+        {
+            _this->mFailureFn(_this->mReadContext, CHIP_ERROR_CONNECTION_CLOSED_UNEXPECTEDLY);
+            return;
+        }
+
+        MediaClusterBase cluster(exchangeMgr, sessionHandle, _this->mClusterId,
+                                 _this->mTvEndpoint);
+        CHIP_ERROR err = cluster.template ReadAttribute<TypeInfo>(_this->mReadContext, _this->mSuccessFn, _this->mFailureFn);
+        if (err != CHIP_NO_ERROR)
+        {
+            _this->mFailureFn(_this->mReadContext, err);
+        }
+    }
+
+    static void OnConnectionFailure(CHIP_ERROR err)
+    {
+        // TODO: _this->mFailureFn(_this->mReadContext, err);
+        ChipLogError(AppServer, "MediaReadBase:OnConnectionFailure - FindOrEstablishSession failed %" CHIP_ERROR_FORMAT,
+                     err.Format());
+    }
+
+private:
+    void * mReadContext;
+    chip::Controller::ReadResponseSuccessCallback<typename TypeInfo::DecodableArgType> mSuccessFn;
+    chip::Controller::ReadResponseFailureCallback mFailureFn;
 };

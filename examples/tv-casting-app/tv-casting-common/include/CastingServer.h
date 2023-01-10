@@ -70,10 +70,10 @@ public:
     TargetVideoPlayerInfo * GetActiveTargetVideoPlayer() { return &mActiveTargetVideoPlayerInfo; }
 
     CHIP_ERROR TargetVideoPlayerInfoInit(chip::NodeId nodeId, chip::FabricIndex fabricIndex,
-                                         std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
+                                         std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
                                          std::function<void(CHIP_ERROR)> onConnectionFailure,
                                          std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
-    void ReadServerClustersForNode(chip::NodeId nodeId);
+    void ReadServerClustersForNode(chip::NodeId nodeId, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle);
     static void OnDescriptorReadSuccessResponse(void * context,
                                                 const chip::app::DataModel::DecodableList<chip::ClusterId> & responseList);
     static void OnDescriptorReadFailureResponse(void * context, CHIP_ERROR error);
@@ -412,7 +412,7 @@ private:
 
     CHIP_ERROR InitBindingHandlers();
     static void DeviceEventCallback(const chip::DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
-    void ReadServerClusters(chip::EndpointId endpointId);
+    void ReadServerClusters(chip::EndpointId endpointId, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle);
 
     PersistenceManager mPersistenceManager;
     bool mInited        = false;
@@ -430,7 +430,7 @@ private:
     std::function<void(CHIP_ERROR)> mCommissioningCompleteCallback;
 
     std::function<void(TargetEndpointInfo *)> mOnNewOrUpdatedEndpoint;
-    std::function<void(TargetVideoPlayerInfo *)> mOnConnectionSuccessClientCallback;
+    std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> mOnConnectionSuccessClientCallback;
     std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
 
     /**
