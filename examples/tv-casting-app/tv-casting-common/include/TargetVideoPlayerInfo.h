@@ -103,6 +103,8 @@ private:
 
     chip::Callback::Callback<chip::OnDeviceConnected> mOnConnectedCallback;
     chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnConnectionFailureCallback;
+    chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback2;
+    chip::Callback::Callback<chip::OnDeviceConnectionFailure> * mOnConnectionFailureCallback2;
     //std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> mOnConnectionSuccessClientCallback;
     std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
     //std::function<void(TargetVideoPlayerInfo *, void *)> mOnConnectionSuccessClientCallbackWithContext;

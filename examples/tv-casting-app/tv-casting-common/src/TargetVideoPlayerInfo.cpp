@@ -62,9 +62,12 @@ CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(void * connectionCo
     mOnConnectionFailureClientCallback            = onConnectionFailure;
     mOnConnectionSuccessClientCallbackWithContext = onConnectionSuccess;
     mConnectionContext = connectionContext;
+    mOnConnectedCallback2 = new chip::Callback::Callback<chip::OnDeviceConnected>(HandleDeviceConnected, this);
+    mOnConnectionFailureCallback2 = new chip::Callback::Callback<chip::OnDeviceConnectionFailure>(HandleDeviceConnectionFailure, this);
+
     Server * server                               = &(chip::Server::GetInstance());
-    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), &mOnConnectedCallback,
-                                                            &mOnConnectionFailureCallback);
+    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), mOnConnectedCallback2,
+                                                            mOnConnectionFailureCallback2);
     return CHIP_NO_ERROR;
 }
 
