@@ -123,7 +123,7 @@ static CHIP_ERROR CastingHandler(int argc, char ** argv)
         return CastingServer::GetInstance()->ContentLauncherLaunchURL(
             CastingServer::GetInstance()->GetActiveTargetVideoPlayer()->GetEndpoint(4), url, display, LaunchURLResponseCallback);
     }
-    if (strcmp(argv[0], "access") == 0)
+    /*if (strcmp(argv[0], "access") == 0)
     {
         ChipLogProgress(DeviceLayer, "access");
         if (argc < 2)
@@ -134,7 +134,7 @@ static CHIP_ERROR CastingHandler(int argc, char ** argv)
         chip::NodeId node = (chip::NodeId) strtoull(argv[1], &eptr, 0);
         CastingServer::GetInstance()->ReadServerClustersForNode(node);
         return CHIP_NO_ERROR;
-    }
+    }*/
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
     if (strcmp(argv[0], "sendudc") == 0)
     {
