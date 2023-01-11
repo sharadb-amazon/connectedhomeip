@@ -74,6 +74,11 @@ private:
             ChipLogProgress(AppServer, "HandleDeviceConnected calling mOnConnectionSuccessClientCallbackWithContext");
             _this->mOnConnectionSuccessClientCallbackWithContext(exchangeMgr, sessionHandle, _this->mConnectionContext);
         }
+
+        delete _this->mOnConnectedCallback2;
+        delete _this->mOnConnectionFailureCallback2;
+        _this->mOnConnectedCallback2 = nullptr;
+        _this->mOnConnectionFailureCallback2 = nullptr;
     }
 
     static void HandleDeviceConnectionFailure(void * context, const chip::ScopedNodeId & peerId, CHIP_ERROR error)
@@ -89,6 +94,11 @@ private:
             ChipLogProgress(AppServer, "HandleDeviceConnectionFailure calling mOnConnectionFailureClientCallback");
             _this->mOnConnectionFailureClientCallback(error);
         }
+
+        delete _this->mOnConnectedCallback2;
+        delete _this->mOnConnectionFailureCallback2;
+        _this->mOnConnectedCallback2 = nullptr;
+        _this->mOnConnectionFailureCallback2 = nullptr;
     }
 
     TargetEndpointInfo mEndpoints[kMaxNumberOfEndpoints];

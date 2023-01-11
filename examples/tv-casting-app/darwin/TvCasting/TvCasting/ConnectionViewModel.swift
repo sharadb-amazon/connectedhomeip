@@ -45,7 +45,7 @@ class ConnectionViewModel: ObservableObject {
                         self.connectionSuccess = true
                         self.connectionStatus = "Connected to \(String(describing: videoPlayer))"
                         self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
-                        /*
+                        
                         // start test
                         // read vendor id
                         self.Log.info("ConnectionViewModel.sending read vendor ID request")
@@ -99,7 +99,7 @@ class ConnectionViewModel: ObservableObject {
                                 self.Log.info("applicationBasic_readVendorID.failureCallback called with \(result)")
                             }
                         }
-                        )*/
+                        )
                     }
                 },
                 onConnectionFailureCallback: { (error: MatterError) -> () in
