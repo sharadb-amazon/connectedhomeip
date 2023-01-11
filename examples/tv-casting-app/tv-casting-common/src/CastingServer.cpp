@@ -85,16 +85,25 @@ CHIP_ERROR CastingServer::InitBindingHandlers()
 }
 
 CHIP_ERROR CastingServer::TargetVideoPlayerInfoInit(NodeId nodeId, FabricIndex fabricIndex,
-                                                    std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
+                                                    std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                     std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                     std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
     Init();
-    mOnConnectionSuccessClientCallback = onConnectionSuccess;
-    mOnConnectionFailureClientCallback = onConnectionFailure;
+    mOnConnectionSuccessClientCallback = [onConnectionSuccess](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
+        ChipLogProgress(AppServer, "CastingServer::TargetVideoPlayerInfoInit.onConnectionSuccess lambda called");
+        TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
+        onConnectionSuccess(videoPlayer);
+    };
+
+    mOnConnectionFailureClientCallback = [onConnectionFailure](void * context, CHIP_ERROR err) {
+        ChipLogProgress(AppServer, "CastingServer::TargetVideoPlayerInfoInit.onConnectionFailure lambda called");
+        onConnectionFailure(err);
+    };
+
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
     return mActiveTargetVideoPlayerInfo.Initialize(nodeId, fabricIndex, &mActiveTargetVideoPlayerInfo, mOnConnectionSuccessClientCallback,
-                                                   mOnConnectionFailureClientCallback);
+                                                mOnConnectionFailureClientCallback);
 }
 
 CHIP_ERROR CastingServer::DiscoverCommissioners()
@@ -116,13 +125,16 @@ CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_E
                                                        std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
     mCommissioningCompleteCallback     = commissioningCompleteCallback;
-    mOnConnectionSuccessClientCallback = [onConnectionSuccess](chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context) {
+    mOnConnectionSuccessClientCallback = [onConnectionSuccess](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
         ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindow.onConnectionSuccess lambda called");
         TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
         onConnectionSuccess(videoPlayer);
     };
 
-    mOnConnectionFailureClientCallback = onConnectionFailure;
+    mOnConnectionFailureClientCallback = [onConnectionFailure](void * context, CHIP_ERROR err) {
+        ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindow.onConnectionFailure lambda called");
+        onConnectionFailure(err);
+    };
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
     return Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
 }
@@ -287,23 +299,26 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
     {
         return CHIP_ERROR_INVALID_ARGUMENT;
     }
-    mOnConnectionSuccessClientCallback = [onConnectionSuccess](chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context) {
+    mOnConnectionSuccessClientCallback = [onConnectionSuccess](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
         ChipLogProgress(AppServer, "CastingServer::VerifyOrEstablishConnection.onConnectionSuccess lambda called");
         TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
         onConnectionSuccess(videoPlayer);
     };
 
-    mOnConnectionFailureClientCallback = onConnectionFailure;
+    mOnConnectionFailureClientCallback = [onConnectionFailure](void * context, CHIP_ERROR err) {
+        ChipLogProgress(AppServer, "CastingServer::VerifyOrEstablishConnection.onConnectionFailure lambda called");
+        onConnectionFailure(err);
+    };
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
 
     return targetVideoPlayerInfo.FindOrEstablishCASESession(&targetVideoPlayerInfo,
-        [](chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context) {
+        [](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
             ChipLogProgress(AppServer, "CastingServer::OnConnectionSuccess lambda called");
             TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
             CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = *videoPlayer;
-            CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(exchangeMgr, sessionHandle, context);
+            CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(context, exchangeMgr, sessionHandle);
         },
-        onConnectionFailure);
+        mOnConnectionFailureClientCallback);
 }
 
 CHIP_ERROR CastingServer::PurgeVideoPlayerCache()
@@ -332,15 +347,13 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
         {
             ChipLogProgress(AppServer,
                             "CastingServer::DeviceEventCallback already connected to video player, reading server clusters");
-            /*CastingServer::GetInstance()->ReadServerClustersForNode(
-                CastingServer::GetInstance()->GetActiveTargetVideoPlayer()->GetNodeId());*/
             CastingServer::GetInstance()->GetActiveTargetVideoPlayer()->FindOrEstablishCASESession(CastingServer::GetInstance()->GetActiveTargetVideoPlayer(), 
-            [](chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context) {
+            [](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
                 ChipLogProgress(AppServer, "CastingServer::DeviceEventCallback.OnConnectionSuccess lambda called");
                 CastingServer::GetInstance()->ReadServerClustersForNode(
                 CastingServer::GetInstance()->GetActiveTargetVideoPlayer()->GetNodeId(), exchangeMgr, sessionHandle);
         }
-        , [](CHIP_ERROR err) {
+        , [](void * context, CHIP_ERROR err) {
             ChipLogError(AppServer, "CastingServer::DeviceEventCallback Could not connect to read server clusters");
         });
         }
@@ -492,13 +505,16 @@ void CastingServer::SetDefaultFabricIndex(std::function<void(TargetVideoPlayerIn
             continue;
         }
 
-        mOnConnectionSuccessClientCallback = [onConnectionSuccess](chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context) {
-            ChipLogProgress(AppServer, "CastingServer::VerifyOrEstablishConnection.onConnectionSuccess lambda called");
+        mOnConnectionSuccessClientCallback = [onConnectionSuccess](void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle) {
+            ChipLogProgress(AppServer, "CastingServer::SetDefaultFabricIndex.onConnectionSuccess lambda called");
             TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
             onConnectionSuccess(videoPlayer);
         };
 
-        mOnConnectionFailureClientCallback = onConnectionFailure;
+        mOnConnectionFailureClientCallback = [onConnectionFailure](void * context, CHIP_ERROR err) {
+            ChipLogProgress(AppServer, "CastingServer::SetDefaultFabricIndex.onConnectionFailure lambda called");
+            onConnectionFailure(err);
+        };
         mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
 
         mActiveTargetVideoPlayerInfo.Initialize(videoPlayerNodeId, fabricIndex, CastingServer::GetInstance()->GetActiveTargetVideoPlayer(), mOnConnectionSuccessClientCallback,
@@ -516,7 +532,8 @@ void CastingServer::ShutdownAllSubscriptions()
 
 void CastingServer::Disconnect()
 {
-
+    ChipLogProgress(AppServer, "CastingServer::Disconnect called");
+    CastingServer::GetInstance()->GetActiveTargetVideoPlayer()->Disconnect();
 }
 
 /**

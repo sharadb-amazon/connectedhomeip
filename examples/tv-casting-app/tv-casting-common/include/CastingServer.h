@@ -70,7 +70,7 @@ public:
     TargetVideoPlayerInfo * GetActiveTargetVideoPlayer() { return &mActiveTargetVideoPlayerInfo; }
 
     CHIP_ERROR TargetVideoPlayerInfoInit(chip::NodeId nodeId, chip::FabricIndex fabricIndex,
-                                         std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
+                                         std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                          std::function<void(CHIP_ERROR)> onConnectionFailure,
                                          std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
     void ReadServerClustersForNode(chip::NodeId nodeId, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle);
@@ -430,8 +430,8 @@ private:
     std::function<void(CHIP_ERROR)> mCommissioningCompleteCallback;
 
     std::function<void(TargetEndpointInfo *)> mOnNewOrUpdatedEndpoint;
-    std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> mOnConnectionSuccessClientCallback;
-    std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
+    std::function<void(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> mOnConnectionSuccessClientCallback;
+    std::function<void(void *, CHIP_ERROR)> mOnConnectionFailureClientCallback;
 
     /**
      * @brief Content Launcher cluster

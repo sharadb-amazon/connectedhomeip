@@ -32,11 +32,12 @@ public:
         ReturnErrorCodeIf(mTargetVideoPlayerInfo == nullptr, CHIP_ERROR_PEER_NODE_NOT_FOUND);
         mRequest          = request;
         sResponseCallback = responseCallback;
-        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
+        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSendCommand, OnConnectionFailure);
     }
 
-    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
+    static void OnConnectionSendCommand(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)
     {
+        ChipLogProgress(AppServer, "MediaCommandBase:OnConnectionSendCommand called");
         if (!sessionHandle->IsSecureSession())
         {
             sResponseCallback(CHIP_ERROR_MISSING_SECURE_SESSION);
@@ -50,12 +51,16 @@ public:
         }
 
         MediaCommandBase * _this = static_cast<MediaCommandBase *>(context);
-        MediaClusterBase cluster(exchangeMgr, sessionHandle, _this->mClusterId,
-                                 _this->mTvEndpoint);
+        MediaClusterBase cluster(exchangeMgr, sessionHandle, _this->mClusterId, _this->mTvEndpoint);
         sResponseCallback(cluster.InvokeCommand(_this->mRequest, nullptr, OnSuccess, OnFailure));
     }
 
-    static void OnConnectionFailure(CHIP_ERROR err) { sResponseCallback(err); }
+    static void OnConnectionFailure(void *context, CHIP_ERROR err) 
+    {
+        MediaCommandBase * _this = static_cast<MediaCommandBase *>(context);
+        ChipLogError(AppServer, "MediaCommandBase:OnConnectionFailure error %" CHIP_ERROR_FORMAT, err.Format());
+        _this->sResponseCallback(err);
+    }
 
     static void OnSuccess(void * context, const ResponseType & response) { sResponseCallback(CHIP_NO_ERROR); }
 

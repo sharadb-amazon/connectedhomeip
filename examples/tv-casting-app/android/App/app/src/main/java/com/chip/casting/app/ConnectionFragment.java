@@ -114,6 +114,12 @@ public class ConnectionFragment extends Fragment {
             if(videoPlayer.getContentApps() != null && !videoPlayer.getContentApps().isEmpty())
             {
               tvCastingApp.applicationBasic_readVendorID(myContentApp, readSuccessHandler, readFailureHandler);
+              /*tvCastingApp.contentLauncherLaunchURL(myContentApp, "my_url", "my_display_string", new MatterCallbackHandler() {
+                @Override
+                public void handle(MatterError err) {
+                  Log.d(TAG, "ConnectionFragment test: contentLauncherLaunchURL: MatterCallbackHandler called with " + err);
+                }
+              });*/
             }
 
             callback.handleCommissioningComplete();

@@ -44,7 +44,7 @@ void HandleCommissioningCompleteCallback(CHIP_ERROR err);
 
 CHIP_ERROR ConnectToCachedVideoPlayer();
 
-void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *context);
+void OnConnectionSuccess(TargetVideoPlayerInfo * videoPlayer);
 
 void OnConnectionFailure(CHIP_ERROR err);
 

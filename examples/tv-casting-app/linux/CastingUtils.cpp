@@ -217,9 +217,8 @@ void doCastingDemoActions(TargetEndpointInfo * endpoint)
     }
 }
 
-void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *context)
+void OnConnectionSuccess(TargetVideoPlayerInfo * videoPlayer)
 {
-    TargetVideoPlayerInfo * videoPlayer = static_cast<TargetVideoPlayerInfo *>(context);
     ChipLogProgress(AppServer,
                     "OnConnectionSuccess with Video Player(nodeId: 0x" ChipLogFormatX64
                     ", fabricIndex: %d, deviceName: %s, vendorId: %d, productId: "

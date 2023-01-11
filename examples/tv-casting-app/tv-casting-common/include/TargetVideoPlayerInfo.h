@@ -27,14 +27,13 @@ constexpr size_t kMaxNumberOfEndpoints = 5;
 class TargetVideoPlayerInfo
 {
 public:
-    TargetVideoPlayerInfo() :
-        mOnConnectedCallback(HandleDeviceConnected, this), mOnConnectionFailureCallback(HandleDeviceConnectionFailure, this)
-    {}
+    TargetVideoPlayerInfo() {} 
 
     bool operator==(const TargetVideoPlayerInfo & other) { return this->mNodeId == other.mNodeId; }
 
     bool IsInitialized() { return mInitialized; }
     bool IsConnected() { return mConnected; }
+    void Disconnect() { mConnected = false; }
     uint16_t GetVendorId() const { return mVendorId; }
     uint16_t GetProductId() const { return mProductId; }
     uint16_t GetDeviceType() const { return mDeviceType; }
@@ -47,12 +46,12 @@ public:
     bool IsSameAs(const char * deviceName, size_t numIPs, const chip::Inet::IPAddress * ipAddresses);
 
     CHIP_ERROR Initialize(chip::NodeId nodeId, chip::FabricIndex fabricIndex, void * connectionContext,
-                          std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
-                          std::function<void(CHIP_ERROR)> onConnectionFailure, uint16_t vendorId = 0, uint16_t productId = 0,
+                          std::function<void(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> onConnectionSuccess,
+                          std::function<void(void *, CHIP_ERROR)> onConnectionFailure, uint16_t vendorId = 0, uint16_t productId = 0,
                           uint16_t deviceType = 0, const char * deviceName = {}, size_t numIPs = 0,
                           chip::Inet::IPAddress * ipAddressList = nullptr);
-    CHIP_ERROR FindOrEstablishCASESession(void * connectionContext, std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
-                                          std::function<void(CHIP_ERROR)> onConnectionFailure);
+    CHIP_ERROR FindOrEstablishCASESession(void * connectionContext, std::function<void(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> onConnectionSuccess,
+                                          std::function<void(void *, CHIP_ERROR)> onConnectionFailure);
     TargetEndpointInfo * GetOrAddEndpoint(chip::EndpointId endpointId);
     TargetEndpointInfo * GetEndpoint(chip::EndpointId endpointId);
     TargetEndpointInfo * GetEndpoints();
@@ -69,16 +68,16 @@ private:
         ChipLogProgress(AppServer, "HandleDeviceConnected called for nodeId: 0x" ChipLogFormatX64
                      ", fabricIndex: %d", ChipLogValueX64(_this->mNodeId), _this->mFabricIndex);
 
-        if (_this->mConnectionContext != nullptr && _this->mOnConnectionSuccessClientCallbackWithContext)
+        if (_this->mOnConnectionSuccessClientCallback)
         {
-            ChipLogProgress(AppServer, "HandleDeviceConnected calling mOnConnectionSuccessClientCallbackWithContext");
-            _this->mOnConnectionSuccessClientCallbackWithContext(exchangeMgr, sessionHandle, _this->mConnectionContext);
+            ChipLogProgress(AppServer, "HandleDeviceConnected calling mOnConnectionSuccessClientCallback");
+            _this->mOnConnectionSuccessClientCallback(_this->mConnectionContext, exchangeMgr, sessionHandle);
         }
 
-        delete _this->mOnConnectedCallback2;
-        delete _this->mOnConnectionFailureCallback2;
-        _this->mOnConnectedCallback2 = nullptr;
-        _this->mOnConnectionFailureCallback2 = nullptr;
+        delete _this->mOnConnectedCallback;
+        delete _this->mOnConnectionFailureCallback;
+        _this->mOnConnectedCallback = nullptr;
+        _this->mOnConnectionFailureCallback = nullptr;
     }
 
     static void HandleDeviceConnectionFailure(void * context, const chip::ScopedNodeId & peerId, CHIP_ERROR error)
@@ -92,13 +91,13 @@ private:
         if (_this->mOnConnectionFailureClientCallback)
         {
             ChipLogProgress(AppServer, "HandleDeviceConnectionFailure calling mOnConnectionFailureClientCallback");
-            _this->mOnConnectionFailureClientCallback(error);
+            _this->mOnConnectionFailureClientCallback(_this->mConnectionContext, error);
         }
 
-        delete _this->mOnConnectedCallback2;
-        delete _this->mOnConnectionFailureCallback2;
-        _this->mOnConnectedCallback2 = nullptr;
-        _this->mOnConnectionFailureCallback2 = nullptr;
+        delete _this->mOnConnectedCallback;
+        delete _this->mOnConnectionFailureCallback;
+        _this->mOnConnectedCallback = nullptr;
+        _this->mOnConnectionFailureCallback = nullptr;
     }
 
     TargetEndpointInfo mEndpoints[kMaxNumberOfEndpoints];
@@ -111,16 +110,12 @@ private:
     size_t mNumIPs                                       = 0; // number of valid IP addresses
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
-    chip::Callback::Callback<chip::OnDeviceConnected> mOnConnectedCallback;
-    chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnConnectionFailureCallback;
-    chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback2;
-    chip::Callback::Callback<chip::OnDeviceConnectionFailure> * mOnConnectionFailureCallback2;
-    //std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> mOnConnectionSuccessClientCallback;
-    std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
-    //std::function<void(TargetVideoPlayerInfo *, void *)> mOnConnectionSuccessClientCallbackWithContext;
-    std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> mOnConnectionSuccessClientCallbackWithContext;
+    chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback;
+    chip::Callback::Callback<chip::OnDeviceConnectionFailure> * mOnConnectionFailureCallback;
+    std::function<void(void *, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> mOnConnectionSuccessClientCallback;
+    std::function<void(void *, CHIP_ERROR)> mOnConnectionFailureClientCallback;
     void * mConnectionContext;
+    bool mConnected = false;
 
     bool mInitialized = false;
-    bool mConnected = false;
 };

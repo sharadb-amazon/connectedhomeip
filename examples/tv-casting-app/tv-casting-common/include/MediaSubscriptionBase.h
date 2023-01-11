@@ -38,11 +38,12 @@ public:
         mMinInterval               = minInterval;
         mMaxInterval               = maxInterval;
         mOnSubscriptionEstablished = onSubscriptionEstablished;
-        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
+        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSendSubscriptionRequest, OnConnectionFailure);
     }
 
-    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
+    static void OnConnectionSendSubscriptionRequest(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)
     {
+        ChipLogProgress(AppServer, "MediaSubscriptionBase:OnConnectionSendSubscriptionRequest called");
         MediaSubscriptionBase * _this = static_cast<MediaSubscriptionBase *>(context);
         if (!sessionHandle->IsSecureSession())
         {
@@ -67,11 +68,11 @@ public:
         }
     }
 
-    static void OnConnectionFailure(CHIP_ERROR err)
+    static void OnConnectionFailure(void *context, CHIP_ERROR err)
     {
-        // TODO: _this->mFailureFn(_this->mSubscriptionContext, err);
-        ChipLogError(AppServer, "MediaSubscriptionBase:OnConnectionFailure - FindOrEstablishSession failed %" CHIP_ERROR_FORMAT,
-                     err.Format());
+        MediaSubscriptionBase * _this = static_cast<MediaSubscriptionBase *>(context);
+        ChipLogError(AppServer, "MediaSubscriptionBase:OnConnectionFailure error %" CHIP_ERROR_FORMAT, err.Format());
+        _this->mFailureFn(_this->mSubscriptionContext, err);
     }
 
 private:

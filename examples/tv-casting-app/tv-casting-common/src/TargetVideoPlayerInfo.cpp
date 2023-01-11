@@ -22,8 +22,8 @@ using namespace chip;
 CASEClientPool<CHIP_CONFIG_DEVICE_MAX_ACTIVE_CASE_CLIENTS> gCASEClientPool;
 
 CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIndex, void * connectionContext,
-                                             std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *)> onConnectionSuccess,
-                                             std::function<void(CHIP_ERROR)> onConnectionFailure, uint16_t vendorId,
+                                             std::function<void(void *context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> onConnectionSuccess,
+                                             std::function<void(void *, CHIP_ERROR)> onConnectionFailure, uint16_t vendorId,
                                              uint16_t productId, uint16_t deviceType, const char * deviceName, size_t numIPs,
                                              chip::Inet::IPAddress * ipAddress)
 {
@@ -55,19 +55,18 @@ CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIn
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(void * connectionContext, std::function<void(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void *context)> onConnectionSuccess,
-                                                             std::function<void(CHIP_ERROR)> onConnectionFailure)
+CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(void * connectionContext, std::function<void(void *context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)> onConnectionSuccess,
+                                                             std::function<void(void *, CHIP_ERROR)> onConnectionFailure)
 {
-    //mOnConnectionSuccessClientCallback            = onConnectionSuccess;
+    mOnConnectionSuccessClientCallback            = onConnectionSuccess;
     mOnConnectionFailureClientCallback            = onConnectionFailure;
-    mOnConnectionSuccessClientCallbackWithContext = onConnectionSuccess;
     mConnectionContext = connectionContext;
-    mOnConnectedCallback2 = new chip::Callback::Callback<chip::OnDeviceConnected>(HandleDeviceConnected, this);
-    mOnConnectionFailureCallback2 = new chip::Callback::Callback<chip::OnDeviceConnectionFailure>(HandleDeviceConnectionFailure, this);
+    mOnConnectedCallback = new chip::Callback::Callback<chip::OnDeviceConnected>(HandleDeviceConnected, this);
+    mOnConnectionFailureCallback = new chip::Callback::Callback<chip::OnDeviceConnectionFailure>(HandleDeviceConnectionFailure, this);
 
     Server * server                               = &(chip::Server::GetInstance());
-    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), mOnConnectedCallback2,
-                                                            mOnConnectionFailureCallback2);
+    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), mOnConnectedCallback,
+                                                            mOnConnectionFailureCallback);
     return CHIP_NO_ERROR;
 }
 

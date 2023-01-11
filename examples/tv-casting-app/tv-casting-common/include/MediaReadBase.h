@@ -34,13 +34,14 @@ public:
         mReadContext       = context;
         mSuccessFn                 = successFn;
         mFailureFn                 = failureFn;
-        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSuccess, OnConnectionFailure);
+        return mTargetVideoPlayerInfo->FindOrEstablishCASESession(this, OnConnectionSendReadRequest, OnConnectionFailure);
         
         VerifyOrDieWithMsg(mTargetVideoPlayerInfo != nullptr, AppServer, "Target unknown");
     }
 
-    static void OnConnectionSuccess(chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle, void * context)
+    static void OnConnectionSendReadRequest(void * context, chip::Messaging::ExchangeManager & exchangeMgr, chip::SessionHandle & sessionHandle)
     {
+        ChipLogProgress(AppServer, "MediaReadBase:OnConnectionSendReadRequest called");
         MediaReadBase * _this = static_cast<MediaReadBase *>(context);
         if (!sessionHandle->IsSecureSession())
         {
@@ -63,11 +64,11 @@ public:
         }
     }
 
-    static void OnConnectionFailure(CHIP_ERROR err)
+    static void OnConnectionFailure(void * context, CHIP_ERROR err)
     {
-        // TODO: _this->mFailureFn(_this->mReadContext, err);
-        ChipLogError(AppServer, "MediaReadBase:OnConnectionFailure - FindOrEstablishSession failed %" CHIP_ERROR_FORMAT,
-                     err.Format());
+        MediaReadBase * _this = static_cast<MediaReadBase *>(context);
+        ChipLogError(AppServer, "MediaReadBase:OnConnectionFailure error %" CHIP_ERROR_FORMAT, err.Format());
+        _this->mFailureFn(_this->mReadContext, err);
     }
 
 private:
