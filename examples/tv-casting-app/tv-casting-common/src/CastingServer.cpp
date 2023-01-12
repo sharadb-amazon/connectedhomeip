@@ -36,6 +36,11 @@ CastingServer * CastingServer::GetInstance()
     return castingServer_;
 }
 
+CHIP_ERROR CastingServer::PreInit(AppParams * AppParams)
+{
+    return SetRotatingDeviceIdUniqueId(AppParams != nullptr ? AppParams->GetRotatingDeviceIdUniqueId() : chip::NullOptional);
+}
+
 CHIP_ERROR CastingServer::Init(AppParams * AppParams)
 {
     if (mInited)
@@ -43,13 +48,24 @@ CHIP_ERROR CastingServer::Init(AppParams * AppParams)
         return CHIP_NO_ERROR;
     }
 
+    // Initialize binding handlers
+    ReturnErrorOnFailure(InitBindingHandlers());
+
+    // Add callback to send Content casting commands after commissioning completes
+    ReturnErrorOnFailure(DeviceLayer::PlatformMgrImpl().AddEventHandler(DeviceEventCallback, 0));
+
+    mInited = true;
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR CastingServer::SetRotatingDeviceIdUniqueId(chip::Optional<chip::ByteSpan> rotatingDeviceIdUniqueIdOptional)
+{
 #if CHIP_ENABLE_ROTATING_DEVICE_ID
     // if this class's client provided a RotatingDeviceIdUniqueId, use that
-    if (AppParams != nullptr && AppParams->GetRotatingDeviceIdUniqueId().HasValue())
+    if (rotatingDeviceIdUniqueIdOptional.HasValue())
     {
         ChipLogProgress(AppServer, "Setting unique ID (for generating rotating device ID) received from client app");
-        ByteSpan rotatingDeviceIdUniqueId(AppParams->GetRotatingDeviceIdUniqueId().Value());
-        chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueId);
+        return chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueIdOptional.Value());
     }
 #ifdef CHIP_DEVICE_CONFIG_ROTATING_DEVICE_ID_UNIQUE_ID
     else
@@ -63,18 +79,10 @@ CHIP_ERROR CastingServer::Init(AppParams * AppParams)
         }
 
         // ByteSpan rotatingDeviceIdUniqueIdSpan(rotatingDeviceIdUniqueId);
-        chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(ByteSpan(rotatingDeviceIdUniqueId));
+        return chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(ByteSpan(rotatingDeviceIdUniqueId));
     }
 #endif // CHIP_DEVICE_CONFIG_ROTATING_DEVICE_ID_UNIQUE_ID
 #endif // CHIP_ENABLE_ROTATING_DEVICE_ID
-
-    // Initialize binding handlers
-    ReturnErrorOnFailure(InitBindingHandlers());
-
-    // Add callback to send Content casting commands after commissioning completes
-    ReturnErrorOnFailure(DeviceLayer::PlatformMgrImpl().AddEventHandler(DeviceEventCallback, 0));
-
-    mInited = true;
     return CHIP_NO_ERROR;
 }
 
