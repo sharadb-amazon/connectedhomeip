@@ -167,6 +167,7 @@ CHIP_ERROR OperationalCredentialsAttrAccess::ReadCommissionedFabrics(EndpointId 
 
 CHIP_ERROR OperationalCredentialsAttrAccess::ReadFabricsList(EndpointId endpoint, AttributeValueEncoder & aEncoder)
 {
+    ChipLogProgress(NotSpecified, "OperationalCredentialsAttrAccess::ReadFabricsList called for EndpointId: %d", endpoint);
     return aEncoder.EncodeList([](const auto & encoder) -> CHIP_ERROR {
         const auto & fabricTable = Server::GetInstance().GetFabricTable();
 
@@ -179,12 +180,15 @@ CHIP_ERROR OperationalCredentialsAttrAccess::ReadFabricsList(EndpointId endpoint
             fabricDescriptor.nodeId      = fabricInfo.GetPeerId().GetNodeId();
             fabricDescriptor.vendorId    = fabricInfo.GetVendorId();
             fabricDescriptor.fabricId    = fabricInfo.GetFabricId();
+            ChipLogProgress(NotSpecified, "OperationalCredentialsAttrAccess::ReadFabricsList fabricIndex: %d, vendorId: 0x%04X fabricId: 0x" ChipLogFormatX64 " nodeId=0x" ChipLogFormatX64, 
+                fabricDescriptor.fabricIndex, fabricDescriptor.vendorId, ChipLogValueX64(fabricDescriptor.fabricId), ChipLogValueX64(fabricDescriptor.nodeId));
 
             fabricDescriptor.label = fabricInfo.GetFabricLabel();
 
             Crypto::P256PublicKey pubKey;
             ReturnErrorOnFailure(fabricTable.FetchRootPubkey(fabricIndex, pubKey));
             fabricDescriptor.rootPublicKey = ByteSpan{ pubKey.ConstBytes(), pubKey.Length() };
+            ChipLogProgress(NotSpecified, "OperationalCredentialsAttrAccess::ReadFabricsList fabricDescriptor.rootPublicKey size: %zu", fabricDescriptor.rootPublicKey.size());
 
             ReturnErrorOnFailure(encoder.Encode(fabricDescriptor));
         }
@@ -233,6 +237,7 @@ OperationalCredentialsAttrAccess gAttrAccess;
 
 CHIP_ERROR OperationalCredentialsAttrAccess::Read(const ConcreteReadAttributePath & aPath, AttributeValueEncoder & aEncoder)
 {
+    ChipLogProgress(NotSpecified, "OperationalCredentialsAttrAccess::Read called %d", aPath.mAttributeId);
     VerifyOrDie(aPath.mClusterId == Clusters::OperationalCredentials::Id);
 
     switch (aPath.mAttributeId)
