@@ -27,9 +27,7 @@ constexpr size_t kMaxNumberOfEndpoints = 5;
 class TargetVideoPlayerInfo
 {
 public:
-    TargetVideoPlayerInfo() :
-        mOnConnectedCallback(HandleDeviceConnected, this), mOnConnectionFailureCallback(HandleDeviceConnectionFailure, this)
-    {}
+    TargetVideoPlayerInfo() {}
 
     bool operator==(const TargetVideoPlayerInfo & other) { return this->mNodeId == other.mNodeId; }
 
@@ -112,8 +110,8 @@ private:
     size_t mNumIPs                                       = 0; // number of valid IP addresses
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
-    chip::Callback::Callback<chip::OnDeviceConnected> mOnConnectedCallback;
-    chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnConnectionFailureCallback;
+    chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback                 = nullptr;
+    chip::Callback::Callback<chip::OnDeviceConnectionFailure> * mOnConnectionFailureCallback = nullptr;
     std::function<void(TargetVideoPlayerInfo *)> mOnConnectionSuccessClientCallback;
     std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
 
