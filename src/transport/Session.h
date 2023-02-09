@@ -46,7 +46,9 @@ class Session;
 class SessionHandle
 {
 public:
-    SessionHandle(Transport::Session & session) : mSession(session) {}
+    SessionHandle(Transport::Session & session) : mSession(session) {
+        ChipLogProgress(NotSpecified, "tmplog: SessionHandle::SessionHandle(& session) called");
+    }
     ~SessionHandle() {}
 
     SessionHandle(const SessionHandle &) = delete;
@@ -71,8 +73,13 @@ private:
 class SessionHolder : public IntrusiveListNodeBase<>
 {
 public:
-    SessionHolder() {}
-    SessionHolder(const SessionHandle & handle) { Grab(handle); }
+    SessionHolder() {
+        ChipLogProgress(NotSpecified, "tmplog: SessionHolder::SessionHolder() called");
+    }
+    SessionHolder(const SessionHandle & handle) { 
+        ChipLogProgress(NotSpecified, "tmplog: SessionHolder::SessionHolder(& handle) called");
+        Grab(handle); 
+    }
     virtual ~SessionHolder();
 
     SessionHolder(const SessionHolder &);
@@ -177,6 +184,7 @@ public:
 
     void AddHolder(SessionHolder & holder)
     {
+        ChipLogProgress(NotSpecified, "tmplog: Session::AddHolder(& holder) called");
         assertChipStackLockedByCurrentThread();
         VerifyOrDie(!holder.IsInList());
         mHolders.PushBack(&holder);
@@ -184,6 +192,7 @@ public:
 
     void RemoveHolder(SessionHolder & holder)
     {
+        ChipLogProgress(NotSpecified, "tmplog: Session::RemoveHolder(& holder) called");
         assertChipStackLockedByCurrentThread();
         VerifyOrDie(mHolders.Contains(&holder));
         mHolders.Remove(&holder);

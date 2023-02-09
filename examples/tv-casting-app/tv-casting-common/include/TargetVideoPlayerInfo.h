@@ -70,6 +70,7 @@ private:
     static void HandleDeviceConnected(void * context, chip::Messaging::ExchangeManager & exchangeMgr,
                                       chip::SessionHandle & sessionHandle)
     {
+        ChipLogProgress(AppServer, "tmplog: HandleDeviceConnected called");
         TargetVideoPlayerInfo * _this = static_cast<TargetVideoPlayerInfo *>(context);
         if(_this == nullptr)
         {

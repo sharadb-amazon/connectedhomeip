@@ -28,6 +28,7 @@ SessionHolder::~SessionHolder()
 
 SessionHolder::SessionHolder(const SessionHolder & that) : IntrusiveListNodeBase()
 {
+    ChipLogProgress(NotSpecified, "tmplog: SessionHolder::SessionHolder(& that) called");
     mSession = that.mSession;
     if (mSession.HasValue())
     {
@@ -37,6 +38,7 @@ SessionHolder::SessionHolder(const SessionHolder & that) : IntrusiveListNodeBase
 
 SessionHolder::SessionHolder(SessionHolder && that) : IntrusiveListNodeBase()
 {
+    ChipLogProgress(NotSpecified, "tmplog: SessionHolder::SessionHolder(&& that) called");
     mSession = that.mSession;
     if (mSession.HasValue())
     {
@@ -48,6 +50,7 @@ SessionHolder::SessionHolder(SessionHolder && that) : IntrusiveListNodeBase()
 
 SessionHolder & SessionHolder::operator=(const SessionHolder & that)
 {
+    ChipLogProgress(NotSpecified, "tmplog: SessionHolder::operator=(& that) called");
     Release();
 
     mSession = that.mSession;
@@ -61,6 +64,7 @@ SessionHolder & SessionHolder::operator=(const SessionHolder & that)
 
 SessionHolder & SessionHolder::operator=(SessionHolder && that)
 {
+    ChipLogProgress(NotSpecified, "tmplog: SessionHolder::operator=(&& that) called");
     Release();
 
     mSession = that.mSession;

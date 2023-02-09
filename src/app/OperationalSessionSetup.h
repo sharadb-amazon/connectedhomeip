@@ -103,7 +103,9 @@ class OperationalDeviceProxy : public DeviceProxy
 public:
     OperationalDeviceProxy(Messaging::ExchangeManager * exchangeMgr, const SessionHandle & sessionHandle) :
         mExchangeMgr(exchangeMgr), mSecureSession(sessionHandle), mPeerScopedNodeId(sessionHandle->GetPeer())
-    {}
+    {
+        ChipLogProgress(NotSpecified, "tmplog: OperationalDeviceProxy() called");
+    }
     OperationalDeviceProxy() {}
 
     // Recommended to use InteractionModelEngine::ShutdownSubscriptions directly.

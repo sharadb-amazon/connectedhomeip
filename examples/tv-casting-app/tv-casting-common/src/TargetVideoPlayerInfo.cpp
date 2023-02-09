@@ -69,6 +69,7 @@ CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIn
 CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                              std::function<void(CHIP_ERROR)> onConnectionFailure)
 {
+    ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession called");
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
 
