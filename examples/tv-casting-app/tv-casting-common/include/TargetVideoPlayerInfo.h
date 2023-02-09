@@ -46,9 +46,9 @@ public:
 
     chip::OperationalDeviceProxy * GetOperationalDeviceProxy()
     {
-        if (mDeviceProxy.ConnectionReady())
+        if (mDeviceProxy != nullptr && mDeviceProxy->ConnectionReady())
         {
-            return &mDeviceProxy;
+            return mDeviceProxy;
         }
         return nullptr;
     }
@@ -71,7 +71,16 @@ private:
                                       chip::SessionHandle & sessionHandle)
     {
         TargetVideoPlayerInfo * _this = static_cast<TargetVideoPlayerInfo *>(context);
-        _this->mDeviceProxy           = chip::OperationalDeviceProxy(&exchangeMgr, sessionHandle);
+        if(_this == nullptr)
+        {
+            ChipLogError(AppServer, "HandleDeviceConnected called with null context");
+            return;
+        }
+        if(_this->mDeviceProxy != nullptr)
+        {
+            delete _this->mDeviceProxy;
+        }
+        _this->mDeviceProxy           = new chip::OperationalDeviceProxy(&exchangeMgr, sessionHandle);
         _this->mInitialized           = true;
         ChipLogProgress(AppServer,
                         "HandleDeviceConnected created an instance of OperationalDeviceProxy for nodeId: 0x" ChipLogFormatX64
@@ -92,7 +101,16 @@ private:
                      ", peer.fabricIndex: %d with error: %" CHIP_ERROR_FORMAT,
                      ChipLogValueX64(peerId.GetNodeId()), peerId.GetFabricIndex(), error.Format());
         TargetVideoPlayerInfo * _this = static_cast<TargetVideoPlayerInfo *>(context);
-        _this->mDeviceProxy           = chip::OperationalDeviceProxy();
+        if(_this == nullptr)
+        {
+            ChipLogError(AppServer, "HandleDeviceConnectionFailure called with null context");
+            return;
+        }
+        if(_this->mDeviceProxy != nullptr)
+        {
+            delete _this->mDeviceProxy;
+        }
+        _this->mDeviceProxy           = new chip::OperationalDeviceProxy();
         if (_this->mOnConnectionFailureClientCallback)
         {
             ChipLogProgress(AppServer, "HandleDeviceConnectionFailure calling mOnConnectionFailureClientCallback");
@@ -103,7 +121,7 @@ private:
     TargetEndpointInfo mEndpoints[kMaxNumberOfEndpoints];
     chip::NodeId mNodeId;
     chip::FabricIndex mFabricIndex;
-    chip::OperationalDeviceProxy mDeviceProxy;
+    chip::OperationalDeviceProxy * mDeviceProxy = nullptr;
     uint16_t mVendorId                                   = 0;
     uint16_t mProductId                                  = 0;
     uint16_t mDeviceType                                 = 0;
