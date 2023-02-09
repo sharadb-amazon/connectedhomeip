@@ -24,6 +24,16 @@
 
 constexpr size_t kMaxNumberOfEndpoints = 5;
 
+class TargetVideoPlayerInfo;
+struct VideoPlayerConnectionContext
+{
+    TargetVideoPlayerInfo *mTargetVideoPlayerInfo;
+    chip::Callback::Callback<chip::OnDeviceConnected> mOnConnectedCallback;
+    chip::Callback::Callback<chip::OnDeviceConnectionFailure> mOnConnectionFailureCallback;
+    std::function<void(TargetVideoPlayerInfo *)> mOnConnectionSuccessClientCallback;
+    std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
+};
+
 class TargetVideoPlayerInfo
 {
 public:
@@ -71,28 +81,29 @@ private:
                                       chip::SessionHandle & sessionHandle)
     {
         ChipLogProgress(AppServer, "tmplog: HandleDeviceConnected called");
-        TargetVideoPlayerInfo * _this = static_cast<TargetVideoPlayerInfo *>(context);
-        if(_this == nullptr)
+        VideoPlayerConnectionContext *connectionContext = static_cast<VideoPlayerConnectionContext *>(context);
+        if(connectionContext == nullptr || connectionContext->mTargetVideoPlayerInfo == nullptr)
         {
-            ChipLogError(AppServer, "HandleDeviceConnected called with null context");
+            ChipLogError(AppServer, "HandleDeviceConnected called with null context or null context.targetVideoPlayerInfo");
             return;
         }
-        if(_this->mDeviceProxy != nullptr)
+        if(connectionContext->mTargetVideoPlayerInfo->mDeviceProxy != nullptr)
         {
-            delete _this->mDeviceProxy;
+            delete connectionContext->mTargetVideoPlayerInfo->mDeviceProxy;
         }
-        _this->mDeviceProxy           = new chip::OperationalDeviceProxy(&exchangeMgr, sessionHandle);
-        _this->mInitialized           = true;
+        connectionContext->mTargetVideoPlayerInfo->mDeviceProxy           = new chip::OperationalDeviceProxy(&exchangeMgr, sessionHandle);
+        connectionContext->mTargetVideoPlayerInfo->mInitialized           = true;
         ChipLogProgress(AppServer,
                         "HandleDeviceConnected created an instance of OperationalDeviceProxy for nodeId: 0x" ChipLogFormatX64
                         ", fabricIndex: %d",
-                        ChipLogValueX64(_this->GetNodeId()), _this->GetFabricIndex());
+                        ChipLogValueX64(connectionContext->mTargetVideoPlayerInfo->GetNodeId()), connectionContext->mTargetVideoPlayerInfo->GetFabricIndex());
 
-        if (_this->mOnConnectionSuccessClientCallback)
+        if (connectionContext->mOnConnectionSuccessClientCallback)
         {
             ChipLogProgress(AppServer, "HandleDeviceConnected calling mOnConnectionSuccessClientCallback");
-            _this->mOnConnectionSuccessClientCallback(_this);
+            connectionContext->mOnConnectionSuccessClientCallback(connectionContext->mTargetVideoPlayerInfo);
         }
+        free(connectionContext);
     }
 
     static void HandleDeviceConnectionFailure(void * context, const chip::ScopedNodeId & peerId, CHIP_ERROR error)
@@ -101,22 +112,23 @@ private:
                      "HandleDeviceConnectionFailure called for peerId.nodeId: 0x" ChipLogFormatX64
                      ", peer.fabricIndex: %d with error: %" CHIP_ERROR_FORMAT,
                      ChipLogValueX64(peerId.GetNodeId()), peerId.GetFabricIndex(), error.Format());
-        TargetVideoPlayerInfo * _this = static_cast<TargetVideoPlayerInfo *>(context);
-        if(_this == nullptr)
+        VideoPlayerConnectionContext *connectionContext = static_cast<VideoPlayerConnectionContext *>(context);
+        if(connectionContext == nullptr || connectionContext->mTargetVideoPlayerInfo == nullptr)
         {
             ChipLogError(AppServer, "HandleDeviceConnectionFailure called with null context");
             return;
         }
-        if(_this->mDeviceProxy != nullptr)
+        if(connectionContext->mTargetVideoPlayerInfo->mDeviceProxy != nullptr)
         {
-            delete _this->mDeviceProxy;
+            delete connectionContext->mTargetVideoPlayerInfo->mDeviceProxy;
         }
-        _this->mDeviceProxy           = new chip::OperationalDeviceProxy();
-        if (_this->mOnConnectionFailureClientCallback)
+        connectionContext->mTargetVideoPlayerInfo->mDeviceProxy           = new chip::OperationalDeviceProxy();
+        if (connectionContext->mOnConnectionFailureClientCallback)
         {
             ChipLogProgress(AppServer, "HandleDeviceConnectionFailure calling mOnConnectionFailureClientCallback");
-            _this->mOnConnectionFailureClientCallback(error);
+            connectionContext->mOnConnectionFailureClientCallback(error);
         }
+        free(connectionContext);
     }
 
     TargetEndpointInfo mEndpoints[kMaxNumberOfEndpoints];
@@ -130,11 +142,5 @@ private:
     char mHostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
     size_t mNumIPs                                       = 0; // number of valid IP addresses
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
-
-    chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback                 = nullptr;
-    chip::Callback::Callback<chip::OnDeviceConnectionFailure> * mOnConnectionFailureCallback = nullptr;
-    std::function<void(TargetVideoPlayerInfo *)> mOnConnectionSuccessClientCallback;
-    std::function<void(CHIP_ERROR)> mOnConnectionFailureClientCallback;
-
     bool mInitialized = false;
 };
