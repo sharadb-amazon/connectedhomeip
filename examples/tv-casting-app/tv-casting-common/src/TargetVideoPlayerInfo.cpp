@@ -134,7 +134,7 @@ bool TargetVideoPlayerInfo::HasEndpoint(EndpointId endpointId)
 
 void TargetVideoPlayerInfo::PrintInfo()
 {
-    ChipLogProgress(NotSpecified, " TargetVideoPlayerInfo nodeId=0x" ChipLogFormatX64 " fabric index=%d", ChipLogValueX64(mNodeId),
+    ChipLogProgress(NotSpecified, " TargetVideoPlayerInfo deviceName=%s nodeId=0x" ChipLogFormatX64 " fabric index=%d", mDeviceName, ChipLogValueX64(mNodeId),
                     mFabricIndex);
     for (auto & endpointInfo : mEndpoints)
     {

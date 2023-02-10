@@ -301,11 +301,21 @@ TargetVideoPlayerInfo * CastingServer::ReadCachedTargetVideoPlayerInfos()
     return mCachedTargetVideoPlayerInfo;
 }
 
+void CastingServer::LogCachedVideoPlayers()
+{
+    ChipLogProgress(AppServer, "CastingServer:LogCachedVideoPlayers dumping any/all cached video players.");
+    for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfo[i].IsInitialized(); i++)
+    {
+        mCachedTargetVideoPlayerInfo[i].PrintInfo();
+    }
+}
 CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & targetVideoPlayerInfo,
                                                       std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                       std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                       std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
+    LogCachedVideoPlayers();
+
     if (!targetVideoPlayerInfo.IsInitialized())
     {
         return CHIP_ERROR_INVALID_ARGUMENT;
