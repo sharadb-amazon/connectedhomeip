@@ -36,10 +36,16 @@ public:
     void OnDiscoveredDevice(const chip::Dnssd::DiscoveredNodeData & nodeData)
     {
         ChipLogProgress(AppServer, "CommissionerDiscoveryDelegateImpl().OnDiscoveredDevice() called");
+#ifdef CHIP_DEVICE_DISCOVERED_COMMISSIONER_DEVICE_TYPE_FILTER
+        if(nodeData.commissionData.deviceType != CHIP_DEVICE_DISCOVERED_COMMISSIONER_DEVICE_TYPE_FILTER)
+        {
+            ChipLogProgress(AppServer, "CommissionerDiscoveryDelegateImpl().OnDiscoveredDevice() filtered out discovered commissioner: DN=%s DT=%d", nodeData.commissionData.deviceName, nodeData.commissionData.deviceType);
+            return;
+        }
+#endif // CHIP_DEVICE_DISCOVERED_COMMISSIONER_DEVICE_TYPE_FILTER
         __block const chip::Dnssd::DiscoveredNodeData cppNodeData = nodeData;
         dispatch_async(mClientQueue, ^{
             DiscoveredNodeData * objCDiscoveredNodeData = [ConversionUtils convertToObjCDiscoveredNodeDataFrom:&cppNodeData];
-
             // set associated connectable video player from cache, if any
             if (mCachedTargetVideoPlayerInfos != nullptr) {
                 for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfos[i].IsInitialized(); i++) {

@@ -129,8 +129,7 @@ CHIP_ERROR CastingServer::DiscoverCommissioners(DeviceDiscoveryDelegate * device
     mCommissionableNodeController.RegisterDeviceDiscoveryDelegate(deviceDiscoveryDelegate);
 
     // Send discover commissioners request
-    return mCommissionableNodeController.DiscoverCommissioners(
-        Dnssd::DiscoveryFilter(Dnssd::DiscoveryFilterType::kDeviceType, static_cast<uint16_t>(35)));
+    return mCommissionableNodeController.DiscoverCommissioners(Dnssd::DiscoveryFilter());
 }
 
 CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
