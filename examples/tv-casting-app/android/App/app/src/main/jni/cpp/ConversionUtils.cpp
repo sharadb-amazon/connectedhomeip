@@ -211,9 +211,11 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
             }
         }
 
+        ChipLogProgress(AppServer, "convertTargetVideoPlayerInfoToJVideoPlayer deviceName: %s", targetVideoPlayerInfo->GetDeviceName());
         jstring deviceName =
             targetVideoPlayerInfo->GetDeviceName() == nullptr ? nullptr : env->NewStringUTF(targetVideoPlayerInfo->GetDeviceName());
 
+        ChipLogProgress(AppServer, "convertTargetVideoPlayerInfoToJVideoPlayer hostName: %s", targetVideoPlayerInfo->GetHostName());
         jstring hostName =
             targetVideoPlayerInfo->GetHostName() == nullptr ? nullptr : env->NewStringUTF(targetVideoPlayerInfo->GetHostName());
 
@@ -239,6 +241,7 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
             }
         }
 
+        ChipLogProgress(AppServer, "convertTargetVideoPlayerInfoToJVideoPlayer creating NewObject");
         outVideoPlayer = env->NewObject(jVideoPlayerClass, jVideoPlayerConstructor, targetVideoPlayerInfo->GetNodeId(),
                                         targetVideoPlayerInfo->GetFabricIndex(), deviceName, targetVideoPlayerInfo->GetVendorId(),
                                         targetVideoPlayerInfo->GetProductId(), targetVideoPlayerInfo->GetDeviceType(),

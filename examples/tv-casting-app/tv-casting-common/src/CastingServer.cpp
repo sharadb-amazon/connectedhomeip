@@ -322,7 +322,8 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
         prevDeviceProxy->Disconnect();
     }
 
-    return targetVideoPlayerInfo.FindOrEstablishCASESession(
+    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = targetVideoPlayerInfo;
+    return CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.FindOrEstablishCASESession(
         [](TargetVideoPlayerInfo * videoPlayer) {
             ChipLogProgress(AppServer, "CastingServer::OnConnectionSuccess lambda called");
             CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = *videoPlayer;

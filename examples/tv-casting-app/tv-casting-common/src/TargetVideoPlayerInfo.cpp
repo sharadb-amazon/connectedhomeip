@@ -43,13 +43,13 @@ CHIP_ERROR TargetVideoPlayerInfo::Initialize(NodeId nodeId, FabricIndex fabricIn
     memset(mDeviceName, '\0', sizeof(mDeviceName));
     if (deviceName != nullptr)
     {
-        chip::Platform::CopyString(mDeviceName, chip::Dnssd::kMaxDeviceNameLen + 1, deviceName);
+        chip::Platform::CopyString(mDeviceName, chip::Dnssd::kMaxDeviceNameLen, deviceName);
     }
 
     memset(mHostName, '\0', sizeof(mHostName));
     if (hostName != nullptr)
     {
-        chip::Platform::CopyString(mHostName, chip::Dnssd::kHostNameMaxLength + 1, hostName);
+        chip::Platform::CopyString(mHostName, chip::Dnssd::kHostNameMaxLength, hostName);
     }
 
     for (auto & endpointInfo : mEndpoints)
@@ -70,19 +70,18 @@ CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(std::function<void(
                                                              std::function<void(CHIP_ERROR)> onConnectionFailure)
 {
     ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession called");
-    VideoPlayerConnectionContext *connectionContext = (VideoPlayerConnectionContext *) malloc(sizeof(VideoPlayerConnectionContext));
-    ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession before =this");
-    connectionContext->mTargetVideoPlayerInfo = this;
-    ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession before =mOnConnectedCallback");
-    connectionContext->mOnConnectedCallback = chip::Callback::Callback<chip::OnDeviceConnected>(HandleDeviceConnected, connectionContext);
-    connectionContext->mOnConnectionFailureCallback = chip::Callback::Callback<chip::OnDeviceConnectionFailure>(HandleDeviceConnectionFailure, connectionContext);
-    ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession before =onConnectionSuccess");
-    connectionContext->mOnConnectionSuccessClientCallback = onConnectionSuccess;
-    connectionContext->mOnConnectionFailureClientCallback = onConnectionFailure;
+    /*if(mDeviceProxy != nullptr)
+        {
+            ChipLogProgress(AppServer, "FindOrEstablishCASESession deleting mDeviceProxy");
+            delete mDeviceProxy;
+            mDeviceProxy = nullptr;
+            ChipLogProgress(AppServer, "FindOrEstablishCASESession deleted mDeviceProxy");
+        }*/
 
+    VideoPlayerConnectionContext *connectionContext = new VideoPlayerConnectionContext(this, HandleDeviceConnected, HandleDeviceConnectionFailure, onConnectionSuccess, onConnectionFailure);
     Server * server = &(chip::Server::GetInstance());
-    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), &(connectionContext->mOnConnectedCallback),
-                                                            &(connectionContext->mOnConnectionFailureCallback));
+    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), connectionContext->mOnConnectedCallback,
+                                                            connectionContext->mOnConnectionFailureCallback);
     return CHIP_NO_ERROR;
 }
 
