@@ -21,6 +21,7 @@
 #include <lib/dnssd/platform/Dnssd.h>
 
 #include "DnssdHostNameRegistrar.h"
+#include "MDnsProviderCpp.h"
 
 #include <map>
 #include <string>
@@ -117,6 +118,23 @@ struct BrowseContext : public GenericContext
 
     void DispatchFailure(DNSServiceErrorType err) override;
     void DispatchSuccess() override;
+};
+
+struct DnsProviderBrowseContext
+{
+    std::vector<DnssdService> services;
+    DnssdBrowseCallback callback;
+    uint32_t interfaceId;
+    DnssdServiceProtocol protocol;
+    MDnsProvider* provider;
+    void* context;
+
+    DnsProviderBrowseContext();
+    ~DnsProviderBrowseContext();
+
+    CHIP_ERROR Finalize(int err = 0);
+    void DispatchFailure(int err);
+    void DispatchSuccess();
 };
 
 struct InterfaceInfo
