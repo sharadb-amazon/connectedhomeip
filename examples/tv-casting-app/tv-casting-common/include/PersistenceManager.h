@@ -30,6 +30,8 @@ public:
 
     CHIP_ERROR ReadAllVideoPlayers(TargetVideoPlayerInfo outVideoPlayers[]);
 
+    CHIP_ERROR RemoveVideoPlayersByFabricIndex(chip::FabricIndex fabricIndex);
+    
     CHIP_ERROR PurgeVideoPlayerCache();
 
 private:

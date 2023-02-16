@@ -46,7 +46,7 @@ constexpr chip::System::Clock::Seconds16 kCommissioningWindowTimeout = chip::Sys
  *  and then have it send TV Casting/Media related commands. This is to be instantiated
  *  as a singleton and is to be used across Linux, Android and iOS.
  */
-class CastingServer
+class CastingServer : public chip::FabricTable::Delegate
 {
 public:
     CastingServer(CastingServer & other) = delete;
@@ -424,6 +424,7 @@ private:
     CHIP_ERROR SetRotatingDeviceIdUniqueId(chip::Optional<chip::ByteSpan> rotatingDeviceIdUniqueId);
 
     static void DeviceEventCallback(const chip::DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
+    void OnFabricRemoved(const chip::FabricTable & fabricTable, chip::FabricIndex fabricIndex);
     void ReadServerClusters(chip::EndpointId endpointId);
 
     PersistenceManager mPersistenceManager;

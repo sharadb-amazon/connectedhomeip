@@ -55,6 +55,9 @@ CHIP_ERROR CastingServer::Init(AppParams * AppParams)
     // Initialize binding handlers
     ReturnErrorOnFailure(InitBindingHandlers());
 
+    // Set FabricDelegate
+    chip::Server::GetInstance().GetFabricTable().AddFabricDelegate(this);
+
     // Add callback to send Content casting commands after commissioning completes
     ReturnErrorOnFailure(DeviceLayer::PlatformMgrImpl().AddEventHandler(DeviceEventCallback, 0));
 
@@ -446,6 +449,17 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
         }
 
         CastingServer::GetInstance()->mCommissioningCompleteCallback(err);
+    }
+}
+
+void CastingServer::OnFabricRemoved(const FabricTable & fabricTable, FabricIndex fabricIndex)
+{
+    ChipLogProgress(AppServer, "CastingServer::OnFabricRemoved called with fabricIndex: %d", fabricIndex);
+
+    CHIP_ERROR err = mPersistenceManager.RemoveVideoPlayersByFabricIndex(fabricIndex);
+    if(err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer, "CastingServer::OnFabricRemoved failure in removing video players from cache by fabricIndex %" CHIP_ERROR_FORMAT, err.Format());
     }
 }
 

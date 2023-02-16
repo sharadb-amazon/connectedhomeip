@@ -402,6 +402,46 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
     return CHIP_NO_ERROR;
 }
 
+CHIP_ERROR PersistenceManager::RemoveVideoPlayersByFabricIndex(chip::FabricIndex fabricIndex)
+{
+    ChipLogProgress(AppServer, "PersistenceManager::PurgeVideoPlayerCache called for fabricIndex: %d", fabricIndex);
+    
+    VerifyOrReturnError(fabricIndex > 0, CHIP_ERROR_INVALID_ARGUMENT);
+
+    // Read cached video players
+    TargetVideoPlayerInfo cachedVideoPlayers[kMaxCachedVideoPlayers];
+    CHIP_ERROR err = ReadAllVideoPlayers(cachedVideoPlayers);
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer, "PersistenceManager::RemoveVideoPlayersByFabricIndex could not read cached video players %" CHIP_ERROR_FORMAT, err.Format());
+    }
+
+    // Delete video players that match the passed in fabricIndex
+    for (size_t i = 0; i < kMaxCachedVideoPlayers && cachedVideoPlayers[i].IsInitialized(); i++)
+    {
+        if(cachedVideoPlayers[i].GetFabricIndex() == fabricIndex)
+        {   
+            ChipLogProgress(AppServer, "PersistenceManager::RemoveVideoPlayersByFabricIndex removing video player with nodeId: 0x" ChipLogFormatX64 " from cache", ChipLogValueX64(cachedVideoPlayers[i].GetNodeId()));
+
+            // shift elements back by 1 and mark the last array element for deletion
+            size_t indexToDelete = i;
+            if(indexToDelete + 1 < kMaxCachedVideoPlayers && cachedVideoPlayers[indexToDelete + 1].IsInitialized())
+            {
+                while(indexToDelete + 1 < kMaxCachedVideoPlayers && cachedVideoPlayers[indexToDelete + 1].IsInitialized())
+                {
+                    cachedVideoPlayers[indexToDelete] = cachedVideoPlayers[indexToDelete + 1];
+                    indexToDelete++;
+                }
+            }
+
+            // memset cachedVideoPlayers[indexToDelete] to zeroes
+            memset(&cachedVideoPlayers[indexToDelete], 0, sizeof(cachedVideoPlayers[indexToDelete]));
+        }
+    }
+
+    return WriteAllVideoPlayers(cachedVideoPlayers);
+}
+
 CHIP_ERROR PersistenceManager::PurgeVideoPlayerCache()
 {
     ChipLogProgress(AppServer, "PersistenceManager::PurgeVideoPlayerCache called");
