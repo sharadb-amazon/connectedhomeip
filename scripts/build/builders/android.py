@@ -85,6 +85,7 @@ class AndroidApp(Enum):
 
     def AppGnArgs(self):
         gn_args = {}
+
         if self == AndroidApp.TV_SERVER:
             gn_args["chip_config_network_layer_ble"] = False
         elif self == AndroidApp.TV_CASTING_APP:
@@ -107,10 +108,11 @@ class AndroidApp(Enum):
 
 
 class AndroidBuilder(Builder):
-    def __init__(self, root, runner, board: AndroidBoard, app: AndroidApp):
+    def __init__(self, root, runner, board: AndroidBoard, app: AndroidApp, is_debug: bool = True):
         super(AndroidBuilder, self).__init__(root, runner)
         self.board = board
         self.app = app
+        self.is_debug = is_debug;
 
     def validate_build_environment(self):
         for k in ["ANDROID_NDK_HOME", "ANDROID_HOME"]:
@@ -332,6 +334,8 @@ class AndroidBuilder(Builder):
             gn_args["target_cpu"] = self.board.TargetCpuName()
             gn_args["android_ndk_root"] = os.environ["ANDROID_NDK_HOME"]
             gn_args["android_sdk_root"] = os.environ["ANDROID_HOME"]
+            if self.is_debug == False:
+                gn_args["is_debug"] = False
             gn_args.update(self.app.AppGnArgs())
 
             args_str = ""
@@ -387,6 +391,22 @@ class AndroidBuilder(Builder):
                     title="Accepting NDK licenses @ tools",
                 )
 
+    def stripSymbols(self):
+        output_libs_dir = os.path.join(
+                self.output_dir,
+                "lib",
+                "jni",
+                self.board.AbiName())
+        for lib in os.listdir(output_libs_dir):
+            if (lib.endswith(".so")):
+                self._Execute(
+                    [ "llvm-strip",
+                     "-s",
+                     os.path.join(output_libs_dir, lib)
+                     ],
+                    "Stripping symbols from " + lib
+                    )
+
     def _build(self):
         if self.board.IsIde():
             # App compilation IDE
@@ -417,6 +437,9 @@ class AndroidBuilder(Builder):
                 self.copyToExampleAndroid()
                 self.gradlewBuildExampleAndroid()
 
+            if self.is_debug is False:
+                self.stripSymbols()
+
     def build_outputs(self):
         if self.board.IsIde():
             outputs = {
@@ -434,7 +457,7 @@ class AndroidBuilder(Builder):
                     "tv-sever-platform-app-debug.apk": os.path.join(
                         self.output_dir, "platform-app", "outputs", "apk", "debug", "platform-app-debug.apk"
                     ),
-                    "tv-sever-content-app-debug.apk": os.path.join(
+                    "tv-sever-content-app.apk": os.path.join(
                         self.output_dir, "content-app", "outputs", "apk", "debug", "content-app-debug.apk"
                     )
                 }
