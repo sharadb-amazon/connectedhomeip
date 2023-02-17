@@ -16,6 +16,7 @@
  */
 #include "DnssdImpl.h"
 #include "MdnsError.h"
+#include "MDnsProviderCpp.h"
 
 #include <cstdio>
 #include <sstream>
@@ -203,7 +204,7 @@ CHIP_ERROR Register(void * context, DnssdPublishCallback callback, uint32_t inte
     return MdnsContexts::GetInstance().Add(sdCtx, sdRef);
 }
 
-void OnBrowseAdd(BrowseContext * context, const char * name, const char * type, const char * domain, uint32_t interfaceId)
+void OnBrowseAdd(DnsProviderBrowseContext * context, const char * name, const char * type, const char * domain, uint32_t interfaceId)
 {
     ChipLogDetail(Discovery, "Mdns: %s  name: %s, type: %s, domain: %s, interface: %" PRIu32, __func__, name, type, domain,
                   interfaceId);
@@ -230,7 +231,7 @@ void OnBrowseAdd(BrowseContext * context, const char * name, const char * type, 
     context->services.push_back(service);
 }
 
-void OnBrowseRemove(BrowseContext * context, const char * name, const char * type, const char * domain, uint32_t interfaceId)
+void OnBrowseRemove(DnsProviderBrowseContext * context, const char * name, const char * type, const char * domain, uint32_t interfaceId)
 {
     ChipLogDetail(Discovery, "Mdns: %s  name: %s, type: %s, domain: %s, interface: %" PRIu32, __func__, name, type, domain,
                   interfaceId);
@@ -245,33 +246,70 @@ void OnBrowseRemove(BrowseContext * context, const char * name, const char * typ
                             context->services.end());
 }
 
-static void OnBrowse(DNSServiceRef sdRef, DNSServiceFlags flags, uint32_t interfaceId, DNSServiceErrorType err, const char * name,
-                     const char * type, const char * domain, void * context)
+static void OnMDnsProviderBrowse
+(
+    MDnsProvider* dnsProvider,
+    const MDnsProviderBrowseFlags flags,
+    const char* name,
+    const char* type,
+    const char* domain,
+    uint32_t interfaceId,
+    void* context
+)
 {
-    auto sdCtx = reinterpret_cast<BrowseContext *>(context);
-    VerifyOrReturn(kDNSServiceErr_NoError == err, sdCtx->Finalize(err));
+    auto sdCtx = reinterpret_cast<DnsProviderBrowseContext *>(context);
 
-    (flags & kDNSServiceFlagsAdd) ? OnBrowseAdd(sdCtx, name, type, domain, interfaceId)
-                                  : OnBrowseRemove(sdCtx, name, type, domain, interfaceId);
-
-    if (!(flags & kDNSServiceFlagsMoreComing))
+    if ((flags & kMDnsProviderBrowseFlagsAdd) && (sdCtx->interfaceId == 0 || sdCtx->interfaceId == interfaceId)) 
     {
-        sdCtx->Finalize();
+        OnBrowseAdd(sdCtx, name, type, domain, interfaceId);
+    }
+    else if ((flags & kMDnsProviderBrowseFlagsRemove) && (sdCtx->interfaceId == 0 || sdCtx->interfaceId == interfaceId))
+    {
+        OnBrowseRemove(sdCtx, name, type, domain, interfaceId);       
+    }
+
+    if ((flags & kMDnsProviderBrowseFlagsBatchComplete))
+    {
+        sdCtx->Finalize(false);
+    }
+}
+
+void OnMDnsProviderState(
+    MDnsProvider* dnsProvider,
+    MDnsProviderState state,
+    int error_code,
+    void* context
+  )
+{
+    auto sdCtx = reinterpret_cast<DnsProviderBrowseContext *>(context);
+    if (state == FAILED)
+    {
+        sdCtx->Finalize(error_code);
     }
 }
 
 CHIP_ERROR Browse(void * context, DnssdBrowseCallback callback, uint32_t interfaceId, const char * type,
                   DnssdServiceProtocol protocol)
 {
-    auto sdCtx = chip::Platform::New<BrowseContext>(context, callback, protocol);
+    ChipLogProgress(Discovery, "Browsing for: %s at interface %d", type, interfaceId);
+
+    MDnsProvider* provider = MDnsProviderCreate(type, kLocalDot);
+    VerifyOrReturnError(nullptr != provider, CHIP_ERROR_NO_MEMORY);
+
+    auto sdCtx = chip::Platform::New<DnsProviderBrowseContext>();
     VerifyOrReturnError(nullptr != sdCtx, CHIP_ERROR_NO_MEMORY);
 
-    ChipLogProgress(Discovery, "Browsing for: %s", type);
-    DNSServiceRef sdRef;
-    auto err = DNSServiceBrowse(&sdRef, kBrowseFlags, interfaceId, type, kLocalDot, OnBrowse, sdCtx);
-    VerifyOrReturnError(kDNSServiceErr_NoError == err, sdCtx->Finalize(err));
+    sdCtx->callback = callback;
+    sdCtx->interfaceId = interfaceId;
+    sdCtx->protocol = protocol;
+    sdCtx->context = context;
+    sdCtx->provider = provider;
 
-    return MdnsContexts::GetInstance().Add(sdCtx, sdRef);
+    MDnsProviderSetStateHandler(provider, OnMDnsProviderState, sdCtx);
+    MDnsProviderSetBrowseHandler(provider, OnMDnsProviderBrowse, sdCtx);
+    MDnsProviderStartBrowsing(provider);
+
+    return CHIP_NO_ERROR;
 }
 
 static void OnGetAddrInfo(DNSServiceRef sdRef, DNSServiceFlags flags, uint32_t interfaceId, DNSServiceErrorType err,
