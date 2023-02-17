@@ -481,5 +481,41 @@ InterfaceInfo::~InterfaceInfo()
     Platform::MemoryFree(const_cast<TextEntry *>(service.mTextEntries));
 }
 
+DnsProviderBrowseContext::DnsProviderBrowseContext()
+{
+}
+
+DnsProviderBrowseContext::~DnsProviderBrowseContext()
+{
+    MDnsProviderDelete(provider);
+}
+
+CHIP_ERROR DnsProviderBrowseContext::Finalize(int err)
+{
+    MDnsProviderStopBrowsing(provider);
+
+    if (!err)
+    {
+        DispatchSuccess();
+    }
+    else
+    {
+        DispatchFailure(err);   
+    }
+
+    delete(this);
+}
+
+void DnsProviderBrowseContext::DispatchFailure(int err)
+{
+    ChipLogError(Discovery, "Mdns: Browse failure (%s)", Error::ToString(err));
+    callback(context, nullptr, 0, true, Error::ToChipError(err));
+}
+
+void DnsProviderBrowseContext::DispatchSuccess()
+{
+    callback(context, services.data(), services.size(), true, CHIP_NO_ERROR);
+}
+
 } // namespace Dnssd
 } // namespace chip
