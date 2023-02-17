@@ -24,6 +24,7 @@
 #define MATTER_PLUGINS_INIT                                                                                                        \
     MatterIdentifyPluginServerInitCallback();                                                                                      \
     MatterGroupsPluginServerInitCallback();                                                                                        \
+    MatterOnOffPluginClientInitCallback();                                                                                         \
     MatterLevelControlPluginClientInitCallback();                                                                                  \
     MatterBinaryInputBasicPluginServerInitCallback();                                                                              \
     MatterDescriptorPluginClientInitCallback();                                                                                    \
@@ -31,23 +32,18 @@
     MatterBindingPluginServerInitCallback();                                                                                       \
     MatterAccessControlPluginServerInitCallback();                                                                                 \
     MatterBasicPluginServerInitCallback();                                                                                         \
-    MatterOtaSoftwareUpdateProviderPluginServerInitCallback();                                                                     \
     MatterLocalizationConfigurationPluginServerInitCallback();                                                                     \
     MatterTimeFormatLocalizationPluginServerInitCallback();                                                                        \
     MatterUnitLocalizationPluginServerInitCallback();                                                                              \
     MatterGeneralCommissioningPluginServerInitCallback();                                                                          \
     MatterNetworkCommissioningPluginServerInitCallback();                                                                          \
-    MatterDiagnosticLogsPluginServerInitCallback();                                                                                \
     MatterGeneralDiagnosticsPluginServerInitCallback();                                                                            \
-    MatterSoftwareDiagnosticsPluginServerInitCallback();                                                                           \
-    MatterThreadNetworkDiagnosticsPluginServerInitCallback();                                                                      \
     MatterWiFiNetworkDiagnosticsPluginServerInitCallback();                                                                        \
     MatterEthernetNetworkDiagnosticsPluginServerInitCallback();                                                                    \
     MatterAdministratorCommissioningPluginServerInitCallback();                                                                    \
     MatterOperationalCredentialsPluginServerInitCallback();                                                                        \
     MatterGroupKeyManagementPluginServerInitCallback();                                                                            \
     MatterFixedLabelPluginServerInitCallback();                                                                                    \
-    MatterUserLabelPluginServerInitCallback();                                                                                     \
     MatterWakeOnLanPluginClientInitCallback();                                                                                     \
     MatterWakeOnLanPluginServerInitCallback();                                                                                     \
     MatterChannelPluginClientInitCallback();                                                                                       \
