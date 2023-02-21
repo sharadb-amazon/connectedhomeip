@@ -113,7 +113,7 @@ struct DnsProviderBrowseContext
     DnssdBrowseCallback callback;
     uint32_t interfaceId;
     DnssdServiceProtocol protocol;
-    MDnsProviderRef provider;
+    MDnsProvider* provider;
     void* context;
 
     DnsProviderBrowseContext();
