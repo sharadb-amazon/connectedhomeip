@@ -1,17 +1,27 @@
-//
-//  MDnsProviderCpp.c
-//  MDNS-SD
-//
-//  Created by Hilal, Rawad on 2/15/23.
-//
+/*
+ *
+ *    Copyright (c) 2021 Project CHIP Authors
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
 
-#include "MDnsProviderCpp.h"
+#include "MDnsProvider.h"
 #include <Network/Network.h>
 #include <lib/support/CHIPMem.h>
 
 namespace chip {
 namespace Dnssd {
-    
+
 typedef struct MDnsProvider
 {
     nw_browser_t                browser;
@@ -109,7 +119,6 @@ void MDnsProviderStopBrowsing(MDnsProvider* provider)
 void _MDnsProviderInitializeBrowser(MDnsProvider* provider)
 {
     provider->browser = nw_browser_create(provider->browse_descriptor, provider->browse_parameters);
-    nw_retain(provider->browser);
     
     nw_browser_set_queue(provider->browser, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0));
     nw_browser_set_state_changed_handler(provider->browser, ^(nw_browser_state_t state, nw_error_t  _Nullable error) {
@@ -168,6 +177,7 @@ void _MDnsProviderInitializeBrowser(MDnsProvider* provider)
         const char *name = nw_endpoint_get_bonjour_service_name(endpoint);
         const char *type = nw_endpoint_get_bonjour_service_type(endpoint);
         const char *domain = nw_endpoint_get_bonjour_service_domain(endpoint);
+        nw_release(endpoint);
         
         __block size_t interface_count = nw_browse_result_get_interfaces_count(result);
         
@@ -191,6 +201,6 @@ void _MDnsProviderInitializeBrowser(MDnsProvider* provider)
         });
     });
 }
-    
+
 }
 }

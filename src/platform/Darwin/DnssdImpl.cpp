@@ -16,7 +16,7 @@
  */
 #include "DnssdImpl.h"
 #include "MdnsError.h"
-#include "MDnsProviderCpp.h"
+#include "MDnsProvider.h"
 
 #include <cstdio>
 #include <sstream>
@@ -270,7 +270,7 @@ static void OnMDnsProviderBrowse
 
     if ((flags & kMDnsProviderBrowseFlagsBatchComplete))
     {
-        sdCtx->Finalize(false);
+        sdCtx->Finalize();
     }
 }
 

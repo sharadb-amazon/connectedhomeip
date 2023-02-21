@@ -21,7 +21,7 @@
 #include <lib/dnssd/platform/Dnssd.h>
 
 #include "DnssdHostNameRegistrar.h"
-#include "MDnsProviderCpp.h"
+#include "MDnsProvider.h"
 
 #include <map>
 #include <string>
@@ -107,26 +107,13 @@ struct RegisterContext : public GenericContext
     bool matches(const char * sType) { return mType.compare(sType) == 0; }
 };
 
-struct BrowseContext : public GenericContext
-{
-    DnssdBrowseCallback callback;
-    std::vector<DnssdService> services;
-    DnssdServiceProtocol protocol;
-
-    BrowseContext(void * cbContext, DnssdBrowseCallback cb, DnssdServiceProtocol cbContextProtocol);
-    virtual ~BrowseContext() {}
-
-    void DispatchFailure(DNSServiceErrorType err) override;
-    void DispatchSuccess() override;
-};
-
 struct DnsProviderBrowseContext
 {
     std::vector<DnssdService> services;
     DnssdBrowseCallback callback;
     uint32_t interfaceId;
     DnssdServiceProtocol protocol;
-    MDnsProvider* provider;
+    MDnsProviderRef provider;
     void* context;
 
     DnsProviderBrowseContext();

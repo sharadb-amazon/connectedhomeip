@@ -278,27 +278,6 @@ void RegisterContext::DispatchSuccess()
     mHostNameRegistrar.Register();
 }
 
-BrowseContext::BrowseContext(void * cbContext, DnssdBrowseCallback cb, DnssdServiceProtocol cbContextProtocol)
-{
-    type     = ContextType::Browse;
-    context  = cbContext;
-    callback = cb;
-    protocol = cbContextProtocol;
-}
-
-void BrowseContext::DispatchFailure(DNSServiceErrorType err)
-{
-    ChipLogError(Discovery, "Mdns: Browse failure (%s)", Error::ToString(err));
-    callback(context, nullptr, 0, true, Error::ToChipError(err));
-    MdnsContexts::GetInstance().Remove(this);
-}
-
-void BrowseContext::DispatchSuccess()
-{
-    callback(context, services.data(), services.size(), true, CHIP_NO_ERROR);
-    MdnsContexts::GetInstance().Remove(this);
-}
-
 ResolveContext::ResolveContext(void * cbContext, DnssdResolveCallback cb, chip::Inet::IPAddressType cbAddressType)
 {
     type     = ContextType::Resolve;
@@ -503,7 +482,7 @@ CHIP_ERROR DnsProviderBrowseContext::Finalize(int err)
         DispatchFailure(err);   
     }
 
-    delete(this);
+    chip::Platform::Delete(this);
 }
 
 void DnsProviderBrowseContext::DispatchFailure(int err)
