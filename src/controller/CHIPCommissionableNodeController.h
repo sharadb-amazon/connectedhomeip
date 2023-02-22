@@ -41,6 +41,7 @@ public:
 
     void RegisterDeviceDiscoveryDelegate(DeviceDiscoveryDelegate * delegate) { mDeviceDiscoveryDelegate = delegate; }
     CHIP_ERROR DiscoverCommissioners(Dnssd::DiscoveryFilter discoveryFilter = Dnssd::DiscoveryFilter());
+    CHIP_ERROR StopDiscoverCommissioners();
 
     /**
      * @return

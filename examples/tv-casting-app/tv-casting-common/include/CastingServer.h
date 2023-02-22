@@ -58,6 +58,7 @@ public:
     CHIP_ERROR InitBindingHandlers();
 
     CHIP_ERROR DiscoverCommissioners(chip::Controller::DeviceDiscoveryDelegate * deviceDiscoveryDelegate = nullptr);
+    CHIP_ERROR StopDiscoverCommissioners();
     const chip::Dnssd::DiscoveredNodeData *
     GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPlayerInfo *> & outAssociatedConnectableVideoPlayer);
     CHIP_ERROR OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,

@@ -30,6 +30,7 @@ class CommissionerDiscoveryViewModel: ObservableObject {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.discoverCommissioners(DispatchQueue.main,
+                                                      timeoutInSeconds:5,
                 discoveryRequestSentHandler:  { (result: Bool) -> () in
                     self.discoveryRequestStatus = result
                 },

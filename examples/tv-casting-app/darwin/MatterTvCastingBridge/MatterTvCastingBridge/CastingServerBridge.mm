@@ -273,6 +273,7 @@
 }
 
 - (void)discoverCommissioners:(dispatch_queue_t _Nonnull)clientQueue
+                 timeoutInSeconds:(NSUInteger)timeoutInSeconds
       discoveryRequestSentHandler:(nullable void (^)(bool))discoveryRequestSentHandler
     discoveredCommissionerHandler:(nullable void (^)(DiscoveredNodeData *))discoveredCommissionerHandler
 {
@@ -289,6 +290,13 @@
         if (err != CHIP_NO_ERROR) {
             ChipLogError(AppServer, "CastingServerBridge().discoverCommissioners() failed: %" CHIP_ERROR_FORMAT, err.Format());
             discoveryRequestStatus = false;
+        }
+
+        if (err == CHIP_NO_ERROR) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), clientQueue, ^{
+                ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() stopped after timeout of %d. Stopping.", timeoutInSeconds);
+                CastingServer::GetInstance()->StopDiscoverCommissioners();
+            });
         }
 
         dispatch_async(clientQueue, ^{
