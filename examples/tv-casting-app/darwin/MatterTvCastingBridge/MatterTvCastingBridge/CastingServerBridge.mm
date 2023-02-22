@@ -49,6 +49,8 @@
 
 @property TargetVideoPlayerInfo * previouslyConnectedVideoPlayer;
 
+@property dispatch_block_t cancelDiscoveryCommissionersWork;
+
 // queue used to serialize all work performed by the CastingServerBridge
 @property (atomic) dispatch_queue_t chipWorkQueue;
 
@@ -273,13 +275,16 @@
 }
 
 - (void)discoverCommissioners:(dispatch_queue_t _Nonnull)clientQueue
+                 timeoutInSeconds:(NSUInteger)timeoutInSeconds
       discoveryRequestSentHandler:(nullable void (^)(bool))discoveryRequestSentHandler
     discoveredCommissionerHandler:(nullable void (^)(DiscoveredNodeData *))discoveredCommissionerHandler
 {
     ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() called");
     dispatch_async(_chipWorkQueue, ^{
         bool discoveryRequestStatus = true;
-
+        if (self->_cancelDiscoveryCommissionersWork) {
+            dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
+        }
         if (discoveredCommissionerHandler != nil) {
             TargetVideoPlayerInfo * cachedTargetVideoPlayerInfos = CastingServer::GetInstance()->ReadCachedTargetVideoPlayerInfos();
             self->_commissionerDiscoveryDelegate->SetUp(clientQueue, discoveredCommissionerHandler, cachedTargetVideoPlayerInfos);
@@ -289,6 +294,14 @@
         if (err != CHIP_NO_ERROR) {
             ChipLogError(AppServer, "CastingServerBridge().discoverCommissioners() failed: %" CHIP_ERROR_FORMAT, err.Format());
             discoveryRequestStatus = false;
+        }
+
+        if (err == CHIP_NO_ERROR) {
+            self->_cancelDiscoveryCommissionersWork = ^{
+                ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() stopped after timeout of %d. Stopping.", timeoutInSeconds);
+                CastingServer::GetInstance()->StopDiscoverCommissioners();
+            };
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), clientQueue, self->_cancelDiscoveryCommissionersWork);
         }
 
         dispatch_async(clientQueue, ^{
