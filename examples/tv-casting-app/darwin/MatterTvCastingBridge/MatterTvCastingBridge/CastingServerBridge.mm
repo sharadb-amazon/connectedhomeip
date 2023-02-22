@@ -284,6 +284,7 @@
         bool discoveryRequestStatus = true;
         if (self->_cancelDiscoveryCommissionersWork) {
             dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
+            self->_cancelDiscoveryCommissionersWork = nil;
         }
         if (discoveredCommissionerHandler != nil) {
             TargetVideoPlayerInfo * cachedTargetVideoPlayerInfos = CastingServer::GetInstance()->ReadCachedTargetVideoPlayerInfos();
@@ -297,10 +298,15 @@
         }
 
         if (err == CHIP_NO_ERROR) {
-            self->_cancelDiscoveryCommissionersWork = ^{
-                ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() stopped after timeout of %d. Stopping.", timeoutInSeconds);
+            self->_cancelDiscoveryCommissionersWork = dispatch_block_create(static_cast<dispatch_block_flags_t>(0), ^{
+                if (dispatch_block_testcancel(self->_cancelDiscoveryCommissionersWork)) {
+                    ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() cancel timer invalidated.");
+                    return;
+                }
+                ChipLogProgress(AppServer, "CastingServerBridge().discoverCommissioners() stopped after timeout of %lu. Stopping.", timeoutInSeconds);
                 CastingServer::GetInstance()->StopDiscoverCommissioners();
-            };
+                self->_cancelDiscoveryCommissionersWork = nil;
+            });
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), clientQueue, self->_cancelDiscoveryCommissionersWork);
         }
 
