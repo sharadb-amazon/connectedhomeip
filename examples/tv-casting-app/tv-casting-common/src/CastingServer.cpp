@@ -136,6 +136,12 @@ CHIP_ERROR CastingServer::DiscoverCommissioners(DeviceDiscoveryDelegate * device
         Dnssd::DiscoveryFilter(Dnssd::DiscoveryFilterType::kDeviceType, static_cast<uint16_t>(35)));
 }
 
+CHIP_ERROR CastingServer::StopDiscoverCommissioners()
+{
+    // Send discover commissioners request
+    return mCommissionableNodeController.StopDiscoverCommissioners();
+}
+
 CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
                                                        std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                        std::function<void(CHIP_ERROR)> onConnectionFailure,

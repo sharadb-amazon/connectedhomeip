@@ -45,6 +45,7 @@
  @param discoveryRequestSentHandler Handler to call after the Commissioner discovery request has been sent
  */
 - (void)discoverCommissioners:(dispatch_queue_t _Nonnull)clientQueue
+                 timeoutInSeconds:(NSUInteger)timeoutInSeconds
       discoveryRequestSentHandler:(nullable void (^)(bool))discoveryRequestSentHandler
     discoveredCommissionerHandler:(nullable void (^)(DiscoveredNodeData * _Nonnull))discoveredCommissionerHandler;
 
