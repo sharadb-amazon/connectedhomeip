@@ -334,7 +334,7 @@ class AndroidBuilder(Builder):
             gn_args["target_cpu"] = self.board.TargetCpuName()
             gn_args["android_ndk_root"] = os.environ["ANDROID_NDK_HOME"]
             gn_args["android_sdk_root"] = os.environ["ANDROID_HOME"]
-            if self.is_debug == False:
+            if self.is_debug is False:
                 gn_args["is_debug"] = False
             gn_args.update(self.app.AppGnArgs())
 
