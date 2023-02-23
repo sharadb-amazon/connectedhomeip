@@ -33,6 +33,7 @@ import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class TvCastingApp {
@@ -44,6 +45,11 @@ public class TvCastingApp {
   private Context applicationContext;
   private ChipAppServer chipAppServer;
   private NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
+  private boolean discoveryStarted = false;
+
+  private WifiManager.MulticastLock multicastLock;
+  private NsdManager nsdManager;
+  private NsdDiscoveryListener nsdDiscoveryListener;
 
   public boolean initApp(Context applicationContext, AppParameters appParameters) {
     if (applicationContext == null || appParameters == null) {
@@ -103,21 +109,26 @@ public class TvCastingApp {
   private native boolean initJni(AppParameters appParameters);
 
   public void discoverVideoPlayerCommissioners(
-      long discoveryDurationSeconds,
       SuccessCallback<DiscoveredNodeData> discoverySuccessCallback,
       FailureCallback discoveryFailureCallback) {
     Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners called");
+
+    if (this.discoveryStarted)
+    {
+      Log.d(TAG, "Discovery already started, stopping before starting again");
+      stopVideoPlayerDiscovery();
+    }
 
     List<VideoPlayer> preCommissionedVideoPlayers = readCachedVideoPlayers();
 
     WifiManager wifiManager =
         (WifiManager) applicationContext.getSystemService(Context.WIFI_SERVICE);
-    WifiManager.MulticastLock multicastLock = wifiManager.createMulticastLock("multicastLock");
+    multicastLock = wifiManager.createMulticastLock("multicastLock");
     multicastLock.setReferenceCounted(true);
     multicastLock.acquire();
 
-    NsdManager nsdManager = (NsdManager) applicationContext.getSystemService(Context.NSD_SERVICE);
-    NsdDiscoveryListener nsdDiscoveryListener =
+    nsdManager = (NsdManager) applicationContext.getSystemService(Context.NSD_SERVICE);
+    nsdDiscoveryListener =
         new NsdDiscoveryListener(
             nsdManager,
             DISCOVERY_TARGET_SERVICE_TYPE,
@@ -128,24 +139,22 @@ public class TvCastingApp {
             nsdManagerResolverAvailState);
 
     nsdManager.discoverServices(
-        DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
+            DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
+    Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners started");
+    this.discoveryStarted = true;
+  }
 
-    Executors.newSingleThreadScheduledExecutor()
-        .schedule(
-            new Runnable() {
-              @Override
-              public void run() {
-                Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
-                nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
-                if(multicastLock.isHeld())
-                {
-                  multicastLock.release();
-                }
-              }
-            },
-            discoveryDurationSeconds,
-            TimeUnit.SECONDS);
-    Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners ended");
+  public void stopVideoPlayerDiscovery()
+  {
+    Log.d(TAG, "TvCastingApp trying to stop video player discovery");
+    if (this.discoveryStarted && nsdManager != null && multicastLock != null && nsdDiscoveryListener != null) {
+      Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
+      nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
+      if (multicastLock.isHeld()) {
+        multicastLock.release();
+      }
+      this.discoveryStarted = false;
+    }
   }
 
   public native boolean openBasicCommissioningWindow(
