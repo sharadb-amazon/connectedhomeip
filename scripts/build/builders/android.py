@@ -457,7 +457,7 @@ class AndroidBuilder(Builder):
                     "tv-sever-platform-app-debug.apk": os.path.join(
                         self.output_dir, "platform-app", "outputs", "apk", "debug", "platform-app-debug.apk"
                     ),
-                    "tv-sever-content-app.apk": os.path.join(
+                    "tv-sever-content-app-debug.apk": os.path.join(
                         self.output_dir, "content-app", "outputs", "apk", "debug", "content-app-debug.apk"
                     )
                 }
