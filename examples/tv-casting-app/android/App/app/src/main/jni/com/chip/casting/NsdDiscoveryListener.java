@@ -38,13 +38,13 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
   private final ExecutorService resolutionExecutor;
 
   public NsdDiscoveryListener(
-      NsdManager nsdManager,
-      String targetServiceType,
-      List<Long> deviceTypeFilter,
-      List<VideoPlayer> preCommissionedVideoPlayers,
-      SuccessCallback<DiscoveredNodeData> successCallback,
-      FailureCallback failureCallback,
-      NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState) {
+          NsdManager nsdManager,
+          String targetServiceType,
+          List<Long> deviceTypeFilter,
+          List<VideoPlayer> preCommissionedVideoPlayers,
+          SuccessCallback<DiscoveredNodeData> successCallback,
+          FailureCallback failureCallback,
+          NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState) {
     this.nsdManager = nsdManager;
     this.targetServiceType = targetServiceType;
     this.deviceTypeFilter = deviceTypeFilter;
@@ -95,6 +95,7 @@ public class NsdDiscoveryListener implements NsdManager.DiscoveryListener {
     // When the network service is no longer available.
     // Internal bookkeeping code goes here.
     Log.e(TAG, "Service lost: " + service);
+    failureCallback.handle(MatterError.DISCOVERY_SERVICE_LOST);
   }
 
   @Override
