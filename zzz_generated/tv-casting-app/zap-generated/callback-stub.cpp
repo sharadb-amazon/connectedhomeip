@@ -65,9 +65,6 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
     case ZCL_DESCRIPTOR_CLUSTER_ID:
         emberAfDescriptorClusterInitCallback(endpoint);
         break;
-    case ZCL_DIAGNOSTIC_LOGS_CLUSTER_ID:
-        emberAfDiagnosticLogsClusterInitCallback(endpoint);
-        break;
     case ZCL_ETHERNET_NETWORK_DIAGNOSTICS_CLUSTER_ID:
         emberAfEthernetNetworkDiagnosticsClusterInitCallback(endpoint);
         break;
@@ -110,29 +107,20 @@ void emberAfClusterInitCallback(EndpointId endpoint, ClusterId clusterId)
     case ZCL_NETWORK_COMMISSIONING_CLUSTER_ID:
         emberAfNetworkCommissioningClusterInitCallback(endpoint);
         break;
-    case ZCL_OTA_PROVIDER_CLUSTER_ID:
-        emberAfOtaSoftwareUpdateProviderClusterInitCallback(endpoint);
+    case ZCL_ON_OFF_CLUSTER_ID:
+        emberAfOnOffClusterInitCallback(endpoint);
         break;
     case ZCL_OPERATIONAL_CREDENTIALS_CLUSTER_ID:
         emberAfOperationalCredentialsClusterInitCallback(endpoint);
         break;
-    case ZCL_SOFTWARE_DIAGNOSTICS_CLUSTER_ID:
-        emberAfSoftwareDiagnosticsClusterInitCallback(endpoint);
-        break;
     case ZCL_TARGET_NAVIGATOR_CLUSTER_ID:
         emberAfTargetNavigatorClusterInitCallback(endpoint);
-        break;
-    case ZCL_THREAD_NETWORK_DIAGNOSTICS_CLUSTER_ID:
-        emberAfThreadNetworkDiagnosticsClusterInitCallback(endpoint);
         break;
     case ZCL_TIME_FORMAT_LOCALIZATION_CLUSTER_ID:
         emberAfTimeFormatLocalizationClusterInitCallback(endpoint);
         break;
     case ZCL_UNIT_LOCALIZATION_CLUSTER_ID:
         emberAfUnitLocalizationClusterInitCallback(endpoint);
-        break;
-    case ZCL_USER_LABEL_CLUSTER_ID:
-        emberAfUserLabelClusterInitCallback(endpoint);
         break;
     case ZCL_WAKE_ON_LAN_CLUSTER_ID:
         emberAfWakeOnLanClusterInitCallback(endpoint);
@@ -202,11 +190,6 @@ void __attribute__((weak)) emberAfContentLauncherClusterInitCallback(EndpointId 
     (void) endpoint;
 }
 void __attribute__((weak)) emberAfDescriptorClusterInitCallback(EndpointId endpoint)
-{
-    // To prevent warning
-    (void) endpoint;
-}
-void __attribute__((weak)) emberAfDiagnosticLogsClusterInitCallback(EndpointId endpoint)
 {
     // To prevent warning
     (void) endpoint;
@@ -281,7 +264,7 @@ void __attribute__((weak)) emberAfNetworkCommissioningClusterInitCallback(Endpoi
     // To prevent warning
     (void) endpoint;
 }
-void __attribute__((weak)) emberAfOtaSoftwareUpdateProviderClusterInitCallback(EndpointId endpoint)
+void __attribute__((weak)) emberAfOnOffClusterInitCallback(EndpointId endpoint)
 {
     // To prevent warning
     (void) endpoint;
@@ -291,17 +274,7 @@ void __attribute__((weak)) emberAfOperationalCredentialsClusterInitCallback(Endp
     // To prevent warning
     (void) endpoint;
 }
-void __attribute__((weak)) emberAfSoftwareDiagnosticsClusterInitCallback(EndpointId endpoint)
-{
-    // To prevent warning
-    (void) endpoint;
-}
 void __attribute__((weak)) emberAfTargetNavigatorClusterInitCallback(EndpointId endpoint)
-{
-    // To prevent warning
-    (void) endpoint;
-}
-void __attribute__((weak)) emberAfThreadNetworkDiagnosticsClusterInitCallback(EndpointId endpoint)
 {
     // To prevent warning
     (void) endpoint;
@@ -312,11 +285,6 @@ void __attribute__((weak)) emberAfTimeFormatLocalizationClusterInitCallback(Endp
     (void) endpoint;
 }
 void __attribute__((weak)) emberAfUnitLocalizationClusterInitCallback(EndpointId endpoint)
-{
-    // To prevent warning
-    (void) endpoint;
-}
-void __attribute__((weak)) emberAfUserLabelClusterInitCallback(EndpointId endpoint)
 {
     // To prevent warning
     (void) endpoint;
