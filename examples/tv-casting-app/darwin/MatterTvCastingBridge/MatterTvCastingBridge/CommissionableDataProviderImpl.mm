@@ -31,6 +31,10 @@
 using namespace chip;
 using namespace chip::Crypto;
 
+#ifndef CHIP_DEVICE_CONFIG_USE_TEST_SPAKE2P_ITERATION_COUNT
+#define CHIP_DEVICE_CONFIG_USE_TEST_SPAKE2P_ITERATION_COUNT 1000
+#endif
+
 namespace {
 
 CHIP_ERROR GeneratePaseSalt(std::vector<uint8_t> & spake2pSaltVector)

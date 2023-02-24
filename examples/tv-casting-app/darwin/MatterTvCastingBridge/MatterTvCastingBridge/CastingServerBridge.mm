@@ -74,6 +74,9 @@
 
 @property NSMutableDictionary * readFailureCallbacks;
 
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE 20202021
+#define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_DISCRIMINATOR 0xF00
+
 @end
 
 @implementation CastingServerBridge
