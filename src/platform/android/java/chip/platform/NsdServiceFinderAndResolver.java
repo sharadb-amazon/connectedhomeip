@@ -18,186 +18,191 @@
 
 package chip.platform;
 
-import android.content.Context;
 import android.net.nsd.NsdManager;
 import android.net.nsd.NsdServiceInfo;
-import android.net.wifi.WifiManager;
 import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 class NsdServiceFinderAndResolver implements NsdManager.DiscoveryListener {
-    private static final String TAG = NsdServiceFinderAndResolver.class.getSimpleName();
+  private static final String TAG = NsdServiceFinderAndResolver.class.getSimpleName();
 
-    private static final long BROWSE_SERVICE_TIMEOUT_MS = 5000L;
+  private static final long BROWSE_SERVICE_TIMEOUT_MS = 5000L;
 
-    private final NsdManager nsdManager;
-    private final NsdServiceInfo targetServiceInfo;
-    private final long callbackHandle;
-    private final long contextHandle;
-    private final ChipMdnsCallback chipMdnsCallback;
-    private final Runnable timeoutRunnable;
-    private final MulticastLock multicastLock;
-    private final Handler mainThreadHandler;
-    @Nullable private final NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
+  private final NsdManager nsdManager;
+  private final NsdServiceInfo targetServiceInfo;
+  private final long callbackHandle;
+  private final long contextHandle;
+  private final ChipMdnsCallback chipMdnsCallback;
+  private final Runnable timeoutRunnable;
+  private final MulticastLock multicastLock;
+  private final Handler mainThreadHandler;
 
-    public NsdServiceFinderAndResolver(
-        final NsdManager nsdManager,
-        final NsdServiceInfo targetServiceInfo,
-        final long callbackHandle,
-        final long contextHandle,
-        final ChipMdnsCallback chipMdnsCallback,
-        final Runnable timeoutRunnable,
-        final MulticastLock multicastLock,
-        final Handler mainThreadHandler,
-        final NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState) {
-      this.nsdManager = nsdManager;
-      this.targetServiceInfo = targetServiceInfo;
-      this.callbackHandle = callbackHandle;
-      this.contextHandle = contextHandle;
-      this.chipMdnsCallback = chipMdnsCallback;
-      this.timeoutRunnable = timeoutRunnable;
-      this.multicastLock = multicastLock;
-      this.mainThreadHandler = mainThreadHandler;
-      this.nsdManagerResolverAvailState = nsdManagerResolverAvailState;
-    }
+  @Nullable
+  private final NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
 
-    public void start() {
-      multicastLock.acquire();
-      
-      this.nsdManager.discoverServices(
-          targetServiceInfo.getServiceType(), NsdManager.PROTOCOL_DNS_SD, this);
-      
-      NsdServiceFinderAndResolver serviceFinderResolver = this;
-      Executors.newSingleThreadScheduledExecutor()
-        .schedule(
-            new Runnable() {
-              @Override
-              public void run() {
-                Log.d(TAG, "Service discovery timed out after " + BROWSE_SERVICE_TIMEOUT_MS + " ms");
-                nsdManager.stopServiceDiscovery(serviceFinderResolver);
-                if (multicastLock.isHeld()) {
-                  multicastLock.release();
-                }
-              }
-            },
-            BROWSE_SERVICE_TIMEOUT_MS,
-            TimeUnit.MILLISECONDS);
-    }
+  private ScheduledFuture<?> stopDiscoveryRunnable;
 
-    @Override
-    public void onServiceFound(NsdServiceInfo service) {
-      if (targetServiceInfo.getServiceName().equals(service.getServiceName())) {
-        Log.d(TAG, "onServiceFound: found target service " + service);
+  public NsdServiceFinderAndResolver(
+      final NsdManager nsdManager,
+      final NsdServiceInfo targetServiceInfo,
+      final long callbackHandle,
+      final long contextHandle,
+      final ChipMdnsCallback chipMdnsCallback,
+      final Runnable timeoutRunnable,
+      final MulticastLock multicastLock,
+      final Handler mainThreadHandler,
+      final NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState) {
+    this.nsdManager = nsdManager;
+    this.targetServiceInfo = targetServiceInfo;
+    this.callbackHandle = callbackHandle;
+    this.contextHandle = contextHandle;
+    this.chipMdnsCallback = chipMdnsCallback;
+    this.timeoutRunnable = timeoutRunnable;
+    this.multicastLock = multicastLock;
+    this.mainThreadHandler = mainThreadHandler;
+    this.nsdManagerResolverAvailState = nsdManagerResolverAvailState;
+  }
 
-        if (nsdManagerResolverAvailState != null) {
-          nsdManagerResolverAvailState.acquireResolver();
+  public void start() {
+    multicastLock.acquire();
+
+    this.nsdManager.discoverServices(
+        targetServiceInfo.getServiceType(), NsdManager.PROTOCOL_DNS_SD, this);
+
+    NsdServiceFinderAndResolver serviceFinderResolver = this;
+    this.stopDiscoveryRunnable =
+        Executors.newSingleThreadScheduledExecutor()
+            .schedule(
+                new Runnable() {
+                  @Override
+                  public void run() {
+                    Log.d(
+                        TAG,
+                        "Service discovery timed out after " + BROWSE_SERVICE_TIMEOUT_MS + " ms");
+                    nsdManager.stopServiceDiscovery(serviceFinderResolver);
+                    if (multicastLock.isHeld()) {
+                      multicastLock.release();
+                    }
+                  }
+                },
+                BROWSE_SERVICE_TIMEOUT_MS,
+                TimeUnit.MILLISECONDS);
+  }
+
+  @Override
+  public void onServiceFound(NsdServiceInfo service) {
+    if (targetServiceInfo.getServiceName().equals(service.getServiceName())) {
+      Log.d(TAG, "onServiceFound: found target service " + service);
+
+      if (stopDiscoveryRunnable.cancel(false)) {
+        nsdManager.stopServiceDiscovery(this);
+        if (multicastLock.isHeld()) {
+          multicastLock.release();
         }
-
-        resolveService(service, callbackHandle, contextHandle, chipMdnsCallback, timeoutRunnable);
       }
-      else {
-        Log.d(TAG, "onServiceFound: found service not a target for resolution, ignoring " + service);
+
+      if (nsdManagerResolverAvailState != null) {
+        nsdManagerResolverAvailState.acquireResolver();
       }
-    }
 
-    private void resolveService(
-        NsdServiceInfo serviceInfo,
-        final long callbackHandle,
-        final long contextHandle,
-        final ChipMdnsCallback chipMdnsCallback,
-        Runnable timeoutRunnable) {
-      this.nsdManager.resolveService(
-          serviceInfo,
-          new NsdManager.ResolveListener() {
-            @Override
-            public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
-              Log.w(
-                  TAG,
-                  "Failed to resolve service '" + serviceInfo.getServiceName() + "': " + errorCode);
-              chipMdnsCallback.handleServiceResolve(
-                  serviceInfo.getServiceName(),
-                  serviceInfo.getServiceType(),
-                  null,
-                  null,
-                  0,
-                  null,
-                  callbackHandle,
-                  contextHandle);
-
-              if (multicastLock.isHeld()) {
-                multicastLock.release();
-
-                if (nsdManagerResolverAvailState != null) {
-                  nsdManagerResolverAvailState.signalFree();
-                }
-              }
-              mainThreadHandler.removeCallbacks(timeoutRunnable);
-            }
-
-            @Override
-            public void onServiceResolved(NsdServiceInfo serviceInfo) {
-              Log.i(
-                  TAG,
-                  "Resolved service '"
-                      + serviceInfo.getServiceName()
-                      + "' to "
-                      + serviceInfo.getHost());
-              // TODO: Find out if DNS-SD results for Android should contain interface ID
-              chipMdnsCallback.handleServiceResolve(
-                  serviceInfo.getServiceName(),
-                  serviceInfo.getServiceType(),
-                  serviceInfo.getHost().getHostName(),
-                  serviceInfo.getHost().getHostAddress(),
-                  serviceInfo.getPort(),
-                  serviceInfo.getAttributes(),
-                  callbackHandle,
-                  contextHandle);
-
-              if (multicastLock.isHeld()) {
-                multicastLock.release();
-
-                if (nsdManagerResolverAvailState != null) {
-                  nsdManagerResolverAvailState.signalFree();
-                }
-              }
-              mainThreadHandler.removeCallbacks(timeoutRunnable);
-            }
-          });
-    }
-
-    @Override
-    public void onDiscoveryStarted(String regType) {
-      Log.d(TAG, "Service discovery started. regType: " + regType);
-    }
-
-    @Override
-    public void onServiceLost(NsdServiceInfo service) {
-      Log.e(TAG, "Service lost: " + service);
-    }
-
-    @Override
-    public void onDiscoveryStopped(String serviceType) {
-      Log.i(TAG, "Discovery stopped: " + serviceType);
-    }
-
-    @Override
-    public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-      Log.e(TAG, "Discovery failed to start: Error code: " + errorCode);
-    }
-
-    @Override
-    public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-      Log.e(TAG, "Discovery failed to stop: Error code: " + errorCode);
+      resolveService(service, callbackHandle, contextHandle, chipMdnsCallback, timeoutRunnable);
+    } else {
+      Log.d(TAG, "onServiceFound: found service not a target for resolution, ignoring " + service);
     }
   }
+
+  private void resolveService(
+      NsdServiceInfo serviceInfo,
+      final long callbackHandle,
+      final long contextHandle,
+      final ChipMdnsCallback chipMdnsCallback,
+      Runnable timeoutRunnable) {
+    this.nsdManager.resolveService(
+        serviceInfo,
+        new NsdManager.ResolveListener() {
+          @Override
+          public void onResolveFailed(NsdServiceInfo serviceInfo, int errorCode) {
+            Log.w(
+                TAG,
+                "Failed to resolve service '" + serviceInfo.getServiceName() + "': " + errorCode);
+            chipMdnsCallback.handleServiceResolve(
+                serviceInfo.getServiceName(),
+                serviceInfo.getServiceType(),
+                null,
+                null,
+                0,
+                null,
+                callbackHandle,
+                contextHandle);
+
+            if (multicastLock.isHeld()) {
+              multicastLock.release();
+
+              if (nsdManagerResolverAvailState != null) {
+                nsdManagerResolverAvailState.signalFree();
+              }
+            }
+            mainThreadHandler.removeCallbacks(timeoutRunnable);
+          }
+
+          @Override
+          public void onServiceResolved(NsdServiceInfo serviceInfo) {
+            Log.i(
+                TAG,
+                "Resolved service '"
+                    + serviceInfo.getServiceName()
+                    + "' to "
+                    + serviceInfo.getHost());
+            // TODO: Find out if DNS-SD results for Android should contain interface ID
+            chipMdnsCallback.handleServiceResolve(
+                serviceInfo.getServiceName(),
+                serviceInfo.getServiceType(),
+                serviceInfo.getHost().getHostName(),
+                serviceInfo.getHost().getHostAddress(),
+                serviceInfo.getPort(),
+                serviceInfo.getAttributes(),
+                callbackHandle,
+                contextHandle);
+
+            if (multicastLock.isHeld()) {
+              multicastLock.release();
+
+              if (nsdManagerResolverAvailState != null) {
+                nsdManagerResolverAvailState.signalFree();
+              }
+            }
+            mainThreadHandler.removeCallbacks(timeoutRunnable);
+          }
+        });
+  }
+
+  @Override
+  public void onDiscoveryStarted(String regType) {
+    Log.d(TAG, "Service discovery started. regType: " + regType);
+  }
+
+  @Override
+  public void onServiceLost(NsdServiceInfo service) {
+    Log.e(TAG, "Service lost: " + service);
+  }
+
+  @Override
+  public void onDiscoveryStopped(String serviceType) {
+    Log.i(TAG, "Discovery stopped: " + serviceType);
+  }
+
+  @Override
+  public void onStartDiscoveryFailed(String serviceType, int errorCode) {
+    Log.e(TAG, "Discovery failed to start: Error code: " + errorCode);
+  }
+
+  @Override
+  public void onStopDiscoveryFailed(String serviceType, int errorCode) {
+    Log.e(TAG, "Discovery failed to stop: Error code: " + errorCode);
+  }
+}
