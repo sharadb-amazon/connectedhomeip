@@ -53,24 +53,34 @@ public class DiscoveredNodeData {
 
   public DiscoveredNodeData(NsdServiceInfo serviceInfo) {
     Map<String, byte[]> attributes = serviceInfo.getAttributes();
-    this.deviceName = new String(attributes.get(KEY_DEVICE_NAME), StandardCharsets.UTF_8);
-    if (serviceInfo.getHost() != null) {
-      this.hostName = serviceInfo.getHost().getHostName();
-    }
-    this.deviceType =
-        Long.parseLong(new String(attributes.get(KEY_DEVICE_TYPE), StandardCharsets.UTF_8));
 
-    String vp = new String(attributes.get(KEY_VENDOR_PRODUCT), StandardCharsets.UTF_8);
-    if (vp != null) {
-      String[] vpArray = vp.split("\\+");
-      if (vpArray.length > 0) {
-        this.vendorId = Long.parseLong(vpArray[0]);
-        if (vpArray.length == 2) {
-          this.productId = Long.parseLong(vpArray[1]);
+    if (attributes != null) {
+      if (attributes.get(KEY_DEVICE_NAME) != null) {
+        this.deviceName = new String(attributes.get(KEY_DEVICE_NAME), StandardCharsets.UTF_8);
+      }
+
+      if (attributes.get(KEY_DEVICE_TYPE) != null) {
+        this.deviceType =
+            Long.parseLong(new String(attributes.get(KEY_DEVICE_TYPE), StandardCharsets.UTF_8));
+      }
+
+      if (attributes.get(KEY_VENDOR_PRODUCT) != null) {
+        String vp = new String(attributes.get(KEY_VENDOR_PRODUCT), StandardCharsets.UTF_8);
+        if (vp != null) {
+          String[] vpArray = vp.split("\\+");
+          if (vpArray.length > 0) {
+            this.vendorId = Long.parseLong(vpArray[0]);
+            if (vpArray.length == 2) {
+              this.productId = Long.parseLong(vpArray[1]);
+            }
+          }
         }
       }
     }
 
+    if (serviceInfo.getHost() != null) {
+      this.hostName = serviceInfo.getHost().getHostName();
+    }
     this.port = serviceInfo.getPort();
     this.ipAddresses = Arrays.asList(serviceInfo.getHost());
     this.numIPs = 1;
