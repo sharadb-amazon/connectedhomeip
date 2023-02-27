@@ -18,7 +18,7 @@
 package com.chip.casting;
 
 import android.net.nsd.NsdServiceInfo;
-
+import android.util.Log;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public class DiscoveredNodeData {
+  private static final String TAG = DiscoveredNodeData.class.getSimpleName();
+
   private static final int MAX_IP_ADDRESSES = 5;
   private static final int MAX_ROTATING_ID_LEN = 50;
   private static final String KEY_DEVICE_NAME = "DN";
@@ -68,21 +70,29 @@ public class DiscoveredNodeData {
         String vp = new String(attributes.get(KEY_VENDOR_PRODUCT), StandardCharsets.UTF_8);
         if (vp != null) {
           String[] vpArray = vp.split("\\+");
-          if (vpArray.length > 0) {
-            this.vendorId = Long.parseLong(vpArray[0]);
-            if (vpArray.length == 2) {
-              this.productId = Long.parseLong(vpArray[1]);
+          try {
+            if (vpArray.length > 0) {
+              this.vendorId = Long.parseLong(vpArray[0]);
+              if (vpArray.length == 2) {
+                this.productId = Long.parseLong(vpArray[1]);
+              }
             }
+          } catch (NumberFormatException e) {
+            Log.e(TAG, "Could not parse TXT record for VP: " + e.getMessage());
           }
+        } else {
+          Log.e(TAG, "TXT Record for VP was null");
         }
       }
     }
 
     if (serviceInfo.getHost() != null) {
       this.hostName = serviceInfo.getHost().getHostName();
+      this.ipAddresses = Arrays.asList(serviceInfo.getHost());
+    } else {
+      Log.e(TAG, "Host name was null");
     }
     this.port = serviceInfo.getPort();
-    this.ipAddresses = Arrays.asList(serviceInfo.getHost());
     this.numIPs = 1;
   }
 
