@@ -831,6 +831,17 @@
     }];
 }
 
+- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue requestSentHandler:(nullable void (^)())requestSentHandler
+{
+    ChipLogProgress(AppServer, "CastingServerBridge().purgeCache() called");
+    dispatch_async(_chipWorkQueue, ^{
+        CastingServer::GetInstance()->PurgeCache();
+        dispatch_async(clientQueue, ^{
+            requestSentHandler();
+        });
+    });
+}
+
 - (void)contentLauncher_launchUrl:(ContentApp * _Nonnull)contentApp
                        contentUrl:(NSString * _Nonnull)contentUrl
                 contentDisplayStr:(NSString * _Nonnull)contentDisplayStr
