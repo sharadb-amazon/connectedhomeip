@@ -146,9 +146,9 @@
  @param queue The client's Dispatch Queue.
  @param block The Block to be invoked to invoke the client callback.
  */
-- (void) dispatchOnClientQueue:(const NSString * _Nullable )description
-                          queue:(dispatch_queue_t)queue
-                          block:(dispatch_block_t)block
+- (void) dispatchOnClientQueue:(dispatch_queue_t)queue
+                   description:(const NSString * _Nullable )description
+                         block:(dispatch_block_t)block
 {
     // Within the CastingServerBridge, the usage pattern is typically to expose asynchronous public APIs that
     // take a callback to indicate that the low-level SDK operation has been initiated (the "started"
@@ -192,21 +192,25 @@
  @param block The Objective C Block to dispatch.
  */
 - (void) withCastingServerInvokeBlock:(const NSString * _Nullable)description
-               withCompletionCallback:(void (^_Nonnull)(bool))blockCompleteCallback
-                              onQueue:(dispatch_queue_t)callbackQueue
+                        callbackQueue:(dispatch_queue_t)callbackQueue
+                      onBlockComplete:(void (^_Nonnull)(bool))blockCompleteCallback
                                 block:(CHIP_ERROR (^_Nonnull)(CastingServer *)) block
 {
     [self dispatchOnMatterSDKQueue:description block:^{
         CastingServer * castingServer = CastingServer::GetInstance();
+
+        // We invoke the block and capture the result on the Matter Dispatch Queue with the stack lock held,
+        // then use the result snapshot in the subsequent block to be asynchronously dispatched on the
+        // client's callback Dispatch Queue.
         const CHIP_ERROR result = block(castingServer);
         dispatch_async(callbackQueue, ^{
             if (nil != description) {
-                ChipLogProgress(AppServer, "[ASYNC (CLIENT)] CastingServerBridge BEGIN %s Started Callback", [description UTF8String]);
+                ChipLogProgress(AppServer, "[ASYNC (CLIENT)] CastingServerBridge invoking %s Started Callback", [description UTF8String]);
             }
             blockCompleteCallback([[MatterError alloc] initWithCode:result.AsInteger()
                                                       message:[NSString stringWithUTF8String:result.AsString()]]);
             if (nil != description) {
-                ChipLogProgress(AppServer, "[ASYNC (CLIENT)] CastingServerBridge END %s Started Callback", [description UTF8String]);
+                ChipLogProgress(AppServer, "[ASYNC (CLIENT)] CastingServerBridge invoked %s Started Callback", [description UTF8String]);
             }
         });
     }];
@@ -224,15 +228,15 @@
  @param callbackQueue The Dispatch Queue on which the callbacks shall be invoked.
  @param block The Objective C Block to dispatch.
  */
-- (void) withCastingServerInvokeBlockWithResponse:(const NSString * _Nullable)description
-                              withStartedCallback:(void (^_Nonnull)(bool))blockCompleteCallback
-                                andResponseCallback:(void (^_Nonnull)(bool))responseCallback
-                                          onQueue:(dispatch_queue_t)callbackQueue
-                                            block:(CHIP_ERROR (^_Nonnull)(CastingServer *, std::function<void(CHIP_ERROR)>)) block
+- (void) withCastingServerInvokeBlock:(const NSString * _Nullable)description
+                        callbackQueue:(dispatch_queue_t)callbackQueue
+                      onBlockComplete:(void (^_Nonnull)(bool))blockCompleteCallback
+                           onResponse:(void (^_Nonnull)(bool))responseCallback
+                                block:(CHIP_ERROR (^_Nonnull)(CastingServer *, std::function<void(CHIP_ERROR)>)) block
 {
     [self withCastingServerInvokeBlock:description
-                withCompletionCallback:blockCompleteCallback
-                               onQueue:callbackQueue
+                         callbackQueue:callbackQueue
+                       onBlockComplete:blockCompleteCallback
                                  block:^(CastingServer *castingServer){
         return block(
             castingServer,
@@ -241,8 +245,10 @@
                      ? nil
                      : [NSString stringWithFormat:@"%@ Response Callback", description];
 
-                 [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:_description
-                                                                          queue:callbackQueue block:^{
+                 [[CastingServerBridge getSharedInstance]
+                     dispatchOnClientQueue:callbackQueue
+                     description:_description
+                           block:^{
                      responseCallback(CHIP_NO_ERROR == err);
                  }];
              }
@@ -553,7 +559,7 @@
     }];
 }
 
-- (OnboardingPayload *)getOnboardingPaylod
+- (OnboardingPayload *)getOnboardingPayload
 {
     return _onboardingPayload;
 }
@@ -568,18 +574,27 @@
     [self dispatchOnMatterSDKQueue:@"openBasicCommissioningWindow(...)" block:^{
         CHIP_ERROR err = CastingServer::GetInstance()->OpenBasicCommissioningWindow(
             [clientQueue, commissioningCompleteCallback](CHIP_ERROR err) {
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"openBasicCommissioningWindow(...) commissioningCompleteCallback" queue:clientQueue block: ^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"openBasicCommissioningWindow(...) commissioningCompleteCallback"
+                                    block: ^{
                     commissioningCompleteCallback(CHIP_NO_ERROR == err);
                 }];
             },
             [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
                 VideoPlayer * videoPlayer = [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"openBasicCommissioningWindow(...) onConnectionSuccessCallback" queue:clientQueue block: ^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"openBasicCommissioningWindow(...) onConnectionSuccessCallback"
+                                    block: ^{
                     onConnectionSuccessCallback(videoPlayer);
                 }];
             },
             [clientQueue, onConnectionFailureCallback](CHIP_ERROR err) {
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"openBasicCommissioningWindow(...) onConnectionFailureCallback" queue:clientQueue block: ^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"openBasicCommissioningWindow(...) onConnectionFailureCallback"
+                                    block: ^{
                     onConnectionFailureCallback(
                         [[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]]
                     );
@@ -587,7 +602,10 @@
             },
             [clientQueue, onNewOrUpdatedEndpointCallback](TargetEndpointInfo * cppTargetEndpointInfo) {
                 ContentApp * contentApp = [ConversionUtils convertToObjCContentAppFrom:cppTargetEndpointInfo];
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"openBasicCommissioningWindow(...) onNewOrUpdatedEndpointCallback" queue:clientQueue block: ^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"openBasicCommissioningWindow(...) onNewOrUpdatedEndpointCallback"
+                                    block: ^{
                     onNewOrUpdatedEndpointCallback(contentApp);
                 }];
             });
@@ -654,19 +672,28 @@
             targetVideoPlayerInfo,
             [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
                 VideoPlayer * videoPlayer = [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"onConnectionSuccessCallback" queue:clientQueue block:^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"onConnectionSuccessCallback"
+                                    block:^{
                     onConnectionSuccessCallback(videoPlayer);
                 }];
             },
             [clientQueue, onConnectionFailureCallback](CHIP_ERROR err) {
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"onConnectionFailureCallback" queue:clientQueue block:^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"onConnectionFailureCallback"
+                                    block:^{
                     onConnectionFailureCallback([[MatterError alloc] initWithCode:err.AsInteger()
                                                                           message:[NSString stringWithUTF8String:err.AsString()]]);
                 }];
             },
             [clientQueue, onNewOrUpdatedEndpointCallback](TargetEndpointInfo * cppTargetEndpointInfo) {
                 ContentApp * contentApp = [ConversionUtils convertToObjCContentAppFrom:cppTargetEndpointInfo];
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"onNewOrUpdatedEndpointCallback" queue:clientQueue block:^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"onNewOrUpdatedEndpointCallback"
+                                    block:^{
                     onNewOrUpdatedEndpointCallback(contentApp);
                 }];
             });
@@ -812,11 +839,11 @@
                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
         return castingServer->ContentLauncherLaunchURL(
@@ -891,7 +918,10 @@
         CHIP_ERROR err = CastingServer::GetInstance()->ContentLauncher_LaunchContent(&endpoint, cppSearch, autoPlay,
             MakeOptional(chip::CharSpan([data UTF8String], [data lengthOfBytesUsingEncoding:NSUTF8StringEncoding])),
             [clientQueue, responseCallback](CHIP_ERROR err) {
-                [[CastingServerBridge getSharedInstance] dispatchOnClientQueue:@"responseCallback" queue:clientQueue block:^{
+                [[CastingServerBridge getSharedInstance]
+                    dispatchOnClientQueue:clientQueue
+                              description:@"contentLauncher_launchContent(...) responseCallback"
+                                    block:^{
                     responseCallback(CHIP_NO_ERROR == err);
                 }];
             });
@@ -954,11 +984,11 @@
        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -984,11 +1014,11 @@
               requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"levelControl_moveToLevel(...) with Content App endpoint ID %d", contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1146,11 +1176,11 @@
         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1164,11 +1194,11 @@
          requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1182,11 +1212,11 @@
                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1200,11 +1230,11 @@
         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1219,11 +1249,11 @@
         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1238,11 +1268,11 @@
                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1257,11 +1287,11 @@
                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1623,11 +1653,11 @@
     application.applicationId = chip::CharSpan::fromCharString([applicationId UTF8String]);
 
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1652,11 +1682,11 @@
     application.applicationId = chip::CharSpan::fromCharString([applicationId UTF8String]);
 
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1680,11 +1710,11 @@
     application.applicationId = chip::CharSpan::fromCharString([applicationId UTF8String]);
 
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1704,11 +1734,11 @@
                     requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -1837,11 +1867,11 @@
          requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -2276,11 +2306,11 @@
     requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -2294,11 +2324,11 @@
     requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
@@ -2312,11 +2342,11 @@
     requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
 {
     const NSString *description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
-    [self withCastingServerInvokeBlockWithResponse:description
-                               withStartedCallback:requestSentHandler
-                               andResponseCallback:responseCallback
-                                           onQueue:clientQueue
-                                             block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
+    [self withCastingServerInvokeBlock:description
+                         callbackQueue:clientQueue
+                       onBlockComplete:requestSentHandler
+                            onResponse:responseCallback
+                                 block: ^(CastingServer *castingServer, std::function<void(CHIP_ERROR)> responseFunction) {
         TargetEndpointInfo endpoint;
         [ConversionUtils convertToCppTargetEndpointInfoFrom:contentApp outTargetEndpointInfo:endpoint];
 
