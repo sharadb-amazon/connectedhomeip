@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,9 +12,11 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.FailureCallback;
 import com.chip.casting.MatterError;
@@ -27,6 +29,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+;
 
 /** A {@link Fragment} to discover commissioners on the network */
 public class CommissionerDiscoveryFragment extends Fragment {
@@ -78,6 +82,18 @@ public class CommissionerDiscoveryFragment extends Fragment {
         View.OnClickListener manualCommissioningButtonOnClickListener =
             v -> callback.handleCommissioningButtonClicked(null);
         manualCommissioningButton.setOnClickListener(manualCommissioningButtonOnClickListener);
+
+        Button purgeCacheButton = getView().findViewById(R.id.purgeCacheButton);
+        Context context = getContext().getApplicationContext();
+        View.OnClickListener purgeCacheOnClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean status = tvCastingApp.purgeCache();
+                Toast.makeText(context, "Cache purge " + (status ? "successful!" : "failed!"), Toast.LENGTH_SHORT).show();
+            }
+        };
+        purgeCacheButton.setOnClickListener(purgeCacheOnClickListener);
+
         ArrayAdapter<DiscoveredNodeData> arrayAdapter = new VideoPlayerCommissionerAdapter(getActivity(), commissionerVideoPlayerList);
         final ListView list = getActivity().findViewById(R.id.commissionerList);
         list.setAdapter(arrayAdapter);
