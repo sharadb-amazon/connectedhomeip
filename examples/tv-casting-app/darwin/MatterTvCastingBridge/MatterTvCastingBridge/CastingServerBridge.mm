@@ -831,7 +831,7 @@
     }];
 }
 
-- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue responseHandler:(nullable void (^)(MatterError * _Nonnull))responseHandler
+- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue responseHandler:(void (^)(MatterError * _Nonnull))responseHandler
 {
     [self dispatchOnMatterSDKQueue:@"purgeCache(...)" block:^{
         CHIP_ERROR err = CastingServer::GetInstance()->PurgeCache();
