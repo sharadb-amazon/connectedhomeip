@@ -831,13 +831,13 @@
     }];
 }
 
-- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue requestSentHandler:(nullable void (^)())requestSentHandler
+- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue responseHandler:(nullable void (^)(MatterError * _Nonnull))responseHandler
 {
     ChipLogProgress(AppServer, "CastingServerBridge().purgeCache() called");
     dispatch_async(_chipWorkQueue, ^{
-        CastingServer::GetInstance()->PurgeCache();
+        CHIP_ERROR err = CastingServer::GetInstance()->PurgeCache();
         dispatch_async(clientQueue, ^{
-            requestSentHandler();
+            responseHandler([[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]]);
         });
     });
 }

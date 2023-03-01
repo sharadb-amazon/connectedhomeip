@@ -443,5 +443,11 @@ void PersistenceManager::OnFabricRemoved(const FabricTable & fabricTable, Fabric
 CHIP_ERROR PersistenceManager::PurgeVideoPlayerCache()
 {
     ChipLogProgress(AppServer, "PersistenceManager::PurgeVideoPlayerCache called");
-    return chip::DeviceLayer::PersistedStorage::KeyValueStoreMgr().Delete(kCastingDataKey);
+    CHIP_ERROR err = chip::DeviceLayer::PersistedStorage::KeyValueStoreMgr().Delete(kCastingDataKey);
+    if(err == CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND) // no error, if the key-value pair was not stored
+    {
+        ChipLogProgress(AppServer, "PersistenceManager::PurgeVideoPlayerCache ignoring error %" CHIP_ERROR_FORMAT, err.Format());
+        return CHIP_NO_ERROR;
+    }
+    return err;
 }

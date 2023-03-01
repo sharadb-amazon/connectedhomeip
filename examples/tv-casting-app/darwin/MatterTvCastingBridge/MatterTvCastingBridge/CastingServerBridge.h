@@ -191,9 +191,9 @@
 
  @param clientQueue Queue to invoke callbacks on
 
- @param requestSentHandler Called after the request has been sent
+ @param responseHandler Called when purgeCache completes
  */
-- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue requestSentHandler:(nullable void (^)())requestSentHandler;
+- (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue responseHandler:(nullable void (^)(MatterError * _Nonnull))responseHandler;
 
 /**
  @brief Start the Matter server and reconnect to a previously connected Video Player (if any). This API is async
