@@ -426,8 +426,17 @@ void Server::Shutdown()
     chip::app::InteractionModelEngine::GetInstance()->Shutdown();
     mCommissioningWindowManager.Shutdown();
     mMessageCounterManager.Shutdown();
-    mExchangeMgr.Shutdown();
+
+    // We shut down the SessionManager before the ExchangeMgr because if the SessionManager has a Session
+    // that is in the middle of an exchange, the ExchangeContext requires a live ExchangeMgr to be torn
+    // down successfully. Fortunately, shutting down the ExchangeMgr also has relatively few side effects
+    // and will succeed even if the SessionManager has already been shut down.
+    //
+    // It is technically more correct to shut down the ExchangeMgr first as it was initialized after the
+    // SessionManager (see `Server::Init`) and has a dependency on the SessionManager.
     mSessions.Shutdown();
+    mExchangeMgr.Shutdown();
+
     mTransports.Close();
     mAccessControl.Finish();
     Credentials::SetGroupDataProvider(nullptr);
