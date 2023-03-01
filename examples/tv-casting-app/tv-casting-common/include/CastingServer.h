@@ -99,7 +99,7 @@ public:
                                            std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
 
     void LogCachedVideoPlayers();
-    CHIP_ERROR PurgeVideoPlayerCache();
+    CHIP_ERROR PurgeCache();
 
     /**
      * Tears down all active subscriptions.

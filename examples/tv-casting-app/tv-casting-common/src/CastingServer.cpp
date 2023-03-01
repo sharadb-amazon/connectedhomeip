@@ -352,7 +352,7 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
         onConnectionFailure);
 }
 
-CHIP_ERROR CastingServer::PurgeVideoPlayerCache()
+CHIP_ERROR CastingServer::PurgeCache()
 {
     return mPersistenceManager.PurgeVideoPlayerCache();
 }
