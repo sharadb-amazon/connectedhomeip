@@ -142,8 +142,8 @@
 /**
  Dispatches a client callback via a `dispatch_block_t` to be run on the client's `dispatch_queue_t`.
 
- @param description Optional. A description of the callback to be dispatched for diagnostic purposes.
  @param queue The client's Dispatch Queue.
+ @param description Optional. A description of the callback to be dispatched for diagnostic purposes.
  @param block The Block to be invoked to invoke the client callback.
  */
 - (void) dispatchOnClientQueue:(dispatch_queue_t)queue
@@ -187,8 +187,8 @@
  The result of the Objective C Block will be relayed to the `blockCompleteCallback`.
 
  @param description  Optional. A description of the Objective C Block to be invoked for diagnostic purposes.
- @param blockCompleteCallback The callback to be invoked with the result of the Objective C Block.
  @param callbackQueue The Dispatch Queue on which the callback shall be invoked.
+ @param blockCompleteCallback The callback to be invoked with the result of the Objective C Block.
  @param block The Objective C Block to dispatch.
  */
 - (void) withCastingServerInvokeBlock:(const NSString * _Nullable)description
