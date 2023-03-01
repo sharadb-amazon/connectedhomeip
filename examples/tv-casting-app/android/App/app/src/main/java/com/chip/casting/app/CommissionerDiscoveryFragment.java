@@ -83,7 +83,6 @@ public class CommissionerDiscoveryFragment extends Fragment {
             v -> callback.handleCommissioningButtonClicked(null);
         manualCommissioningButton.setOnClickListener(manualCommissioningButtonOnClickListener);
 
-
         Button purgeCacheButton = getView().findViewById(R.id.purgeCacheButton);
         Context context = getContext().getApplicationContext();
         View.OnClickListener purgeCacheOnClickListener = new View.OnClickListener() {

@@ -833,13 +833,12 @@
 
 - (void)purgeCache:(dispatch_queue_t _Nonnull)clientQueue responseHandler:(nullable void (^)(MatterError * _Nonnull))responseHandler
 {
-    ChipLogProgress(AppServer, "CastingServerBridge().purgeCache() called");
-    dispatch_async(_chipWorkQueue, ^{
+    [self dispatchOnMatterSDKQueue:@"purgeCache(...)" block:^{
         CHIP_ERROR err = CastingServer::GetInstance()->PurgeCache();
         dispatch_async(clientQueue, ^{
             responseHandler([[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]]);
         });
-    });
+    }];
 }
 
 - (void)contentLauncher_launchUrl:(ContentApp * _Nonnull)contentApp
