@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02C3667729B16704009F4EDC /* strip_debug_symbols.sh in Resources */ = {isa = PBXBuildFile; fileRef = 02C3667629B16704009F4EDC /* strip_debug_symbols.sh */; };
 		3C26AC8C2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 3C26AC8B2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp */; };
 		3C26AC902927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C26AC8F2927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm */; };
 		3C26AC9329282B8100BA6881 /* DeviceAttestationCredentialsHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C26AC9229282B8100BA6881 /* DeviceAttestationCredentialsHolder.m */; };
@@ -32,6 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		02C3667629B16704009F4EDC /* strip_debug_symbols.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = strip_debug_symbols.sh; sourceTree = "<group>"; };
 		3C0D9CDF2920A30C00D3332B /* CommissionableDataProviderImpl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CommissionableDataProviderImpl.hpp; sourceTree = "<group>"; };
 		3C26AC8B2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DeviceAttestationCredentialsProviderImpl.hpp; sourceTree = "<group>"; };
 		3C26AC8F2927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceAttestationCredentialsProviderImpl.mm; sourceTree = "<group>"; };
@@ -83,6 +85,7 @@
 		3CCB87132869085400771BAD = {
 			isa = PBXGroup;
 			children = (
+				02C3667629B16704009F4EDC /* strip_debug_symbols.sh */,
 				3CCB871F2869085400771BAD /* MatterTvCastingBridge */,
 				3CCB8736286A555500771BAD /* libmbedtls.a */,
 				3CCB8735286A555500771BAD /* libTvCastingCommon.a */,
@@ -210,6 +213,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02C3667729B16704009F4EDC /* strip_debug_symbols.sh in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,7 +296,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -356,13 +360,14 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = z;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -386,6 +391,7 @@
 			buildSettings = {
 				CHIP_ROOT = "$(PROJECT_DIR)/../../../..";
 				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -457,6 +463,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.matter.MatterTvCastingBridge;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
+				STRIP_INSTALLED_PRODUCT = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -468,6 +475,7 @@
 			buildSettings = {
 				CHIP_ROOT = "$(PROJECT_DIR)/../../../..";
 				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -514,6 +522,26 @@
 					"-Wformat",
 					"-Wformat-nonliteral",
 					"-Wformat-security",
+				);
+				"OTHER_LDFLAGS[arch=*]" = (
+					"-framework",
+					CoreData,
+					"-framework",
+					Foundation,
+					"-framework",
+					CoreBluetooth,
+					"-lnetwork",
+					"-Wl,-unexported_symbol,\"__Z*\"",
+				);
+				"OTHER_LDFLAGS[sdk=macosx*]" = (
+					"-framework",
+					IOKit,
+					"-lnetwork",
+					"-framework",
+					CoreBluetooth,
+					"-framework",
+					CoreData,
+					"-Wl,-unexported_symbol,\"__Z*\"",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.matter.MatterTvCastingBridge;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
