@@ -430,7 +430,7 @@ private:
     /**
      * @brief Retrieve the IP Address to use for the UDC request.
      * This function will look for an IPv4 address in the list of IPAddresses passed in if available and return
-     * that address if found. If there are no available IPv4 addresses, it will default to the first avaialble address.
+     * that address if found. If there are no available IPv4 addresses, it will default to the first available address.
      * This logic is similar to the one used by the UDC server that prefers IPv4 addresses.
      *
      * @param ipAddresses - The list of ip addresses available to use
