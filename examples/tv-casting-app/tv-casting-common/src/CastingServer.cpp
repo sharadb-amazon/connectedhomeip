@@ -160,12 +160,36 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(chip::Transport::
     return Server::GetInstance().SendUserDirectedCommissioningRequest(commissioner);
 }
 
+chip::Inet::IPAddress *CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const int numIPs)
+{
+    int ipIndexToUse = 0;
+    for (int i = 0; i < numIPs; i++)
+    {
+        if (ipAddresses[i].IsIPv4())
+        {
+            ipIndexToUse = i;
+            ChipLogProgress(AppServer, "Found iPv4 address at index: %d", ipIndexToUse);
+            break;
+        }
+
+        if (i == (numIPs - 1))
+        {
+            ChipLogProgress(AppServer, "Could not find an iPv4 address, defaulting to the first address in IP list");
+        }
+    }
+
+    return &ipAddresses[ipIndexToUse];
+}
+
 CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::DiscoveredNodeData * selectedCommissioner)
 {
+    chip::TransportMgrBase transport = Server::GetInstance().GetTransportManager();
     mUdcInProgress = true;
     // Send User Directed commissioning request
+    chip::Inet::IPAddress *ipAddressToUse = getIpAddressForUDCRequest(selectedCommissioner->resolutionData.ipAddress,
+        selectedCommissioner->resolutionData.numIPs);
     ReturnErrorOnFailure(SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress::UDP(
-        selectedCommissioner->resolutionData.ipAddress[0], selectedCommissioner->resolutionData.port,
+        *ipAddressToUse, selectedCommissioner->resolutionData.port,
         selectedCommissioner->resolutionData.interfaceId)));
     mTargetVideoPlayerVendorId   = selectedCommissioner->commissionData.vendorId;
     mTargetVideoPlayerProductId  = selectedCommissioner->commissionData.productId;
