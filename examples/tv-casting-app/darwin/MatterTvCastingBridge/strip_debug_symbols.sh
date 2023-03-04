@@ -22,6 +22,12 @@
 
 set -ex
 
+if [ "${CONFIGURATION}" == "Debug" ]
+then
+    echo "Skipping stripping debug symbols since we are using the '${CONFIGURATION}' configuration"
+    exit 0
+fi
+
 files_to_strip=("libTvCastingCommon.a")
 
 for lib_path in ${LIBRARY_SEARCH_PATHS[@]}
