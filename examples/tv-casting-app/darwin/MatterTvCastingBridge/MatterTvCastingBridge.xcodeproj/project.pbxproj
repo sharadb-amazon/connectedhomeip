@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		02C3667729B16704009F4EDC /* strip_debug_symbols.sh in Resources */ = {isa = PBXBuildFile; fileRef = 02C3667629B16704009F4EDC /* strip_debug_symbols.sh */; };
 		3C26AC8C2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 3C26AC8B2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp */; };
 		3C26AC902927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C26AC8F2927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm */; };
 		3C26AC9329282B8100BA6881 /* DeviceAttestationCredentialsHolder.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C26AC9229282B8100BA6881 /* DeviceAttestationCredentialsHolder.m */; };
@@ -33,7 +32,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		02C3667629B16704009F4EDC /* strip_debug_symbols.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = strip_debug_symbols.sh; sourceTree = "<group>"; };
 		3C0D9CDF2920A30C00D3332B /* CommissionableDataProviderImpl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CommissionableDataProviderImpl.hpp; sourceTree = "<group>"; };
 		3C26AC8B2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DeviceAttestationCredentialsProviderImpl.hpp; sourceTree = "<group>"; };
 		3C26AC8F2927008900BA6881 /* DeviceAttestationCredentialsProviderImpl.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = DeviceAttestationCredentialsProviderImpl.mm; sourceTree = "<group>"; };
@@ -85,7 +83,6 @@
 		3CCB87132869085400771BAD = {
 			isa = PBXGroup;
 			children = (
-				02C3667629B16704009F4EDC /* strip_debug_symbols.sh */,
 				3CCB871F2869085400771BAD /* MatterTvCastingBridge */,
 				3CCB8736286A555500771BAD /* libmbedtls.a */,
 				3CCB8735286A555500771BAD /* libTvCastingCommon.a */,
@@ -164,8 +161,8 @@
 				3CCB872E286A502100771BAD /* ShellScript */,
 				3CCB87182869085400771BAD /* Headers */,
 				3CCB87192869085400771BAD /* Sources */,
+				02DECDA929B2BD3400D27C39 /* ShellScript */,
 				3CCB871A2869085400771BAD /* Frameworks */,
-				3CCB871B2869085400771BAD /* Resources */,
 			);
 			buildRules = (
 			);
@@ -208,18 +205,24 @@
 		};
 /* End PBXProject section */
 
-/* Begin PBXResourcesBuildPhase section */
-		3CCB871B2869085400771BAD /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
+/* Begin PBXShellScriptBuildPhase section */
+		02DECDA929B2BD3400D27C39 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				02C3667729B16704009F4EDC /* strip_debug_symbols.sh in Resources */,
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "./strip_debug_symbols.sh\n";
 		};
-/* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
 		3CCB872E286A502100771BAD /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
