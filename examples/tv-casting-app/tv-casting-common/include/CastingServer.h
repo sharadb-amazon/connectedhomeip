@@ -438,7 +438,7 @@ private:
      *
      * @returns The IPv4 address in the array if available, otherwise will return the first address in the list.
      */
-    static chip::Inet::IPAddress *getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const int numIPs);
+    static chip::Inet::IPAddress *getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs);
 
     PersistenceManager mPersistenceManager;
     bool mInited        = false;
@@ -450,7 +450,7 @@ private:
     uint16_t mTargetVideoPlayerDeviceType                                 = 0;
     char mTargetVideoPlayerDeviceName[chip::Dnssd::kMaxDeviceNameLen + 1] = {};
     char mTargetVideoPlayerHostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
-    uint8_t mTargetVideoPlayerNumIPs                                      = 0; // number of valid IP addresses
+    size_t mTargetVideoPlayerNumIPs                                      = 0; // number of valid IP addresses
     chip::Inet::IPAddress mTargetVideoPlayerIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
     chip::Controller::CommissionableNodeController mCommissionableNodeController;

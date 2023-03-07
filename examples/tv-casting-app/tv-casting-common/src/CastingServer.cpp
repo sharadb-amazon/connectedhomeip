@@ -160,15 +160,15 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(chip::Transport::
     return Server::GetInstance().SendUserDirectedCommissioningRequest(commissioner);
 }
 
-chip::Inet::IPAddress *CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const int numIPs)
+chip::Inet::IPAddress *CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs)
 {
-    int ipIndexToUse = 0;
-    for (int i = 0; i < numIPs; i++)
+    size_t ipIndexToUse = 0;
+    for (size_t i = 0; i < numIPs; i++)
     {
         if (ipAddresses[i].IsIPv4())
         {
             ipIndexToUse = i;
-            ChipLogProgress(AppServer, "Found iPv4 address at index: %d", ipIndexToUse);
+            ChipLogProgress(AppServer, "Found iPv4 address at index: %lu", ipIndexToUse);
             break;
         }
 
