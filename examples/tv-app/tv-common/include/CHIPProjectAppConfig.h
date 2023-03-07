@@ -30,6 +30,8 @@
 // TVs need to be commissioners and likely want to be discoverable
 #define CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY 1
 
+#define CHIP_DEVICE_CONFIG_MAX_DISCOVERED_IP_ADDRESSES 10
+
 // TVs need to be both commissioners and commissionees
 #define CHIP_DEVICE_CONFIG_ENABLE_BOTH_COMMISSIONER_AND_COMMISSIONEE 1
 

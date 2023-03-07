@@ -187,15 +187,15 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::Discovered
     mUdcInProgress = true;
     // Send User Directed commissioning request
     chip::Inet::IPAddress *ipAddressToUse = getIpAddressForUDCRequest(selectedCommissioner->resolutionData.ipAddress,
-        selectedCommissioner->resolutionData.numIPs);
+        (uint8_t)selectedCommissioner->resolutionData.numIPs);
     ReturnErrorOnFailure(SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress::UDP(
         *ipAddressToUse, selectedCommissioner->resolutionData.port,
         selectedCommissioner->resolutionData.interfaceId)));
     mTargetVideoPlayerVendorId   = selectedCommissioner->commissionData.vendorId;
     mTargetVideoPlayerProductId  = selectedCommissioner->commissionData.productId;
     mTargetVideoPlayerDeviceType = selectedCommissioner->commissionData.deviceType;
-    mTargetVideoPlayerNumIPs     = selectedCommissioner->resolutionData.numIPs;
-    for (size_t i = 0; i < mTargetVideoPlayerNumIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
+    mTargetVideoPlayerNumIPs     = (uint8_t)selectedCommissioner->resolutionData.numIPs;
+    for (uint8_t i = 0; i < mTargetVideoPlayerNumIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
     {
         mTargetVideoPlayerIpAddress[i] = selectedCommissioner->resolutionData.ipAddress[i];
     }
