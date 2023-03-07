@@ -26,10 +26,8 @@ public class AppParameters {
   public static final int MIN_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH = 16;
   private static final int TEST_SETUP_PASSCODE = 20202021;
   private static final int TEST_DISCRIMINATOR = 0xF00;
-  private DACProvider TEST_DAC_PROVIDER = new DACProviderStub();
 
   private byte[] rotatingDeviceIdUniqueId;
-  private DACProvider dacProvider = TEST_DAC_PROVIDER;
   private String spake2pVerifierBase64;
   private String Spake2pSaltBase64;
   private int spake2pIterationCount;
@@ -51,14 +49,6 @@ public class AppParameters {
         "AppParameters.getRotatingDeviceIdUniqueId returning copyOf "
             + new BigInteger(1, rotatingDeviceIdUniqueId).toString(16));
     return Arrays.copyOf(rotatingDeviceIdUniqueId, rotatingDeviceIdUniqueId.length);
-  }
-
-  public DACProvider getDacProvider() {
-    return dacProvider;
-  }
-
-  public void setDacProvider(DACProvider dacProvider) {
-    this.dacProvider = dacProvider;
   }
 
   public String getSpake2pVerifierBase64() {
