@@ -28,10 +28,13 @@
 #include <credentials/DeviceAttestationCredsProvider.h>
 #include <credentials/attestation_verifier/DefaultDeviceAttestationVerifier.h>
 #include <credentials/attestation_verifier/DeviceAttestationVerifier.h>
-#include <credentials/examples/DeviceAttestationCredsExample.h>
 #include <lib/support/CHIPListUtils.h>
 #include <lib/support/CHIPMem.h>
 #include <platform/PlatformManager.h>
+
+#ifdef CHIP_DEFAULT_TO_EXAMPLE_CREDS
+#include <credentials/examples/DeviceAttestationCredsExample.h>
+#endif
 
 @interface CastingServerBridge ()
 
@@ -271,7 +274,7 @@
     CHIP_ERROR err = CHIP_NO_ERROR;
     _commissionableDataProvider = new CommissionableDataProviderImpl();
     
-#if 0x8000 <= CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID && CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID <= 0x801F
+#ifdef CHIP_DEFAULT_TO_EXAMPLE_CREDS
     _deviceAttestationCredentialsProvider = chip::Credentials::Examples::GetExampleDACProvider();
     SetDeviceAttestationCredentialsProvider(_deviceAttestationCredentialsProvider);
 #else
