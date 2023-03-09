@@ -70,8 +70,26 @@ bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
 # Setting up Android deps through Gradle
 python3 third_party/android_deps/set_up_android_deps.py
 
+# Generating android-arm-tv-casting-app-no-debug
+gn gen --check --fail-on-unused-args {out}/android-arm-tv-casting-app-no-debug '--args=target_os="android" target_cpu="arm" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-casting-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
 # Generating android-arm-tv-server
 gn gen --check --fail-on-unused-args {out}/android-arm-tv-server '--args=target_os="android" target_cpu="arm" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
+# Generating android-arm-tv-server-no-debug
+gn gen --check --fail-on-unused-args {out}/android-arm-tv-server-no-debug '--args=target_os="android" target_cpu="arm" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
 
 # Accepting NDK licenses @ tools
 bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
@@ -106,8 +124,26 @@ bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
 # Setting up Android deps through Gradle
 python3 third_party/android_deps/set_up_android_deps.py
 
+# Generating android-arm64-tv-casting-app-no-debug
+gn gen --check --fail-on-unused-args {out}/android-arm64-tv-casting-app-no-debug '--args=target_os="android" target_cpu="arm64" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-casting-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
 # Generating android-arm64-tv-server
 gn gen --check --fail-on-unused-args {out}/android-arm64-tv-server '--args=target_os="android" target_cpu="arm64" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
+# Generating android-arm64-tv-server-no-debug
+gn gen --check --fail-on-unused-args {out}/android-arm64-tv-server-no-debug '--args=target_os="android" target_cpu="arm64" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
 
 # Accepting NDK licenses @ tools
 bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
@@ -133,6 +169,15 @@ bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
 # Setting up Android deps through Gradle
 python3 third_party/android_deps/set_up_android_deps.py
 
+# Generating android-x64-tv-server-no-debug
+gn gen --check --fail-on-unused-args {out}/android-x64-tv-server-no-debug '--args=target_os="android" target_cpu="x64" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
 # Generating android-x86-chip-tool
 gn gen --check --fail-on-unused-args {out}/android-x86-chip-tool '--args=target_os="android" target_cpu="x86" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" '
 
@@ -144,6 +189,15 @@ python3 third_party/android_deps/set_up_android_deps.py
 
 # Generating android-x86-tv-server
 gn gen --check --fail-on-unused-args {out}/android-x86-tv-server '--args=target_os="android" target_cpu="x86" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
+
+# Accepting NDK licenses @ tools
+bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
+
+# Setting up Android deps through Gradle
+python3 third_party/android_deps/set_up_android_deps.py
+
+# Generating android-x86-tv-server-no-debug
+gn gen --check --fail-on-unused-args {out}/android-x86-tv-server-no-debug '--args=target_os="android" target_cpu="x86" android_ndk_root="TEST_ANDROID_NDK_HOME" android_sdk_root="TEST_ANDROID_HOME" is_debug=false chip_config_network_layer_ble=false ' --root={root}/examples/tv-app/android/
 
 # Accepting NDK licenses @ tools
 bash -c 'yes | TEST_ANDROID_HOME/tools/bin/sdkmanager --licenses >/dev/null'
@@ -1343,6 +1397,25 @@ cp {out}/android-arm-tv-casting-app/lib/TvCastingApp.jar {root}/examples/tv-cast
 # Building Example android-arm-tv-casting-app
 {root}/examples/tv-casting-app/android/App/gradlew -p {root}/examples/tv-casting-app/android/App/ -PmatterBuildSrcDir={out}/android-arm-tv-casting-app -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm-tv-casting-app assembleDebug
 
+# Building JNI android-arm-tv-casting-app-no-debug
+ninja -C {out}/android-arm-tv-casting-app-no-debug
+
+# Prepare Native libs android-arm-tv-casting-app-no-debug
+mkdir -p {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/armeabi-v7a
+
+cp {out}/android-arm-tv-casting-app-no-debug/lib/jni/armeabi-v7a/libc++_shared.so {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/armeabi-v7a/libc++_shared.so
+
+cp {out}/android-arm-tv-casting-app-no-debug/lib/jni/armeabi-v7a/libTvCastingApp.so {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/armeabi-v7a/libTvCastingApp.so
+
+cp {out}/android-arm-tv-casting-app-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-casting-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-arm-tv-casting-app-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-casting-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-arm-tv-casting-app-no-debug/lib/TvCastingApp.jar {root}/examples/tv-casting-app/android/App/app/libs/TvCastingApp.jar
+
+# Building Example android-arm-tv-casting-app-no-debug
+{root}/examples/tv-casting-app/android/App/gradlew -p {root}/examples/tv-casting-app/android/App/ -PmatterBuildSrcDir={out}/android-arm-tv-casting-app-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm-tv-casting-app-no-debug assembleDebug
+
 # Building JNI android-arm-tv-server
 ninja -C {out}/android-arm-tv-server
 
@@ -1368,6 +1441,32 @@ cp {out}/android-arm-tv-server/lib/TvApp.jar {root}/examples/tv-app/android/App/
 
 # Building Example android-arm-tv-server, module content-app
 {root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm-tv-server -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm-tv-server/content-app :content-app:assembleDebug
+
+# Building JNI android-arm-tv-server-no-debug
+ninja -C {out}/android-arm-tv-server-no-debug
+
+# Prepare Native libs android-arm-tv-server-no-debug
+mkdir -p {root}/examples/tv-app/android/App/app/libs/jniLibs/armeabi-v7a
+
+cp {out}/android-arm-tv-server-no-debug/lib/jni/armeabi-v7a/libSetupPayloadParser.so {root}/examples/tv-app/android/App/app/libs/jniLibs/armeabi-v7a/libSetupPayloadParser.so
+
+cp {out}/android-arm-tv-server-no-debug/lib/jni/armeabi-v7a/libc++_shared.so {root}/examples/tv-app/android/App/app/libs/jniLibs/armeabi-v7a/libc++_shared.so
+
+cp {out}/android-arm-tv-server-no-debug/lib/jni/armeabi-v7a/libTvApp.so {root}/examples/tv-app/android/App/app/libs/jniLibs/armeabi-v7a/libTvApp.so
+
+cp {out}/android-arm-tv-server-no-debug/lib/third_party/connectedhomeip/src/setup_payload/java/SetupPayloadParser.jar {root}/examples/tv-app/android/App/app/libs/SetupPayloadParser.jar
+
+cp {out}/android-arm-tv-server-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-arm-tv-server-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-arm-tv-server-no-debug/lib/TvApp.jar {root}/examples/tv-app/android/App/app/libs/TvApp.jar
+
+# Building Example android-arm-tv-server-no-debug, module platform-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm-tv-server-no-debug/platform-app :platform-app:assembleDebug
+
+# Building Example android-arm-tv-server-no-debug, module content-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm-tv-server-no-debug/content-app :content-app:assembleDebug
 
 # Building JNI android-arm64-chip-test
 ninja -C {out}/android-arm64-chip-test
@@ -1430,6 +1529,25 @@ cp {out}/android-arm64-tv-casting-app/lib/TvCastingApp.jar {root}/examples/tv-ca
 # Building Example android-arm64-tv-casting-app
 {root}/examples/tv-casting-app/android/App/gradlew -p {root}/examples/tv-casting-app/android/App/ -PmatterBuildSrcDir={out}/android-arm64-tv-casting-app -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm64-tv-casting-app assembleDebug
 
+# Building JNI android-arm64-tv-casting-app-no-debug
+ninja -C {out}/android-arm64-tv-casting-app-no-debug
+
+# Prepare Native libs android-arm64-tv-casting-app-no-debug
+mkdir -p {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/arm64-v8a
+
+cp {out}/android-arm64-tv-casting-app-no-debug/lib/jni/arm64-v8a/libc++_shared.so {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/arm64-v8a/libc++_shared.so
+
+cp {out}/android-arm64-tv-casting-app-no-debug/lib/jni/arm64-v8a/libTvCastingApp.so {root}/examples/tv-casting-app/android/App/app/libs/jniLibs/arm64-v8a/libTvCastingApp.so
+
+cp {out}/android-arm64-tv-casting-app-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-casting-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-arm64-tv-casting-app-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-casting-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-arm64-tv-casting-app-no-debug/lib/TvCastingApp.jar {root}/examples/tv-casting-app/android/App/app/libs/TvCastingApp.jar
+
+# Building Example android-arm64-tv-casting-app-no-debug
+{root}/examples/tv-casting-app/android/App/gradlew -p {root}/examples/tv-casting-app/android/App/ -PmatterBuildSrcDir={out}/android-arm64-tv-casting-app-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm64-tv-casting-app-no-debug assembleDebug
+
 # Building JNI android-arm64-tv-server
 ninja -C {out}/android-arm64-tv-server
 
@@ -1455,6 +1573,32 @@ cp {out}/android-arm64-tv-server/lib/TvApp.jar {root}/examples/tv-app/android/Ap
 
 # Building Example android-arm64-tv-server, module content-app
 {root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm64-tv-server -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm64-tv-server/content-app :content-app:assembleDebug
+
+# Building JNI android-arm64-tv-server-no-debug
+ninja -C {out}/android-arm64-tv-server-no-debug
+
+# Prepare Native libs android-arm64-tv-server-no-debug
+mkdir -p {root}/examples/tv-app/android/App/app/libs/jniLibs/arm64-v8a
+
+cp {out}/android-arm64-tv-server-no-debug/lib/jni/arm64-v8a/libSetupPayloadParser.so {root}/examples/tv-app/android/App/app/libs/jniLibs/arm64-v8a/libSetupPayloadParser.so
+
+cp {out}/android-arm64-tv-server-no-debug/lib/jni/arm64-v8a/libc++_shared.so {root}/examples/tv-app/android/App/app/libs/jniLibs/arm64-v8a/libc++_shared.so
+
+cp {out}/android-arm64-tv-server-no-debug/lib/jni/arm64-v8a/libTvApp.so {root}/examples/tv-app/android/App/app/libs/jniLibs/arm64-v8a/libTvApp.so
+
+cp {out}/android-arm64-tv-server-no-debug/lib/third_party/connectedhomeip/src/setup_payload/java/SetupPayloadParser.jar {root}/examples/tv-app/android/App/app/libs/SetupPayloadParser.jar
+
+cp {out}/android-arm64-tv-server-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-arm64-tv-server-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-arm64-tv-server-no-debug/lib/TvApp.jar {root}/examples/tv-app/android/App/app/libs/TvApp.jar
+
+# Building Example android-arm64-tv-server-no-debug, module platform-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm64-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm64-tv-server-no-debug/platform-app :platform-app:assembleDebug
+
+# Building Example android-arm64-tv-server-no-debug, module content-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-arm64-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-arm64-tv-server-no-debug/content-app :content-app:assembleDebug
 
 # Building JNI android-x64-chip-tool
 ninja -C {out}/android-x64-chip-tool
@@ -1503,6 +1647,32 @@ cp {out}/android-x64-tv-server/lib/TvApp.jar {root}/examples/tv-app/android/App/
 # Building Example android-x64-tv-server, module content-app
 {root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x64-tv-server -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x64-tv-server/content-app :content-app:assembleDebug
 
+# Building JNI android-x64-tv-server-no-debug
+ninja -C {out}/android-x64-tv-server-no-debug
+
+# Prepare Native libs android-x64-tv-server-no-debug
+mkdir -p {root}/examples/tv-app/android/App/app/libs/jniLibs/x86_64
+
+cp {out}/android-x64-tv-server-no-debug/lib/jni/x86_64/libSetupPayloadParser.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86_64/libSetupPayloadParser.so
+
+cp {out}/android-x64-tv-server-no-debug/lib/jni/x86_64/libc++_shared.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86_64/libc++_shared.so
+
+cp {out}/android-x64-tv-server-no-debug/lib/jni/x86_64/libTvApp.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86_64/libTvApp.so
+
+cp {out}/android-x64-tv-server-no-debug/lib/third_party/connectedhomeip/src/setup_payload/java/SetupPayloadParser.jar {root}/examples/tv-app/android/App/app/libs/SetupPayloadParser.jar
+
+cp {out}/android-x64-tv-server-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-x64-tv-server-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-x64-tv-server-no-debug/lib/TvApp.jar {root}/examples/tv-app/android/App/app/libs/TvApp.jar
+
+# Building Example android-x64-tv-server-no-debug, module platform-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x64-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x64-tv-server-no-debug/platform-app :platform-app:assembleDebug
+
+# Building Example android-x64-tv-server-no-debug, module content-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x64-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x64-tv-server-no-debug/content-app :content-app:assembleDebug
+
 # Building JNI android-x86-chip-tool
 ninja -C {out}/android-x86-chip-tool
 
@@ -1549,6 +1719,32 @@ cp {out}/android-x86-tv-server/lib/TvApp.jar {root}/examples/tv-app/android/App/
 
 # Building Example android-x86-tv-server, module content-app
 {root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x86-tv-server -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x86-tv-server/content-app :content-app:assembleDebug
+
+# Building JNI android-x86-tv-server-no-debug
+ninja -C {out}/android-x86-tv-server-no-debug
+
+# Prepare Native libs android-x86-tv-server-no-debug
+mkdir -p {root}/examples/tv-app/android/App/app/libs/jniLibs/x86
+
+cp {out}/android-x86-tv-server-no-debug/lib/jni/x86/libSetupPayloadParser.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86/libSetupPayloadParser.so
+
+cp {out}/android-x86-tv-server-no-debug/lib/jni/x86/libc++_shared.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86/libc++_shared.so
+
+cp {out}/android-x86-tv-server-no-debug/lib/jni/x86/libTvApp.so {root}/examples/tv-app/android/App/app/libs/jniLibs/x86/libTvApp.so
+
+cp {out}/android-x86-tv-server-no-debug/lib/third_party/connectedhomeip/src/setup_payload/java/SetupPayloadParser.jar {root}/examples/tv-app/android/App/app/libs/SetupPayloadParser.jar
+
+cp {out}/android-x86-tv-server-no-debug/lib/third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar {root}/examples/tv-app/android/App/app/libs/AndroidPlatform.jar
+
+cp {out}/android-x86-tv-server-no-debug/lib/third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar {root}/examples/tv-app/android/App/app/libs/CHIPAppServer.jar
+
+cp {out}/android-x86-tv-server-no-debug/lib/TvApp.jar {root}/examples/tv-app/android/App/app/libs/TvApp.jar
+
+# Building Example android-x86-tv-server-no-debug, module platform-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x86-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x86-tv-server-no-debug/platform-app :platform-app:assembleDebug
+
+# Building Example android-x86-tv-server-no-debug, module content-app
+{root}/examples/tv-app/android/App/gradlew -p {root}/examples/tv-app/android/App/ -PmatterBuildSrcDir={out}/android-x86-tv-server-no-debug -PmatterSdkSourceBuild=false -PbuildDir={out}/android-x86-tv-server-no-debug/content-app :content-app:assembleDebug
 
 # Building bl602-light
 ninja -C {out}/bl602-light

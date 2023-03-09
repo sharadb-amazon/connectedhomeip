@@ -38,7 +38,12 @@ namespace Dnssd {
 /// Node resolution data common to both operational and commissionable discovery
 struct CommonResolutionData
 {
+#ifdef CHIP_DEVICE_CONFIG_MAX_DISCOVERED_IP_ADDRESSES
     static constexpr unsigned kMaxIPAddresses = CHIP_DEVICE_CONFIG_MAX_DISCOVERED_IP_ADDRESSES;
+#else
+    static constexpr unsigned kMaxIPAddresses = 5;
+#endif
+
 
     Inet::InterfaceId interfaceId;
 
