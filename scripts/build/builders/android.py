@@ -397,15 +397,16 @@ class AndroidBuilder(Builder):
             "lib",
             "jni",
             self.board.AbiName())
-        for lib in os.listdir(output_libs_dir):
-            if (lib.endswith(".so")):
-                self._Execute(
-                    ["llvm-strip",
-                     "-s",
-                     os.path.join(output_libs_dir, lib)
-                     ],
-                    "Stripping symbols from " + lib
-                )
+        if os.path.exists(output_libs_dir):
+            for lib in os.listdir(output_libs_dir):
+                if (lib.endswith(".so")):
+                    self._Execute(
+                        ["llvm-strip",
+                         "-s",
+                         os.path.join(output_libs_dir, lib)
+                         ],
+                        "Stripping symbols from " + lib
+                    )
 
     def _build(self):
         if self.board.IsIde():
