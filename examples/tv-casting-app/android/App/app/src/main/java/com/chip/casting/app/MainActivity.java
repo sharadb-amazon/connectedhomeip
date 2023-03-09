@@ -1,13 +1,12 @@
 package com.chip.casting.app;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.chip.casting.AppParameters;
-import com.chip.casting.DACProviderStub;
+import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.util.GlobalCastingConstants;
@@ -78,17 +77,16 @@ public class MainActivity extends AppCompatActivity
   private boolean initJni() {
     tvCastingApp = new TvCastingApp();
 
-    Context applicationContext = this.getApplicationContext();
+    tvCastingApp.setDACProvider(new DACProviderStub());
 
     AppParameters appParameters = new AppParameters();
     byte[] rotatingDeviceIdUniqueId =
         new byte[AppParameters.MIN_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH];
     new Random().nextBytes(rotatingDeviceIdUniqueId);
     appParameters.setRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueId);
-    appParameters.setDacProvider(new DACProviderStub());
     appParameters.setSetupPasscode(GlobalCastingConstants.SetupPasscode);
     appParameters.setDiscriminator(GlobalCastingConstants.Discriminator);
-    return tvCastingApp.initApp(applicationContext, appParameters);
+    return tvCastingApp.initApp(this.getApplicationContext(), appParameters);
   }
 
   private void showFragment(Fragment fragment, boolean showOnBack) {
