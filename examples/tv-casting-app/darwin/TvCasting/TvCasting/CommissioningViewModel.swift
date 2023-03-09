@@ -19,6 +19,39 @@
 import Foundation
 import os.log
 
+class ExampleDAC : DeviceAttestationCredentialsHolder {
+    let kDevelopmentDAC_Cert_FFF1_8001: Data = Data(base64Encoded: "MIIB5zCCAY6gAwIBAgIIac3xDenlTtEwCgYIKoZIzj0EAwIwPTElMCMGA1UEAwwcTWF0dGVyIERldiBQQUkgMHhGRkYxIG5vIFBJRDEUMBIGCisGAQQBgqJ8AgEMBEZGRjEwIBcNMjIwMjA1MDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMFMxJTAjBgNVBAMMHE1hdHRlciBEZXYgREFDIDB4RkZGMS8weDgwMDExFDASBgorBgEEAYKifAIBDARGRkYxMRQwEgYKKwYBBAGConwCAgwEODAwMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABEY6xpNCkQoOVYj8b/Vrtj5i7M7LFI99TrA+5VJgFBV2fRalxmP3k+SRIyYLgpenzX58/HsxaznZjpDSk3dzjoKjYDBeMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBSI3eezADgpMs/3NMBGJIEPRBaKbzAfBgNVHSMEGDAWgBRjVA5H9kscONE4hKRi0WwZXY/7PDAKBggqhkjOPQQDAgNHADBEAiABJ6J7S0RhDuL83E0reIVWNmC8D3bxchntagjfsrPBzQIga1ngr0Xz6yqFuRnTVzFSjGAoxBUjlUXhCOTlTnCXE1M=")!;
+    let kDevelopmentDAC_PrivateKey_FFF1_8001: Data = Data(base64Encoded: "qrYAroroqrfXNifCF7fCBHCcppRq9fL3UwgzpStE+/8=")!;
+    let kDevelopmentDAC_PublicKey_FFF1_8001: Data = Data(base64Encoded: "BEY6xpNCkQoOVYj8b/Vrtj5i7M7LFI99TrA+5VJgFBV2fRalxmP3k+SRIyYLgpenzX58/HsxaznZjpDSk3dzjoI=")!;
+    let KPAI_FFF1_8000_Cert_Array: Data = Data(base64Encoded: "MIIByzCCAXGgAwIBAgIIVq2CIq2UW2QwCgYIKoZIzj0EAwIwMDEYMBYGA1UEAwwPTWF0dGVyIFRlc3QgUEFBMRQwEgYKKwYBBAGConwCAQwERkZGMTAgFw0yMjAyMDUwMDAwMDBaGA85OTk5MTIzMTIzNTk1OVowPTElMCMGA1UEAwwcTWF0dGVyIERldiBQQUkgMHhGRkYxIG5vIFBJRDEUMBIGCisGAQQBgqJ8AgEMBEZGRjEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARBmpMVwhc+DIyHbQPM/JRIUmR/f+xeUIL0BZko7KiUxZQVEwmsYx5MsDOSr2hLC6+35ls7gWLC9Sv5MbjneqqCo2YwZDASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUY1QOR/ZLHDjROISkYtFsGV2P+zwwHwYDVR0jBBgwFoAUav0idx9RH+y/FkGXZxDc3DGhcX4wCgYIKoZIzj0EAwIDSAAwRQIhALLvJ/Sa6bUPuR7qyUxNC9u415KcbLiPrOUpNo0SBUwMAiBlXckrhr2QmIKmxiF3uCXX0F7b58Ivn+pxIg5+pwP4kQ==")!;
+    let kCertificationDeclaration: Data = Data(base64Encoded: "MIICGQYJKoZIhvcNAQcCoIICCjCCAgYCAQMxDTALBglghkgBZQMEAgEwggFxBgkqhkiG9w0BBwGgggFiBIIBXhUkAAElAfH/NgIFAIAFAYAFAoAFA4AFBIAFBYAFBoAFB4AFCIAFCYAFCoAFC4AFDIAFDYAFDoAFD4AFEIAFEYAFEoAFE4AFFIAFFYAFFoAFF4AFGIAFGYAFGoAFG4AFHIAFHYAFHoAFH4AFIIAFIYAFIoAFI4AFJIAFJYAFJoAFJ4AFKIAFKYAFKoAFK4AFLIAFLYAFLoAFL4AFMIAFMYAFMoAFM4AFNIAFNYAFNoAFN4AFOIAFOYAFOoAFO4AFPIAFPYAFPoAFP4AFQIAFQYAFQoAFQ4AFRIAFRYAFRoAFR4AFSIAFSYAFSoAFS4AFTIAFTYAFToAFT4AFUIAFUYAFUoAFU4AFVIAFVYAFVoAFV4AFWIAFWYAFWoAFW4AFXIAFXYAFXoAFX4AFYIAFYYAFYoAFY4AYJAMWLAQTWklHMjAxNDJaQjMzMDAwMy0yNCQFACQGACUHlCYkCAAYMX0wewIBA4AUYvqCM1ms+qmWPhz6FArd9QTzcWAwCwYJYIZIAWUDBAIBMAoGCCqGSM49BAMCBEcwRQIgJOXR9Hp9ew0gaibvaZt8l1e3LUaQid4xkuZ4x0Xn9gwCIQD4qi+nEfy3m5fjl87aZnuuRk4r0//fw8zteqjKX0wafA==")!;
+
+
+    override func getCertificationDeclaration() -> Data {
+        return kCertificationDeclaration
+    }
+
+    override func getFirmwareInformation() -> Data {
+        return Data()
+    }
+
+    override func getDeviceAttestationCert() -> Data {
+        return kDevelopmentDAC_Cert_FFF1_8001
+    }
+
+    override func getProductAttestationIntermediateCert() -> Data {
+        return KPAI_FFF1_8000_Cert_Array
+    }
+
+    override func getDeviceAttestationCertPrivateKey() -> Data {
+        return kDevelopmentDAC_PrivateKey_FFF1_8001
+    }
+
+    override func getDeviceAttestationCertPublicKey() -> Data {
+        return kDevelopmentDAC_PublicKey_FFF1_8001
+    }
+}
+
 class CommissioningViewModel: ObservableObject {
     let Log = Logger(subsystem: "com.matter.casting",
                      category: "CommissioningViewModel")
@@ -36,37 +69,45 @@ class CommissioningViewModel: ObservableObject {
     func prepareForCommissioning(selectedCommissioner: DiscoveredNodeData?) {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
-            castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
-                commissioningWindowRequestedHandler: { (result: Bool) -> () in
-                    DispatchQueue.main.async {
-                        self.commisisoningWindowOpened = result
+            castingServerBridge.setDacHolder(ExampleDAC(), clientQueue: DispatchQueue.main, setDacHolderStatus: { (error: MatterError) -> () in
+                DispatchQueue.main.async {
+                    self.Log.info("CommissioningViewModel.setDacHolder status was \(error)")
+                    if(error.code == 0)
+                    {
+                        castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
+                            commissioningWindowRequestedHandler: { (result: Bool) -> () in
+                                DispatchQueue.main.async {
+                                    self.commisisoningWindowOpened = result
+                                }
+                            },
+                            commissioningCompleteCallback: { (result: Bool) -> () in
+                                self.Log.info("Commissioning status: \(result)")
+                                DispatchQueue.main.async {
+                                    self.commisisoningComplete = result
+                                }
+                            },
+                            onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
+                                DispatchQueue.main.async {
+                                    self.connectionSuccess = true
+                                    self.connectionStatus = "Connected to \(String(describing: videoPlayer))"
+                                    self.Log.info("CommissioningViewModel.verifyOrEstablishConnection.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
+                                }
+                            },
+                            onConnectionFailureCallback: { (error: MatterError) -> () in
+                                DispatchQueue.main.async {
+                                    self.connectionSuccess = false
+                                    self.connectionStatus = "Failed to connect to video player!"
+                                    self.Log.info("CommissioningViewModel.verifyOrEstablishConnection.onConnectionFailureCallback called with \(error)")
+                                }
+                            },
+                            onNewOrUpdatedEndpointCallback: { (contentApp: ContentApp) -> () in
+                                DispatchQueue.main.async {
+                                    self.Log.info("CommissioningViewModel.openBasicCommissioningWindow.onNewOrUpdatedEndpointCallback called with \(contentApp.endpointId)")
+                                }
+                            })
                     }
-                },
-                commissioningCompleteCallback: { (result: Bool) -> () in
-                    self.Log.info("Commissioning status: \(result)")
-                    DispatchQueue.main.async {
-                        self.commisisoningComplete = result
-                    }
-                },
-                onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
-                    DispatchQueue.main.async {
-                        self.connectionSuccess = true
-                        self.connectionStatus = "Connected to \(String(describing: videoPlayer))"
-                        self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionSuccessCallback called with \(videoPlayer.nodeId)")
-                    }
-                },
-                onConnectionFailureCallback: { (error: MatterError) -> () in
-                    DispatchQueue.main.async {
-                        self.connectionSuccess = false
-                        self.connectionStatus = "Failed to connect to video player!"
-                        self.Log.info("ConnectionViewModel.verifyOrEstablishConnection.onConnectionFailureCallback called with \(error)")
-                    }
-                },
-                onNewOrUpdatedEndpointCallback: { (contentApp: ContentApp) -> () in
-                    DispatchQueue.main.async {
-                        self.Log.info("CommissioningViewModel.openBasicCommissioningWindow.onNewOrUpdatedEndpointCallback called with \(contentApp.endpointId)")
-                    }
-                })
+                }
+            })
         }
                 
         // Send User directed commissioning request if a commissioner with a known IP addr was selected

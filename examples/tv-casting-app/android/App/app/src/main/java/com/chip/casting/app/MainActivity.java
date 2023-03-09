@@ -1,13 +1,12 @@
 package com.chip.casting.app;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.chip.casting.AppParameters;
-import com.chip.casting.DACProviderStub;
+import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.util.GlobalCastingConstants;

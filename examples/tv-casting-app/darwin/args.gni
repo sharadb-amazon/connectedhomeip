@@ -26,7 +26,8 @@ chip_project_config_include_dirs += [ "${chip_root}/config/ios" ]
 
 chip_build_libshell = true
 
-chip_build_example_creds = true
+# Example Credentials like ExampleDAC.h/cpp are not required for the tv-casting-app
+chip_build_example_creds = false
 
 chip_enable_additional_data_advertising = true
 
