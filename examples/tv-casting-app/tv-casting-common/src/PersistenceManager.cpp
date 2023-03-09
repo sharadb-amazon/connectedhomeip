@@ -180,8 +180,8 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
     size_t castingDataSize = 0;
     ReturnErrorOnFailure(chip::DeviceLayer::PersistedStorage::KeyValueStoreMgr().Get(kCastingDataKey, castingData,
                                                                                      kCastingDataMaxBytes, &castingDataSize));
-    ChipLogProgress(AppServer, "PersistenceManager::ReadAllVideoPlayers Read TLV(CastingData) from KVS store with size: %zu bytes",
-                    castingDataSize);
+    ChipLogProgress(AppServer, "PersistenceManager::ReadAllVideoPlayers Read TLV(CastingData) from KVS store with size: %d bytes",
+                    (int) castingDataSize);
 
     TLV::TLVReader reader;
     reader.Init(castingData);
@@ -436,8 +436,7 @@ void PersistenceManager::OnFabricRemoved(const FabricTable & fabricTable, Fabric
                 }
             }
 
-            // memset cachedVideoPlayers[indexToDelete] to zeroes
-            memset(&cachedVideoPlayers[indexToDelete], 0, sizeof(cachedVideoPlayers[indexToDelete]));
+            cachedVideoPlayers[indexToDelete] = {};
         }
     }
 
