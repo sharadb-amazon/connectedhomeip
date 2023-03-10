@@ -160,7 +160,7 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(chip::Transport::
     return Server::GetInstance().SendUserDirectedCommissioningRequest(commissioner);
 }
 
-chip::Inet::IPAddress *CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs)
+chip::Inet::IPAddress * CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs)
 {
     size_t ipIndexToUse = 0;
     for (size_t i = 0; i < numIPs; i++)
@@ -184,17 +184,16 @@ chip::Inet::IPAddress *CastingServer::getIpAddressForUDCRequest(chip::Inet::IPAd
 CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::DiscoveredNodeData * selectedCommissioner)
 {
     chip::TransportMgrBase transport = Server::GetInstance().GetTransportManager();
-    mUdcInProgress = true;
+    mUdcInProgress                   = true;
     // Send User Directed commissioning request
-    chip::Inet::IPAddress *ipAddressToUse = getIpAddressForUDCRequest(selectedCommissioner->resolutionData.ipAddress,
-        (uint8_t)selectedCommissioner->resolutionData.numIPs);
+    chip::Inet::IPAddress * ipAddressToUse = getIpAddressForUDCRequest(selectedCommissioner->resolutionData.ipAddress,
+                                                                       (uint8_t) selectedCommissioner->resolutionData.numIPs);
     ReturnErrorOnFailure(SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress::UDP(
-        *ipAddressToUse, selectedCommissioner->resolutionData.port,
-        selectedCommissioner->resolutionData.interfaceId)));
+        *ipAddressToUse, selectedCommissioner->resolutionData.port, selectedCommissioner->resolutionData.interfaceId)));
     mTargetVideoPlayerVendorId   = selectedCommissioner->commissionData.vendorId;
     mTargetVideoPlayerProductId  = selectedCommissioner->commissionData.productId;
     mTargetVideoPlayerDeviceType = selectedCommissioner->commissionData.deviceType;
-    mTargetVideoPlayerNumIPs     = (uint8_t)selectedCommissioner->resolutionData.numIPs;
+    mTargetVideoPlayerNumIPs     = (uint8_t) selectedCommissioner->resolutionData.numIPs;
     for (uint8_t i = 0; i < mTargetVideoPlayerNumIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
     {
         mTargetVideoPlayerIpAddress[i] = selectedCommissioner->resolutionData.ipAddress[i];

@@ -56,7 +56,7 @@ CHIP_ERROR ExampleDACProvider::GetDeviceAttestationCert(MutableByteSpan & out_da
     return CopySpanToMutableSpan(DevelopmentCerts::kDacCert, out_dac_buffer);
 #else
     return CHIP_ERROR_NOT_IMPLEMENTED;
-#endif  // 0x8000 <= CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID && CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID <= 0x801F
+#endif // 0x8000 <= CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID && CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID <= 0x801F
 }
 
 CHIP_ERROR ExampleDACProvider::GetProductAttestationIntermediateCert(MutableByteSpan & out_pai_buffer)
@@ -142,7 +142,7 @@ CHIP_ERROR ExampleDACProvider::SignWithDeviceAttestationKey(const ByteSpan & mes
     return CopySpanToMutableSpan(ByteSpan{ signature.ConstBytes(), signature.Length() }, out_signature_buffer);
 #else
     return CHIP_ERROR_NOT_IMPLEMENTED;
-#endif  // 0x8000 <= CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID && CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID <= 0x801F
+#endif // 0x8000 <= CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID && CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID <= 0x801F
 }
 
 } // namespace

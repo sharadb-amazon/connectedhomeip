@@ -45,6 +45,7 @@ xcodebuild -workspace TvCastingDarwin.xcworkspace -scheme TvCasting -sdk <SDK_TA
 ```
 
 The list of available SDKs can be found by using the showsdks flag.
+
 ```shell
 xcodebuild -showsdks
 ```
@@ -95,6 +96,5 @@ the run button once more.
 
 ## Debugging
 
-Use the "TvCasting" scheme when building to enable debugging. If you wish to build
-the app without any debugging symbols, use the "TvCasting Release" scheme.
-
+Use the "TvCasting" scheme when building to enable debugging. If you wish to
+build the app without any debugging symbols, use the "TvCasting Release" scheme.

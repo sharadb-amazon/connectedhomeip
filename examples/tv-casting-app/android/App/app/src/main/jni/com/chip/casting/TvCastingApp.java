@@ -32,9 +32,6 @@ import chip.platform.PreferencesConfigurationManager;
 import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class TvCastingApp {
   private static final String TAG = TvCastingApp.class.getSimpleName();
@@ -112,8 +109,7 @@ public class TvCastingApp {
       FailureCallback discoveryFailureCallback) {
     Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners called");
 
-    if (this.discoveryStarted)
-    {
+    if (this.discoveryStarted) {
       Log.d(TAG, "Discovery already started, stopping before starting again");
       stopVideoPlayerDiscovery();
     }
@@ -138,15 +134,17 @@ public class TvCastingApp {
             nsdManagerResolverAvailState);
 
     nsdManager.discoverServices(
-            DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
+        DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
     Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners started");
     this.discoveryStarted = true;
   }
 
-  public void stopVideoPlayerDiscovery()
-  {
+  public void stopVideoPlayerDiscovery() {
     Log.d(TAG, "TvCastingApp trying to stop video player discovery");
-    if (this.discoveryStarted && nsdManager != null && multicastLock != null && nsdDiscoveryListener != null) {
+    if (this.discoveryStarted
+        && nsdManager != null
+        && multicastLock != null
+        && nsdDiscoveryListener != null) {
       Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
       nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
       if (multicastLock.isHeld()) {

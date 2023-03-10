@@ -222,6 +222,10 @@ public class DiscoveredNodeData {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     DiscoveredNodeData that = (DiscoveredNodeData) o;
-    return vendorId == that.vendorId && productId == that.productId && commissioningMode == that.commissioningMode && deviceType == that.deviceType && Objects.equals(hostName, that.hostName);
+    return vendorId == that.vendorId
+        && productId == that.productId
+        && commissioningMode == that.commissioningMode
+        && deviceType == that.deviceType
+        && Objects.equals(hostName, that.hostName);
   }
 }
