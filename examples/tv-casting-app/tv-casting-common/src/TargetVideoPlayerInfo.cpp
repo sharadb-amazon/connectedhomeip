@@ -71,9 +71,11 @@ CHIP_ERROR TargetVideoPlayerInfo::FindOrEstablishCASESession(std::function<void(
 {
     ChipLogProgress(AppServer, "TargetVideoPlayerInfo::FindOrEstablishCASESession called");
 
-    VideoPlayerConnectionContext *connectionContext = new VideoPlayerConnectionContext(this, HandleDeviceConnected, HandleDeviceConnectionFailure, onConnectionSuccess, onConnectionFailure);
+    VideoPlayerConnectionContext * connectionContext = new VideoPlayerConnectionContext(
+        this, HandleDeviceConnected, HandleDeviceConnectionFailure, onConnectionSuccess, onConnectionFailure);
     Server * server = &(chip::Server::GetInstance());
-    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex), connectionContext->mOnConnectedCallback,
+    server->GetCASESessionManager()->FindOrEstablishSession(ScopedNodeId(mNodeId, mFabricIndex),
+                                                            connectionContext->mOnConnectedCallback,
                                                             connectionContext->mOnConnectionFailureCallback);
     return CHIP_NO_ERROR;
 }
@@ -127,8 +129,8 @@ bool TargetVideoPlayerInfo::HasEndpoint(EndpointId endpointId)
 
 void TargetVideoPlayerInfo::PrintInfo()
 {
-    ChipLogProgress(NotSpecified, " TargetVideoPlayerInfo deviceName=%s nodeId=0x" ChipLogFormatX64 " fabric index=%d", mDeviceName, ChipLogValueX64(mNodeId),
-                    mFabricIndex);
+    ChipLogProgress(NotSpecified, " TargetVideoPlayerInfo deviceName=%s nodeId=0x" ChipLogFormatX64 " fabric index=%d", mDeviceName,
+                    ChipLogValueX64(mNodeId), mFabricIndex);
     for (auto & endpointInfo : mEndpoints)
     {
         if (endpointInfo.IsInitialized())

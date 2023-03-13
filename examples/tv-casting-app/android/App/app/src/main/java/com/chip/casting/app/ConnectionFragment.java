@@ -17,8 +17,6 @@ import com.chip.casting.SuccessCallback;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.VideoPlayer;
 import com.chip.casting.util.GlobalCastingConstants;
-
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /** A {@link Fragment} to get the TV Casting App commissioned / connected. */
@@ -67,97 +65,114 @@ public class ConnectionFragment extends Fragment {
     onboardingPayloadView = getView().findViewById(R.id.onboardingPayload);
     commissioningWindowStatusView = getView().findViewById(R.id.commissioningWindowStatus);
 
-    String commissioningWindowStatus = (selectedCommissioner != null && selectedCommissioner.isPreCommissioned())
+    String commissioningWindowStatus =
+        (selectedCommissioner != null && selectedCommissioner.isPreCommissioned())
             ? "Establishing CASE session with video player..."
             : "Requesting to be commissioned by the video player...";
     commissioningWindowStatusView.setText(commissioningWindowStatus);
 
-    Executors.newSingleThreadExecutor().submit(() -> {
-      Callback callback = (ConnectionFragment.Callback) this.getActivity();
+    Executors.newSingleThreadExecutor()
+        .submit(
+            () -> {
+              Callback callback = (ConnectionFragment.Callback) this.getActivity();
 
-      SuccessCallback<VideoPlayer> onConnectionSuccess = new SuccessCallback<VideoPlayer>() {
-                @Override
-                public void handle(VideoPlayer videoPlayer) {
-                  Log.d(TAG, "handle() called on OnConnectionSuccess with " + videoPlayer);
-                  callback.handleCommissioningComplete();
-                }
-              };
+              SuccessCallback<VideoPlayer> onConnectionSuccess =
+                  new SuccessCallback<VideoPlayer>() {
+                    @Override
+                    public void handle(VideoPlayer videoPlayer) {
+                      Log.d(TAG, "handle() called on OnConnectionSuccess with " + videoPlayer);
+                      callback.handleCommissioningComplete();
+                    }
+                  };
 
-      FailureCallback onConnectionFailure = new FailureCallback() {
-                @Override
-                public void handle(MatterError matterError) {
-                  Log.d(TAG, "handle() called on OnConnectionFailure with " + matterError);
-                }
-              };
+              FailureCallback onConnectionFailure =
+                  new FailureCallback() {
+                    @Override
+                    public void handle(MatterError matterError) {
+                      Log.d(TAG, "handle() called on OnConnectionFailure with " + matterError);
+                    }
+                  };
 
-      SuccessCallback<ContentApp> onNewOrUpdatedEndpoints = new SuccessCallback<ContentApp>() {
-                @Override
-                public void handle(ContentApp contentApp) {
-                  Log.d(TAG, "handle() called on OnNewOrUpdatedEndpoint with " + contentApp);
-                }
-              };
+              SuccessCallback<ContentApp> onNewOrUpdatedEndpoints =
+                  new SuccessCallback<ContentApp>() {
+                    @Override
+                    public void handle(ContentApp contentApp) {
+                      Log.d(TAG, "handle() called on OnNewOrUpdatedEndpoint with " + contentApp);
+                    }
+                  };
 
-      if (selectedCommissioner != null && selectedCommissioner.isPreCommissioned()) {
-        VideoPlayer videoPlayer = selectedCommissioner.toConnectableVideoPlayer();
-        Log.d(TAG, "Calling verifyOrEstablishConnectionSuccess with VideoPlayer: " + videoPlayer);
-        tvCastingApp.verifyOrEstablishConnection(
-                videoPlayer, onConnectionSuccess, onConnectionFailure, onNewOrUpdatedEndpoints);
-      } else {
-        beginCommissioning(onConnectionSuccess, onConnectionFailure, onNewOrUpdatedEndpoints);
-      }
-    });
+              if (selectedCommissioner != null && selectedCommissioner.isPreCommissioned()) {
+                VideoPlayer videoPlayer = selectedCommissioner.toConnectableVideoPlayer();
+                Log.d(
+                    TAG,
+                    "Calling verifyOrEstablishConnectionSuccess with VideoPlayer: " + videoPlayer);
+                tvCastingApp.verifyOrEstablishConnection(
+                    videoPlayer, onConnectionSuccess, onConnectionFailure, onNewOrUpdatedEndpoints);
+              } else {
+                beginCommissioning(
+                    onConnectionSuccess, onConnectionFailure, onNewOrUpdatedEndpoints);
+              }
+            });
   }
 
-  private void beginCommissioning(SuccessCallback<VideoPlayer> onConnectionSuccess,
-                                  FailureCallback onConnectionFailure,
-                                  SuccessCallback<ContentApp> onNewOrUpdatedEndpoints)
-  {
+  private void beginCommissioning(
+      SuccessCallback<VideoPlayer> onConnectionSuccess,
+      FailureCallback onConnectionFailure,
+      SuccessCallback<ContentApp> onNewOrUpdatedEndpoints) {
     Log.d(TAG, "Running commissioning");
     this.openCommissioningWindowSuccess =
-            tvCastingApp.openBasicCommissioningWindow(
-                    GlobalCastingConstants.CommissioningWindowDurationSecs,
-                    new MatterCallbackHandler() {
-                      @Override
-                      public void handle(MatterError error) {
-                        Log.d(TAG, "handle() called on CommissioningComplete event with " + error);
-                      }
-                    },
-                    onConnectionSuccess,
-                    onConnectionFailure,
-                    onNewOrUpdatedEndpoints);
+        tvCastingApp.openBasicCommissioningWindow(
+            GlobalCastingConstants.CommissioningWindowDurationSecs,
+            new MatterCallbackHandler() {
+              @Override
+              public void handle(MatterError error) {
+                Log.d(TAG, "handle() called on CommissioningComplete event with " + error);
+              }
+            },
+            onConnectionSuccess,
+            onConnectionFailure,
+            onNewOrUpdatedEndpoints);
 
     if (this.openCommissioningWindowSuccess) {
       if (selectedCommissioner != null && selectedCommissioner.getNumIPs() > 0) {
         String ipAddress = selectedCommissioner.getIpAddresses().get(0).getHostAddress();
-        Log.d(TAG,
-          "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
-                + ipAddress + " port: " + selectedCommissioner.getPort());
+        Log.d(
+            TAG,
+            "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
+                + ipAddress
+                + " port: "
+                + selectedCommissioner.getPort());
 
         this.sendUdcSuccess = tvCastingApp.sendCommissioningRequest(selectedCommissioner);
         updateUiOnConnectionSuccess();
       }
     } else {
-      getActivity().runOnUiThread(() -> {
-        commissioningWindowStatusView.setText("Failed to open commissioning window");
-      });
+      getActivity()
+          .runOnUiThread(
+              () -> {
+                commissioningWindowStatusView.setText("Failed to open commissioning window");
+              });
     }
   }
 
   private void updateUiOnConnectionSuccess() {
-    getActivity().runOnUiThread(() -> {
-      String finalCommissioningWindowStatus = "Commissioning window has been opened. Commission manually.";
-      if (this.sendUdcSuccess) {
-        finalCommissioningWindowStatus =
-                "Commissioning window has been opened. Commissioning requested from "
+    getActivity()
+        .runOnUiThread(
+            () -> {
+              String finalCommissioningWindowStatus =
+                  "Commissioning window has been opened. Commission manually.";
+              if (this.sendUdcSuccess) {
+                finalCommissioningWindowStatus =
+                    "Commissioning window has been opened. Commissioning requested from "
                         + selectedCommissioner.getDeviceName();
-      }
-      onboardingPayloadView.setText(
-              "Onboarding PIN: "
+              }
+              onboardingPayloadView.setText(
+                  "Onboarding PIN: "
                       + GlobalCastingConstants.SetupPasscode
                       + "\nDiscriminator: "
                       + GlobalCastingConstants.Discriminator);
-      commissioningWindowStatusView.setText(finalCommissioningWindowStatus);
-    });
+              commissioningWindowStatusView.setText(finalCommissioningWindowStatus);
+            });
   }
 
   /** Interface for notifying the host. */

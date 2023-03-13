@@ -6,9 +6,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.chip.casting.AppParameters;
-import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
+import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.util.GlobalCastingConstants;
 import java.util.Random;
 

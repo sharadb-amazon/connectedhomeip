@@ -1,7 +1,6 @@
 package com.chip.casting.util;
 
 import android.util.Base64;
-
 import com.chip.casting.DACProvider;
 
 public class DACProviderStub implements DACProvider {

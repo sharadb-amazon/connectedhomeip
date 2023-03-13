@@ -24,7 +24,7 @@ public class MatterError {
   private String errorMessage;
 
   public static final MatterError DISCOVERY_SERVICE_LOST =
-          new MatterError(4, "Discovery service was lost.");
+      new MatterError(4, "Discovery service was lost.");
 
   public static final MatterError NO_ERROR = new MatterError(0, null);
 
