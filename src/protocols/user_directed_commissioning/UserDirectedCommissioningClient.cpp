@@ -25,8 +25,7 @@
 
 #include "UserDirectedCommissioning.h"
 
-#include <chrono>
-#include <thread>
+#include <unistd.h>
 
 namespace chip {
 namespace Protocols {
@@ -51,7 +50,7 @@ CHIP_ERROR UserDirectedCommissioningClient::SendUDCMessage(TransportMgrBase * tr
             ChipLogError(AppServer, "UDC SendMessage failed: %" CHIP_ERROR_FORMAT, err.Format());
             return err;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        usleep(100 * 1000); // 100ms
     }
     ChipLogProgress(Inet, "UDC msg send status %" CHIP_ERROR_FORMAT, err.Format());
     return err;
