@@ -31,7 +31,7 @@ public:
     CHIP_ERROR ReadAllVideoPlayers(TargetVideoPlayerInfo outVideoPlayers[]);
 
     void OnFabricRemoved(const chip::FabricTable & fabricTable, chip::FabricIndex fabricIndex);
-    
+
     CHIP_ERROR PurgeVideoPlayerCache();
 
 private:

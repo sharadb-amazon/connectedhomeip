@@ -112,7 +112,7 @@ class AndroidBuilder(Builder):
         super(AndroidBuilder, self).__init__(root, runner)
         self.board = board
         self.app = app
-        self.is_debug = is_debug;
+        self.is_debug = is_debug
 
     def validate_build_environment(self):
         for k in ["ANDROID_NDK_HOME", "ANDROID_HOME"]:
@@ -393,19 +393,19 @@ class AndroidBuilder(Builder):
 
     def stripSymbols(self):
         output_libs_dir = os.path.join(
-                self.output_dir,
-                "lib",
-                "jni",
-                self.board.AbiName())
+            self.output_dir,
+            "lib",
+            "jni",
+            self.board.AbiName())
         for lib in os.listdir(output_libs_dir):
             if (lib.endswith(".so")):
                 self._Execute(
-                    [ "llvm-strip",
+                    ["llvm-strip",
                      "-s",
                      os.path.join(output_libs_dir, lib)
                      ],
                     "Stripping symbols from " + lib
-                    )
+                )
 
     def _build(self):
         if self.board.IsIde():

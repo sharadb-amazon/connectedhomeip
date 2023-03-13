@@ -37,9 +37,9 @@
                             clientQueue:(dispatch_queue_t _Nonnull)clientQueue
                    initAppStatusHandler:(nullable void (^)(bool))initAppStatusHandler;
 
-- (void)setDacHolder:(DeviceAttestationCredentialsHolder *_Nonnull)deviceAttestationCredentials
-                      clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-  setDacHolderStatus:(void (^_Nonnull)(MatterError * _Nonnull))setDacHolderStatus;
+- (void)setDacHolder:(DeviceAttestationCredentialsHolder * _Nonnull)deviceAttestationCredentials
+           clientQueue:(dispatch_queue_t _Nonnull)clientQueue
+    setDacHolderStatus:(void (^_Nonnull)(MatterError * _Nonnull))setDacHolderStatus;
 
 /*!
  @brief Browse for on-network commissioner TVs
