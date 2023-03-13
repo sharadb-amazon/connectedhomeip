@@ -132,7 +132,10 @@ class NsdServiceFinderAndResolver implements NsdManager.DiscoveryListener {
                 "Failed to resolve service '" + serviceInfo.getServiceName() + "': " + errorCode);
             chipMdnsCallback.handleServiceResolve(
                 serviceInfo.getServiceName(),
-                serviceInfo.getServiceType(),
+                // Use the target service info since the resolved service info sometimes appends a "." at the front
+                // likely because it is trying to strip the service name out of it and something is missed.
+                // The target service info service type should be effectively the same as the resolved service info.
+                NsdServiceFinderAndResolver.this.targetServiceInfo.getServiceType(),
                 null,
                 null,
                 0,
@@ -156,12 +159,17 @@ class NsdServiceFinderAndResolver implements NsdManager.DiscoveryListener {
                 TAG,
                 "Resolved service '"
                     + serviceInfo.getServiceName()
-                    + "' to "
+                    + "' ("
+                    + serviceInfo.getServiceType()
+                    + ") to "
                     + serviceInfo.getHost());
             // TODO: Find out if DNS-SD results for Android should contain interface ID
             chipMdnsCallback.handleServiceResolve(
                 serviceInfo.getServiceName(),
-                serviceInfo.getServiceType(),
+                // Use the target service info since the resolved service info sometimes appends a "." at the front
+                // likely because it is trying to strip the service name out of it and something is missed.
+                // The target service info service type should be effectively the same as the resolved service info.
+                NsdServiceFinderAndResolver.this.targetServiceInfo.getServiceType(),
                 serviceInfo.getHost().getHostName(),
                 serviceInfo.getHost().getHostAddress(),
                 serviceInfo.getPort(),
