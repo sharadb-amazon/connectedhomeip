@@ -266,14 +266,30 @@ void CastingServer::ReadServerClusters(EndpointId endpointId)
 
     TargetEndpointInfo * endpointInfo = mActiveTargetVideoPlayerInfo.GetOrAddEndpoint(endpointId);
 
-    if (cluster.ReadAttribute<app::Clusters::Descriptor::Attributes::ServerList::TypeInfo>(
-            endpointInfo, CastingServer::OnDescriptorReadSuccessResponse, CastingServer::OnDescriptorReadFailureResponse) !=
-        CHIP_NO_ERROR)
-    {
-        ChipLogError(Controller, "Could not read Descriptor cluster ServerList");
-    }
+    CHIP_ERROR err = cluster.ReadAttribute<app::Clusters::Descriptor::Attributes::DeviceTypeList::TypeInfo>(endpointInfo, 
+                                        [cluster, endpointInfo](void * context, const app::DataModel::DecodableList<DeviceTypeStruct> & responseList) 
+                                        {
+                                            auto iter = responseList.begin();
+                                            while (iter.Next()) {
+                                                auto & deviceType = iter.GetValue();
+                                                if(deviceType == 36) 
+                                                {
+                                                    if (cluster.ReadAttribute<app::Clusters::Descriptor::Attributes::ServerList::TypeInfo>(endpointInfo, 
+                                                        CastingServer::OnDescriptorReadSuccessResponse, CastingServer::OnDescriptorReadFailureResponse) != CHIP_NO_ERROR)
+                                                    {
+                                                        ChipLogError(Controller, "Could not read Descriptor cluster ServerList");
+                                                    }  
+                                                    ChipLogProgress(Controller, "Sent descriptor read for remote endpoint=%d", endpointInfo->GetEndpointId());
+                                                    break;
+                                                }
+                                            }
+                                        },
+                                        [](void * context, CHIP_ERROR error){});
 
-    ChipLogProgress(Controller, "Sent descriptor read for remote endpoint=%d", endpointId);
+    if(err != CHIP_NO_ERROR)
+    {
+        ChipLogError(Controller, "Could not read Descriptor cluster DeviceTypeList");
+    }
 }
 
 void CastingServer::OnDescriptorReadSuccessResponse(void * context, const app::DataModel::DecodableList<ClusterId> & responseList)
