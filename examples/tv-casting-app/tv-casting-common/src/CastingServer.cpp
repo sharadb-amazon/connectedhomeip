@@ -77,8 +77,8 @@ CHIP_ERROR CastingServer::SetRotatingDeviceIdUniqueId(chip::Optional<chip::ByteS
                                             2 * CHIP_DEVICE_CONFIG_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH);
         ChipLogProgress(
             AppServer,
-            "Setting unique ID (for generating rotating device ID) received from client app (hex): %s with byte size: %d",
-            hexRotatingDeviceIdUniqueId, (int)rotatingDeviceIdUniqueIdOptional.Value().size());
+            "Setting unique ID (for generating rotating device ID) received from client app (hex): %s with byte size: %lu",
+            hexRotatingDeviceIdUniqueId, static_cast<unsigned long>(rotatingDeviceIdUniqueIdOptional.Value().size()));
 
         return chip::DeviceLayer::ConfigurationMgr().SetRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueIdOptional.Value());
     }
@@ -168,7 +168,7 @@ chip::Inet::IPAddress * CastingServer::getIpAddressForUDCRequest(chip::Inet::IPA
         if (ipAddresses[i].IsIPv4())
         {
             ipIndexToUse = i;
-            ChipLogProgress(AppServer, "Found iPv4 address at index: %d", (int)ipIndexToUse);
+            ChipLogProgress(AppServer, "Found iPv4 address at index: %lu", static_cast<unsigned long>(ipIndexToUse));
             break;
         }
 
