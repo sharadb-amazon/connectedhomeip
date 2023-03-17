@@ -49,4 +49,8 @@ public class PreferencesKeyValueStoreManager implements KeyValueStoreManager {
   public void delete(String key) {
     preferences.edit().remove(key).apply();
   }
+
+  public void clear() {
+    preferences.edit().clear().apply();
+  }
 }

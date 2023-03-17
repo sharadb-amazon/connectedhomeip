@@ -48,6 +48,8 @@ public class TvCastingApp {
   private NsdManager nsdManager;
   private NsdDiscoveryListener nsdDiscoveryListener;
 
+  private PreferencesKeyValueStoreManager preferencesKeyValueStoreManager;
+
   public boolean initApp(Context applicationContext, AppParameters appParameters) {
     if (applicationContext == null || appParameters == null) {
       return false;
@@ -58,10 +60,11 @@ public class TvCastingApp {
     NsdManagerServiceResolver nsdManagerServiceResolver =
         new NsdManagerServiceResolver(applicationContext, nsdManagerResolverAvailState);
 
+    this.preferencesKeyValueStoreManager = new PreferencesKeyValueStoreManager(applicationContext);
     AndroidChipPlatform chipPlatform =
         new AndroidChipPlatform(
             new AndroidBleManager(),
-            new PreferencesKeyValueStoreManager(applicationContext),
+            this.preferencesKeyValueStoreManager,
             new PreferencesConfigurationManager(applicationContext),
             nsdManagerServiceResolver,
             new NsdManagerServiceBrowser(applicationContext),
@@ -180,7 +183,11 @@ public class TvCastingApp {
 
   public native List<VideoPlayer> getActiveTargetVideoPlayers();
 
-  public native boolean purgeCache();
+  public boolean purgeCache() {
+    Log.d(TAG, "TvCastingApp.purgeCache called");
+    this.preferencesKeyValueStoreManager.clear();
+    return true;
+  }
 
   /*
    * CONTENT LAUNCHER CLUSTER

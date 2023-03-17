@@ -18,6 +18,8 @@
 
 #include "CastingServer.h"
 
+#include <cstdio>
+
 using namespace chip;
 using namespace chip::Controller;
 using namespace chip::Credentials;
@@ -377,7 +379,18 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
 
 CHIP_ERROR CastingServer::PurgeCache()
 {
-    return mPersistenceManager.PurgeVideoPlayerCache();
+#ifdef CHIP_CONFIG_KVS_PATH
+     if(remove(CHIP_CONFIG_KVS_PATH) != 0)
+     {
+        return CHIP_ERROR_PERSISTED_STORAGE_FAILED;
+     }
+     else
+     {
+        return CHIP_NO_ERROR;
+     }
+#else
+    return CHIP_ERROR_PERSISTED_STORAGE_VALUE_NOT_FOUND;
+#endif
 }
 
 [[deprecated("Use ContentLauncher_LaunchURL(..) instead")]] CHIP_ERROR
