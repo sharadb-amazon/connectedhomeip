@@ -426,6 +426,9 @@ private:
 
     static void DeviceEventCallback(const chip::DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
     void ReadServerClusters(chip::EndpointId endpointId);
+    void FilterByDeviceTypeAndReadServerClusters(chip::EndpointId endpointId);
+    static void OnDeviceTypeReadSuccessResponse(void * context, const chip::app::DataModel::DecodableList<chip::app::Clusters::Descriptor::Structs::DeviceTypeStruct::DecodableType> & responseList);
+    static void OnDeviceTypeReadFailureResponse(void * context, CHIP_ERROR error);
 
     /**
      * @brief Retrieve the IP Address to use for the UDC request.

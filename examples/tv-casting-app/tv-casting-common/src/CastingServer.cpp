@@ -237,7 +237,8 @@ void CastingServer::ReadServerClustersForNode(NodeId nodeId)
         {
             if (!mActiveTargetVideoPlayerInfo.HasEndpoint(binding.remote))
             {
-                ReadServerClusters(binding.remote);
+                FilterByDeviceTypeAndReadServerClusters(binding.remote);
+                //ReadServerClusters(binding.remote);
             }
             else
             {
@@ -249,6 +250,55 @@ void CastingServer::ReadServerClustersForNode(NodeId nodeId)
             }
         }
     }
+}
+
+void CastingServer::FilterByDeviceTypeAndReadServerClusters(EndpointId endpointId)
+{
+    const OperationalDeviceProxy * deviceProxy = mActiveTargetVideoPlayerInfo.GetOperationalDeviceProxy();
+    if (deviceProxy == nullptr)
+    {
+        ChipLogError(AppServer, "Failed in getting an instance of DeviceProxy");
+        return;
+    }
+
+    // GetOperationalDeviceProxy only passes us a deviceProxy if we can get a SessionHandle.
+    chip::Controller::DescriptorCluster cluster(*deviceProxy->GetExchangeManager(), deviceProxy->GetSecureSession().Value(),
+                                                endpointId);
+
+    TargetEndpointInfo * endpointInfo = mActiveTargetVideoPlayerInfo.GetOrAddEndpoint(endpointId);
+
+    if (cluster.ReadAttribute<app::Clusters::Descriptor::Attributes::DeviceTypeList::TypeInfo>(
+            endpointInfo, CastingServer::OnDeviceTypeReadSuccessResponse, CastingServer::OnDeviceTypeReadFailureResponse) !=
+        CHIP_NO_ERROR)
+    {
+        ChipLogError(Controller, "Could not read Descriptor cluster DeviceTypeList");
+    }
+
+    ChipLogProgress(Controller, "Sent descriptor read for DeviceTypeList for remote endpoint=%d", endpointId);
+}
+
+void CastingServer::OnDeviceTypeReadSuccessResponse(void * context, const app::DataModel::DecodableList<chip::app::Clusters::Descriptor::Structs::DeviceTypeStruct::DecodableType> & responseList)
+{
+    //ReadServerClusters(binding.remote);
+
+    TargetEndpointInfo * endpointInfo = static_cast<TargetEndpointInfo *>(context);
+    ChipLogProgress(AppServer, "Descriptor: Default DeviceTypeList Success Response endpoint=%d", endpointInfo->GetEndpointId());
+
+    auto iter = responseList.begin();
+    while (iter.Next())
+    {
+        auto & deviceTypeStruct = iter.GetValue();
+        ChipLogProgress(AppServer, "OnDeviceTypeReadSuccessResponse: type %d, revision %d", deviceTypeStruct.type, deviceTypeStruct.revision);
+        //endpointInfo->AddCluster(clusterId);
+    }
+    // Always print the target info after handling descriptor read response
+    // Even when we get nothing back for any reasons
+    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.PrintInfo();
+}
+
+void CastingServer::OnDeviceTypeReadFailureResponse(void * context, CHIP_ERROR error)
+{
+
 }
 
 void CastingServer::ReadServerClusters(EndpointId endpointId)
