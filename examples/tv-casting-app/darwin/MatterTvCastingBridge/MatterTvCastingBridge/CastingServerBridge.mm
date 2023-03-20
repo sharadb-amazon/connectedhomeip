@@ -191,7 +191,7 @@
  */
 - (void)withCastingServerInvokeBlock:(const NSString * _Nullable)description
                        callbackQueue:(dispatch_queue_t)callbackQueue
-                     onBlockComplete:(void (^_Nonnull)(bool))blockCompleteCallback
+                     onBlockComplete:(void (^_Nonnull)(MatterError * _Nonnull))blockCompleteCallback
                                block:(CHIP_ERROR (^_Nonnull)(CastingServer *))block
 {
     [self dispatchOnMatterSDKQueue:description
@@ -235,8 +235,8 @@
  */
 - (void)withCastingServerInvokeBlock:(const NSString * _Nullable)description
                        callbackQueue:(dispatch_queue_t)callbackQueue
-                     onBlockComplete:(void (^_Nonnull)(bool))blockCompleteCallback
-                          onResponse:(void (^_Nonnull)(bool))responseCallback
+                     onBlockComplete:(void (^_Nonnull)(MatterError * _Nonnull))blockCompleteCallback
+                          onResponse:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                                block:(CHIP_ERROR (^_Nonnull)(CastingServer *, std::function<void(CHIP_ERROR)>))block
 {
     [self withCastingServerInvokeBlock:description
@@ -252,7 +252,9 @@
                                              dispatchOnClientQueue:callbackQueue
                                                        description:_description
                                                              block:^{
-                                                                 responseCallback(CHIP_NO_ERROR == err);
+                                                                 responseCallback([[MatterError alloc]
+                                                                     initWithCode:err.AsInteger()
+                                                                          message:[NSString stringWithUTF8String:err.AsString()]]);
                                                              }];
                                      });
                                  }];
@@ -260,7 +262,7 @@
 
 - (MatterError *)initializeApp:(AppParameters * _Nullable)appParameters
                    clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-          initAppStatusHandler:(nullable void (^)(bool))initAppStatusHandler
+          initAppStatusHandler:(nullable void (^)(MatterError * _Nonnull))initAppStatusHandler
 {
     // The Matter SDK is not, generally, internally thread-safe. It relies upon the client to lock
     // the SDK prior to any interactions after chip::DeviceLayer::PlatformMgr().InitChipStack()
@@ -365,14 +367,13 @@
             err = CastingServer::GetInstance()->Init(&appParam);
         }
 
-        Boolean initAppStatus = true;
         if (err != CHIP_NO_ERROR) {
             ChipLogError(AppServer, "CastingServerBridge().initApp() failed: %" CHIP_ERROR_FORMAT, err.Format());
-            initAppStatus = false;
         }
 
         dispatch_async(clientQueue, ^{
-            initAppStatusHandler(initAppStatus);
+            initAppStatusHandler([[MatterError alloc] initWithCode:err.AsInteger()
+                                                           message:[NSString stringWithUTF8String:err.AsString()]]);
         });
     });
 
@@ -439,12 +440,11 @@
 
 - (void)discoverCommissioners:(dispatch_queue_t _Nonnull)clientQueue
                  timeoutInSeconds:(NSUInteger)timeoutInSeconds
-      discoveryRequestSentHandler:(nullable void (^)(bool))discoveryRequestSentHandler
+      discoveryRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))discoveryRequestSentHandler
     discoveredCommissionerHandler:(nullable void (^)(DiscoveredNodeData *))discoveredCommissionerHandler
 {
     [self dispatchOnMatterSDKQueue:@"discoverCommissioners(...)"
                              block:^{
-                                 bool discoveryRequestStatus = true;
                                  if (self->_cancelDiscoveryCommissionersWork) {
                                      dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
                                      self->_cancelDiscoveryCommissionersWork = nil;
@@ -460,7 +460,6 @@
                                  if (err != CHIP_NO_ERROR) {
                                      ChipLogError(AppServer,
                                          "CastingServerBridge().discoverCommissioners() failed: %" CHIP_ERROR_FORMAT, err.Format());
-                                     discoveryRequestStatus = false;
                                  }
 
                                  if (err == CHIP_NO_ERROR) {
@@ -483,7 +482,9 @@
                                  }
 
                                  dispatch_async(clientQueue, ^{
-                                     discoveryRequestSentHandler(discoveryRequestStatus);
+                                     discoveryRequestSentHandler(
+                                         [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                   message:[NSString stringWithUTF8String:err.AsString()]]);
                                  });
                              }];
 }
@@ -518,20 +519,20 @@
                             commissionerPort:(uint16_t)commissionerPort
                            platformInterface:(unsigned int)platformInterface
                                  clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                       udcRequestSentHandler:(nullable void (^)(bool))udcRequestSentHandler
+                       udcRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))udcRequestSentHandler
 {
     const NSString * description =
         [NSString stringWithFormat:@"sendUserDirectedCommissioningRequest() IP %s port %d platformInterface %d",
                   [commissionerIpAddress UTF8String], commissionerPort, platformInterface];
     [self dispatchOnMatterSDKQueue:description
                              block:^{
-                                 bool udcRequestStatus;
+                                 CHIP_ERROR err = CHIP_NO_ERROR;
                                  chip::Inet::IPAddress commissionerAddrInet;
                                  if (chip::Inet::IPAddress::FromString([commissionerIpAddress UTF8String], commissionerAddrInet)
                                      == false) {
                                      ChipLogError(AppServer,
                                          "CastingServerBridge().sendUserDirectedCommissioningRequest() failed to parse IP address");
-                                     udcRequestStatus = false;
+                                     err = CHIP_ERROR_INVALID_ADDRESS;
                                  } else {
                                      chip::Inet::InterfaceId interfaceId = chip::Inet::InterfaceId(platformInterface);
 
@@ -545,21 +546,20 @@
                                              "CastingServerBridge().sendUserDirectedCommissioningRequest() failed: "
                                              "%" CHIP_ERROR_FORMAT,
                                              err.Format());
-                                         udcRequestStatus = false;
-                                     } else {
-                                         udcRequestStatus = true;
                                      }
                                  }
 
                                  dispatch_async(clientQueue, ^{
-                                     udcRequestSentHandler(udcRequestStatus);
+                                     udcRequestSentHandler(
+                                         [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                   message:[NSString stringWithUTF8String:err.AsString()]]);
                                  });
                              }];
 }
 
 - (void)sendUserDirectedCommissioningRequest:(DiscoveredNodeData * _Nonnull)commissioner
                                  clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                       udcRequestSentHandler:(nullable void (^)(bool))udcRequestSentHandler
+                       udcRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))udcRequestSentHandler
 {
     const NSString * description =
         [NSString stringWithFormat:@"sendUserDirectedCommissioningRequest(...) IP %s port %d platformInterface %d deviceName %s",
@@ -568,7 +568,7 @@
 
     [self dispatchOnMatterSDKQueue:description
                              block:^{
-                                 bool udcRequestStatus;
+                                 CHIP_ERROR err = CHIP_NO_ERROR;
 
                                  chip::Dnssd::DiscoveredNodeData cppCommissioner;
                                  if ([ConversionUtils convertToCppDiscoveredNodeDataFrom:commissioner
@@ -578,7 +578,7 @@
                                          "CastingServerBridge().sendUserDirectedCommissioningRequest() failed to convert "
                                          "Commissioner(DiscoveredNodeData) "
                                          "to Cpp type");
-                                     udcRequestStatus = false;
+                                     err = CHIP_ERROR_INVALID_ADDRESS;
                                  } else {
                                      CHIP_ERROR err
                                          = CastingServer::GetInstance()->SendUserDirectedCommissioningRequest(&cppCommissioner);
@@ -587,14 +587,13 @@
                                              "CastingServerBridge().sendUserDirectedCommissioningRequest() failed: "
                                              "%" CHIP_ERROR_FORMAT,
                                              err.Format());
-                                         udcRequestStatus = false;
-                                     } else {
-                                         udcRequestStatus = true;
                                      }
                                  }
 
                                  dispatch_async(clientQueue, ^{
-                                     udcRequestSentHandler(udcRequestStatus);
+                                     udcRequestSentHandler(
+                                         [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                   message:[NSString stringWithUTF8String:err.AsString()]]);
                                  });
                              }];
 }
@@ -605,8 +604,8 @@
 }
 
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
-    commissioningWindowRequestedHandler:(void (^_Nonnull)(bool))commissioningWindowRequestedHandler
-          commissioningCompleteCallback:(void (^_Nonnull)(bool))commissioningCompleteCallback
+    commissioningWindowRequestedHandler:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowRequestedHandler
+          commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
             onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
          onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
@@ -620,7 +619,9 @@
                                            dispatchOnClientQueue:clientQueue
                                                      description:@"openBasicCommissioningWindow(...) commissioningCompleteCallback"
                                                            block:^{
-                                                               commissioningCompleteCallback(CHIP_NO_ERROR == err);
+                                                               commissioningCompleteCallback([[MatterError alloc]
+                                                                   initWithCode:err.AsInteger()
+                                                                        message:[NSString stringWithUTF8String:err.AsString()]]);
                                                            }];
                                    },
                                    [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
@@ -656,7 +657,9 @@
 
                                dispatch_async(clientQueue, ^{
                                    ChipLogProgress(AppServer, "[async] Dispatching commissioningWindowRequestedHandler");
-                                   commissioningWindowRequestedHandler(CHIP_NO_ERROR == err);
+                                   commissioningWindowRequestedHandler(
+                                       [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                 message:[NSString stringWithUTF8String:err.AsString()]]);
                                });
                            }];
 }
@@ -916,9 +919,9 @@
 - (void)contentLauncher_launchUrl:(ContentApp * _Nonnull)contentApp
                        contentUrl:(NSString * _Nonnull)contentUrl
                 contentDisplayStr:(NSString * _Nonnull)contentDisplayStr
-                 responseCallback:(void (^_Nonnull)(bool))responseCallback
+                 responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                       clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-               requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+               requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -937,9 +940,9 @@
                         contentSearch:(ContentLauncher_ContentSearch * _Nonnull)contentSearch
                              autoPlay:(bool)autoPlay
                                  data:(NSString * _Nullable)data
-                     responseCallback:(void (^_Nonnull)(bool))responseCallback
+                     responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                           clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                   requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                   requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description =
         [NSString stringWithFormat:@"contentLauncher_launchContent(...) with Content App endpoint ID %d", contentApp.endpointId];
@@ -1010,12 +1013,16 @@
                                              dispatchOnClientQueue:clientQueue
                                                        description:@"contentLauncher_launchContent(...) responseCallback"
                                                              block:^{
-                                                                 responseCallback(CHIP_NO_ERROR == err);
+                                                                 responseCallback([[MatterError alloc]
+                                                                     initWithCode:err.AsInteger()
+                                                                          message:[NSString stringWithUTF8String:err.AsString()]]);
                                                              }];
                                      });
 
                                  dispatch_async(clientQueue, ^{
-                                     requestSentHandler(CHIP_NO_ERROR == err);
+                                     requestSentHandler(
+                                         [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                   message:[NSString stringWithUTF8String:err.AsString()]]);
                                  });
                              }];
 }
@@ -1077,9 +1084,9 @@
            transitionTime:(uint16_t)transitionTime
                optionMask:(uint8_t)optionMask
            optionOverride:(uint8_t)optionOverride
-         responseCallback:(void (^_Nonnull)(bool))responseCallback
+         responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
               clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-       requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+       requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1101,9 +1108,9 @@
                   transitionTime:(uint16_t)transitionTime
                       optionMask:(uint8_t)optionMask
                   optionOverride:(uint8_t)optionOverride
-                responseCallback:(void (^_Nonnull)(bool))responseCallback
+                responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                      clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-              requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+              requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description =
         [NSString stringWithFormat:@"levelControl_moveToLevel(...) with Content App endpoint ID %d", contentApp.endpointId];
@@ -1284,9 +1291,9 @@
 }
 
 - (void)mediaPlayback_play:(ContentApp * _Nonnull)contentApp
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1302,9 +1309,9 @@
 }
 
 - (void)mediaPlayback_pause:(ContentApp * _Nonnull)contentApp
-           responseCallback:(void (^_Nonnull)(bool))responseCallback
+           responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                 clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+         requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1320,9 +1327,9 @@
 }
 
 - (void)mediaPlayback_stopPlayback:(ContentApp * _Nonnull)contentApp
-                  responseCallback:(void (^_Nonnull)(bool))responseCallback
+                  responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                        clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1338,9 +1345,9 @@
 }
 
 - (void)mediaPlayback_next:(ContentApp * _Nonnull)contentApp
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1357,9 +1364,9 @@
 
 - (void)mediaPlayback_seek:(ContentApp * _Nonnull)contentApp
                   position:(uint64_t)position
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1376,9 +1383,9 @@
 
 - (void)mediaPlayback_skipForward:(ContentApp * _Nonnull)contentApp
         deltaPositionMilliseconds:(uint64_t)deltaPositionMilliseconds
-                 responseCallback:(void (^_Nonnull)(bool))responseCallback
+                 responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                       clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-               requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+               requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1396,9 +1403,9 @@
 
 - (void)mediaPlayback_skipBackward:(ContentApp * _Nonnull)contentApp
          deltaPositionMilliseconds:(uint64_t)deltaPositionMilliseconds
-                  responseCallback:(void (^_Nonnull)(bool))responseCallback
+                  responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                        clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -1815,9 +1822,9 @@
                       catalogVendorId:(uint16_t)catalogVendorId
                         applicationId:(NSString * _Nonnull)applicationId
                                  data:(NSData * _Nullable)data
-                     responseCallback:(void (^_Nonnull)(bool))responseCallback
+                     responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                           clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                   requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                   requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application;
     application.catalogVendorId = catalogVendorId;
@@ -1841,9 +1848,9 @@
 - (void)applicationLauncher_stopApp:(ContentApp * _Nonnull)contentApp
                     catalogVendorId:(uint16_t)catalogVendorId
                       applicationId:(NSString * _Nonnull)applicationId
-                   responseCallback:(void (^_Nonnull)(bool))responseCallback
+                   responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                         clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                 requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application;
     application.catalogVendorId = catalogVendorId;
@@ -1865,9 +1872,9 @@
 - (void)applicationLauncher_hideApp:(ContentApp * _Nonnull)contentApp
                     catalogVendorId:(uint16_t)catalogVendorId
                       applicationId:(NSString * _Nonnull)applicationId
-                   responseCallback:(void (^_Nonnull)(bool))responseCallback
+                   responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                         clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                 requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application;
     application.catalogVendorId = catalogVendorId;
@@ -1889,9 +1896,9 @@
 - (void)targetNavigator_navigateTarget:(ContentApp * _Nonnull)contentApp
                                 target:(uint8_t)target
                                   data:(NSString * _Nullable)data
-                      responseCallback:(void (^_Nonnull)(bool))responseCallback
+                      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+                    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -2035,9 +2042,9 @@
 
 - (void)keypadInput_sendKey:(ContentApp * _Nonnull)contentApp
                     keyCode:(uint8_t)keyCode
-           responseCallback:(void (^_Nonnull)(bool))responseCallback
+           responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                 clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+         requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -2547,9 +2554,9 @@
 }
 
 - (void)onOff_on:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -2565,9 +2572,9 @@
 }
 
 - (void)onOff_off:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description
@@ -2583,9 +2590,9 @@
 }
 
 - (void)onOff_toggle:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler
 {
     const NSString * description = [NSString stringWithFormat:@"%s(...) (Content App %d)", __func__, contentApp.endpointId];
     [self withCastingServerInvokeBlock:description

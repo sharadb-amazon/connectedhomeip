@@ -35,7 +35,7 @@
 
 - (MatterError * _Nonnull)initializeApp:(AppParameters * _Nullable)appParameters
                             clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                   initAppStatusHandler:(nullable void (^)(bool))initAppStatusHandler;
+                   initAppStatusHandler:(nullable void (^)(MatterError * _Nonnull))initAppStatusHandler;
 
 - (void)setDacHolder:(DeviceAttestationCredentialsHolder * _Nonnull)deviceAttestationCredentials
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
@@ -50,7 +50,7 @@
  */
 - (void)discoverCommissioners:(dispatch_queue_t _Nonnull)clientQueue
                  timeoutInSeconds:(NSUInteger)timeoutInSeconds
-      discoveryRequestSentHandler:(nullable void (^)(bool))discoveryRequestSentHandler
+      discoveryRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))discoveryRequestSentHandler
     discoveredCommissionerHandler:(nullable void (^)(DiscoveredNodeData * _Nonnull))discoveredCommissionerHandler;
 
 /*!
@@ -83,7 +83,7 @@
                             commissionerPort:(uint16_t)commissionerPort
                            platformInterface:(unsigned int)platformInterface
                                  clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                       udcRequestSentHandler:(nullable void (^)(bool))udcRequestSentHandler;
+                       udcRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))udcRequestSentHandler;
 
 /*!
  @brief Send a User Directed Commissioning request to a commissioner TV
@@ -96,7 +96,7 @@
  */
 - (void)sendUserDirectedCommissioningRequest:(DiscoveredNodeData * _Nonnull)commissioner
                                  clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                       udcRequestSentHandler:(nullable void (^)(bool))udcRequestSentHandler;
+                       udcRequestSentHandler:(nullable void (^)(MatterError * _Nonnull))udcRequestSentHandler;
 
 /*!
  @brief Return the onboarding payload for this app (setup passcode, discriminator)
@@ -123,8 +123,8 @@
  @param commissioningWindowRequestedHandler Handler to call on requesting the opening of a commissioning window
  */
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
-    commissioningWindowRequestedHandler:(void (^_Nonnull)(bool))commissioningWindowRequestedHandler
-          commissioningCompleteCallback:(void (^_Nonnull)(bool))commissioningCompleteCallback
+    commissioningWindowRequestedHandler:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowRequestedHandler
+          commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
             onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
          onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback;
@@ -233,9 +233,9 @@
 - (void)contentLauncher_launchUrl:(ContentApp * _Nonnull)contentApp
                        contentUrl:(NSString * _Nonnull)contentUrl
                 contentDisplayStr:(NSString * _Nonnull)contentDisplayStr
-                 responseCallback:(void (^_Nonnull)(bool))responseCallback
+                 responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                       clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-               requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+               requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a ContentLauncher:LaunchContent request to a TV
@@ -258,9 +258,9 @@
                         contentSearch:(ContentLauncher_ContentSearch * _Nonnull)contentSearch
                              autoPlay:(bool)autoPlay
                                  data:(NSString * _Nullable)data
-                     responseCallback:(void (^_Nonnull)(bool))responseCallback
+                     responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                           clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                   requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                   requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Subscribe to ContentLauncher:SupportedStreamingProtocols
@@ -317,9 +317,9 @@
            transitionTime:(uint16_t)transitionTime
                optionMask:(uint8_t)optionMask
            optionOverride:(uint8_t)optionOverride
-         responseCallback:(void (^_Nonnull)(bool))responseCallback
+         responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
               clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-       requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+       requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a LevelControl:MoveToLevel request to a TV
@@ -345,9 +345,9 @@
                   transitionTime:(uint16_t)transitionTime
                       optionMask:(uint8_t)optionMask
                   optionOverride:(uint8_t)optionOverride
-                responseCallback:(void (^_Nonnull)(bool))responseCallback
+                responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                      clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-              requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+              requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Subscribe to LevelControl:CurrentLevel
@@ -445,9 +445,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)mediaPlayback_play:(ContentApp * _Nonnull)contentApp
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:Pause request to a TV
@@ -461,9 +461,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)mediaPlayback_pause:(ContentApp * _Nonnull)contentApp
-           responseCallback:(void (^_Nonnull)(bool))responseCallback
+           responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                 clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+         requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:StopPlayback request to a TV
@@ -477,9 +477,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)mediaPlayback_stopPlayback:(ContentApp * _Nonnull)contentApp
-                  responseCallback:(void (^_Nonnull)(bool))responseCallback
+                  responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                        clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:Next request to a TV
@@ -493,9 +493,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)mediaPlayback_next:(ContentApp * _Nonnull)contentApp
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:Seek request to a TV
@@ -512,9 +512,9 @@
  */
 - (void)mediaPlayback_seek:(ContentApp * _Nonnull)contentApp
                   position:(uint64_t)position
-          responseCallback:(void (^_Nonnull)(bool))responseCallback
+          responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-        requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+        requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:SkipForward request to a TV
@@ -531,9 +531,9 @@
  */
 - (void)mediaPlayback_skipForward:(ContentApp * _Nonnull)contentApp
         deltaPositionMilliseconds:(uint64_t)deltaPositionMilliseconds
-                 responseCallback:(void (^_Nonnull)(bool))responseCallback
+                 responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                       clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-               requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+               requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a MediaPlayback:SkipBackward request to a TV
@@ -550,9 +550,9 @@
  */
 - (void)mediaPlayback_skipBackward:(ContentApp * _Nonnull)contentApp
          deltaPositionMilliseconds:(uint64_t)deltaPositionMilliseconds
-                  responseCallback:(void (^_Nonnull)(bool))responseCallback
+                  responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                        clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Subscribe to MediaPlayback:CurrentState
@@ -770,9 +770,9 @@
                       catalogVendorId:(uint16_t)catalogVendorId
                         applicationId:(NSString * _Nonnull)applicationId
                                  data:(NSData * _Nullable)data
-                     responseCallback:(void (^_Nonnull)(bool))responseCallback
+                     responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                           clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                   requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                   requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a ApplicationLauncher:StopApp request to a TV
@@ -792,9 +792,9 @@
 - (void)applicationLauncher_stopApp:(ContentApp * _Nonnull)contentApp
                     catalogVendorId:(uint16_t)catalogVendorId
                       applicationId:(NSString * _Nonnull)applicationId
-                   responseCallback:(void (^_Nonnull)(bool))responseCallback
+                   responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                         clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                 requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a ApplicationLauncher:HideApp request to a TV
@@ -814,9 +814,9 @@
 - (void)applicationLauncher_hideApp:(ContentApp * _Nonnull)contentApp
                     catalogVendorId:(uint16_t)catalogVendorId
                       applicationId:(NSString * _Nonnull)applicationId
-                   responseCallback:(void (^_Nonnull)(bool))responseCallback
+                   responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                         clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                 requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                 requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a TargetNavigator:NavigateTarget request to a TV
@@ -837,9 +837,9 @@
 - (void)targetNavigator_navigateTarget:(ContentApp * _Nonnull)contentApp
                                 target:(uint8_t)target
                                   data:(NSString * _Nullable)data
-                      responseCallback:(void (^_Nonnull)(bool))responseCallback
+                      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-                    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+                    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Subscribe to TargetNavigator:TargetList
@@ -914,9 +914,9 @@
  */
 - (void)keypadInput_sendKey:(ContentApp * _Nonnull)contentApp
                     keyCode:(uint8_t)keyCode
-           responseCallback:(void (^_Nonnull)(bool))responseCallback
+           responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
                 clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-         requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+         requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Subscribe to ApplicationBasic:VendorName
@@ -1164,9 +1164,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)onOff_on:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a OnOff:Off request to a TV
@@ -1180,9 +1180,9 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)onOff_off:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 
 /*!
  @brief Send a OnOff:Toggle request to a TV
@@ -1196,8 +1196,8 @@
  @param requestSentHandler Handler to call on sending the request
  */
 - (void)onOff_toggle:(ContentApp * _Nonnull)contentApp
-      responseCallback:(void (^_Nonnull)(bool))responseCallback
+      responseCallback:(void (^_Nonnull)(MatterError * _Nonnull))responseCallback
            clientQueue:(dispatch_queue_t _Nonnull)clientQueue
-    requestSentHandler:(void (^_Nonnull)(bool))requestSentHandler;
+    requestSentHandler:(void (^_Nonnull)(MatterError * _Nonnull))requestSentHandler;
 @end
 #endif /* CastingServerBridge_h */
