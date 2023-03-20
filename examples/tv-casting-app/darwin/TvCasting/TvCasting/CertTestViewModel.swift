@@ -28,20 +28,20 @@ private class CallbackHelper {
         self.certTestViewModel = certTestViewModel
     }
 
-    func responseCallback(succeeded: Bool)
+    func responseCallback(succeeded: MatterError)
     {
         logger.info("CertTestViewModel.responseCallback.\(self.testCaseName) succeeded? \(succeeded)")
-        if (succeeded) {
+        if (succeeded.code == 0) {
             certTestViewModel.onTestPassed(testCaseName)
         } else {
             certTestViewModel.onTestFailed(testCaseName)
         }
     }
 
-    func requestSentHandler(succeeded: Bool)
+    func requestSentHandler(succeeded: MatterError)
     {
         logger.info("CertTestViewModel.requestSentHandler.\(self.testCaseName) succeeded? \(succeeded)")
-        if (!succeeded) {
+        if (succeeded.code != 0) {
             certTestViewModel.onTestFailed(testCaseName)
         }
     }
@@ -49,7 +49,7 @@ private class CallbackHelper {
     func requestSentHandlerError(result: MatterError)
     {
         logger.warning("CertTestViewModel.requestSentHandler.\(self.testCaseName).  Code : \(result.code). Message : \(result.message ?? "")")
-        requestSentHandler(succeeded: result.code == 0)
+        requestSentHandler(succeeded: result)
     }
 
     func successCallbackString(result: String)

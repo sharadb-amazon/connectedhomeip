@@ -31,14 +31,14 @@ class CommissionerDiscoveryViewModel: ObservableObject {
         {
             castingServerBridge.discoverCommissioners(DispatchQueue.main,
                                                       timeoutInSeconds:5,
-                discoveryRequestSentHandler:  { (result: Bool) -> () in
-                    self.discoveryRequestStatus = result
+                discoveryRequestSentHandler:  { (result: MatterError) -> () in
+                self.discoveryRequestStatus = (result.code == 0)
                 },
                 discoveredCommissionerHandler: { (commissioner: DiscoveredNodeData) -> () in
                     self.Log.info("discoveredCommissionerHandler called with \(commissioner)")
                     if(self.commissioners.contains(commissioner))
                     {
-                        var index = self.commissioners.firstIndex(of: commissioner)
+                        let index = self.commissioners.firstIndex(of: commissioner)
                         self.commissioners[index!] = commissioner
                         self.Log.info("Updating previously discovered commissioner \(commissioner.description)")
                     }

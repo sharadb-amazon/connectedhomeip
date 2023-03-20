@@ -58,15 +58,15 @@ class CommissioningViewModel: ObservableObject {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
-                commissioningWindowRequestedHandler: { (result: Bool) -> () in
+                commissioningWindowRequestedHandler: { (result: MatterError) -> () in
                     DispatchQueue.main.async {
-                        self.commisisoningWindowOpened = result
+                        self.commisisoningWindowOpened = (result.code == 0)
                     }
                 },
-                commissioningCompleteCallback: { (result: Bool) -> () in
+                commissioningCompleteCallback: { (result: MatterError) -> () in
                     self.Log.info("Commissioning status: \(result)")
                     DispatchQueue.main.async {
-                        self.commisisoningComplete = result
+                        self.commisisoningComplete = (result.code == 0)
                     }
                 },
                 onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
@@ -95,8 +95,8 @@ class CommissioningViewModel: ObservableObject {
     private func sendUserDirectedCommissioningRequest(selectedCommissioner: DiscoveredNodeData?) {        
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
-            castingServerBridge.sendUserDirectedCommissioningRequest(selectedCommissioner!, clientQueue: DispatchQueue.main, udcRequestSentHandler: { (result: Bool) -> () in
-                self.udcRequestSent = result
+            castingServerBridge.sendUserDirectedCommissioningRequest(selectedCommissioner!, clientQueue: DispatchQueue.main, udcRequestSentHandler: { (result: MatterError) -> () in
+                self.udcRequestSent = (result.code == 0)
             })
         }
     }
