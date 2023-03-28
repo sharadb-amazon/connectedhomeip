@@ -3,6 +3,19 @@ package com.chip.casting.util;
 import android.util.Base64;
 import com.chip.casting.DACProvider;
 
+import java.math.BigInteger;
+import java.security.AlgorithmParameters;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPrivateKeySpec;
+import java.security.spec.KeySpec;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
 public class DACProviderStub implements DACProvider {
 
   private String kDevelopmentDAC_Cert_FFF1_8001 =
@@ -47,12 +60,29 @@ public class DACProviderStub implements DACProvider {
   }
 
   @Override
-  public byte[] GetDeviceAttestationCertPrivateKey() {
-    return Base64.decode(kDevelopmentDAC_PrivateKey_FFF1_8001, Base64.DEFAULT);
-  }
+  public byte[] SignWithDeviceAttestationKey(byte[] message) {
 
-  @Override
-  public byte[] GetDeviceAttestationCertPublicKeyKey() {
-    return Base64.decode(kDevelopmentDAC_PublicKey_FFF1_8001, Base64.DEFAULT);
+    try {
+      byte[] privateKeyBytes = Base64.decode(kDevelopmentDAC_PrivateKey_FFF1_8001, Base64.DEFAULT);
+
+      AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");
+      algorithmParameters.init(new ECGenParameterSpec("secp256r1"));
+      ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);
+      ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);
+
+      KeyFactory keyFactory = KeyFactory.getInstance("EC");
+      PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);
+
+      Signature signature = Signature.getInstance("SHA256withECDSA");
+      signature.initSign(privateKey);
+
+      signature.update(message);
+
+      return signature.sign();
+
+    } catch (Exception e)
+    {
+      return null;
+    }
   }
 }
