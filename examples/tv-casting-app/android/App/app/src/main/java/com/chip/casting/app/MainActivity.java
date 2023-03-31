@@ -10,6 +10,7 @@ import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.util.GlobalCastingConstants;
+import com.chip.casting.util.PreferencesConfigurationManager;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
@@ -80,6 +81,8 @@ public class MainActivity extends AppCompatActivity
     tvCastingApp.setDACProvider(new DACProviderStub());
 
     AppParameters appParameters = new AppParameters();
+    appParameters.setConfigurationManager(
+        new PreferencesConfigurationManager(this.getApplicationContext()));
     byte[] rotatingDeviceIdUniqueId =
         new byte[AppParameters.MIN_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH];
     new Random().nextBytes(rotatingDeviceIdUniqueId);
