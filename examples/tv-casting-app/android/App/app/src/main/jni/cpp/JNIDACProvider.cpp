@@ -69,8 +69,7 @@ JNIDACProvider::JNIDACProvider(jobject provider)
         env->ExceptionClear();
     }
 
-    mSignWithDeviceAttestationKeyMethod =
-        env->GetMethodID(JNIDACProviderClass, "SignWithDeviceAttestationKey", "([B)[B");
+    mSignWithDeviceAttestationKeyMethod = env->GetMethodID(JNIDACProviderClass, "SignWithDeviceAttestationKey", "([B)[B");
     if (mSignWithDeviceAttestationKeyMethod == nullptr)
     {
         ChipLogError(Zcl, "Failed to access JNIDACProvider 'SignWithDeviceAttestationKey' method");
@@ -112,7 +111,7 @@ CHIP_ERROR JNIDACProvider::GetJavaByteByMethod(jmethodID method, const ByteSpan 
     VerifyOrReturnLogError(env != nullptr, CHIP_JNI_ERROR_NO_ENV);
 
     jbyteArray in_buffer_jbyteArray = env->NewByteArray((jsize)(in_buffer.size()));
-    env->SetByteArrayRegion(in_buffer_jbyteArray, 0, (int)in_buffer.size(), reinterpret_cast<const jbyte*>(in_buffer.data()));
+    env->SetByteArrayRegion(in_buffer_jbyteArray, 0, (int) in_buffer.size(), reinterpret_cast<const jbyte *>(in_buffer.data()));
 
     jbyteArray outArray = (jbyteArray) env->CallObjectMethod(mJNIDACProviderObject, method, in_buffer_jbyteArray);
     if (env->ExceptionCheck())
@@ -123,7 +122,7 @@ CHIP_ERROR JNIDACProvider::GetJavaByteByMethod(jmethodID method, const ByteSpan 
         return CHIP_ERROR_INCORRECT_STATE;
     }
 
-    env->DeleteLocalRef(in_buffer_jbyteArray); 
+    env->DeleteLocalRef(in_buffer_jbyteArray);
 
     if (outArray == nullptr || env->GetArrayLength(outArray) <= 0)
     {
@@ -163,9 +162,9 @@ CHIP_ERROR JNIDACProvider::SignWithDeviceAttestationKey(const ByteSpan & message
 {
     ChipLogProgress(Zcl, "Received SignWithDeviceAttestationKey");
     uint8_t mAsn1SignatureBytes[73];
-    
+
     MutableByteSpan asn1_signature_buffer(mAsn1SignatureBytes, sizeof(mAsn1SignatureBytes));
-    
+
     CHIP_ERROR error = GetJavaByteByMethod(mSignWithDeviceAttestationKeyMethod, message_to_sign, asn1_signature_buffer);
     if (error != CHIP_NO_ERROR)
     {
@@ -173,5 +172,6 @@ CHIP_ERROR JNIDACProvider::SignWithDeviceAttestationKey(const ByteSpan & message
         return error;
     }
 
-    return chip::Crypto::EcdsaAsn1SignatureToRaw(32, ByteSpan(asn1_signature_buffer.data(), asn1_signature_buffer.size()), out_signature_buffer);
+    return chip::Crypto::EcdsaAsn1SignatureToRaw(32, ByteSpan(asn1_signature_buffer.data(), asn1_signature_buffer.size()),
+                                                 out_signature_buffer);
 }

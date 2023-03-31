@@ -30,7 +30,7 @@ public:
                                              chip::MutableByteSpan * firmwareInformation,
                                              chip::MutableByteSpan * deviceAttestationCert,
                                              chip::MutableByteSpan * productAttestationIntermediateCert,
-                                             SecKeyRef               deviceAttestationCertPrivateKeyRef);
+                                             SecKeyRef deviceAttestationCertPrivateKeyRef);
 
     CHIP_ERROR GetCertificationDeclaration(chip::MutableByteSpan & outCertificationDeclaration) override;
     CHIP_ERROR GetFirmwareInformation(chip::MutableByteSpan & outFirmwareInformation) override;
@@ -44,6 +44,5 @@ private:
     chip::MutableByteSpan mFirmwareInformation;
     chip::MutableByteSpan mDeviceAttestationCert;
     chip::MutableByteSpan mProductAttestationIntermediateCert;
-    SecKeyRef             mDeviceAttestationCertPrivateKeyRef;
-
+    SecKeyRef mDeviceAttestationCertPrivateKeyRef;
 };

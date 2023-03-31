@@ -35,11 +35,12 @@
 
 @implementation DeviceAttestationCredentialsHolder
 
-- (DeviceAttestationCredentialsHolder * _Nonnull)initWithCertificationDeclaration:(NSData * _Nonnull)certificationDeclaration
-                                                              firmwareInformation:(NSData * _Nonnull)firmwareInformation
-                                                            deviceAttestationCert:(NSData * _Nonnull)deviceAttestationCert
-                                               productAttestationIntermediateCert:(NSData * _Nonnull)productAttestationIntermediateCert
-                                               deviceAttestationCertPrivateKeyRef:(SecKeyRef _Nonnull)deviceAttestationCertPrivateKeyRef
+- (DeviceAttestationCredentialsHolder * _Nonnull)
+      initWithCertificationDeclaration:(NSData * _Nonnull)certificationDeclaration
+                   firmwareInformation:(NSData * _Nonnull)firmwareInformation
+                 deviceAttestationCert:(NSData * _Nonnull)deviceAttestationCert
+    productAttestationIntermediateCert:(NSData * _Nonnull)productAttestationIntermediateCert
+    deviceAttestationCertPrivateKeyRef:(SecKeyRef _Nonnull)deviceAttestationCertPrivateKeyRef
 {
     self = [super init];
     if (self) {

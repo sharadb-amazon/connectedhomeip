@@ -2,19 +2,14 @@ package com.chip.casting.util;
 
 import android.util.Base64;
 import com.chip.casting.DACProvider;
-
 import java.math.BigInteger;
 import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.Signature;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.ECPrivateKeySpec;
-import java.security.spec.KeySpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 
 public class DACProviderStub implements DACProvider {
 
@@ -68,7 +63,8 @@ public class DACProviderStub implements DACProvider {
       AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");
       algorithmParameters.init(new ECGenParameterSpec("secp256r1"));
       ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);
-      ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);
+      ECPrivateKeySpec ecPrivateKeySpec =
+          new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);
 
       KeyFactory keyFactory = KeyFactory.getInstance("EC");
       PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);
@@ -80,8 +76,7 @@ public class DACProviderStub implements DACProvider {
 
       return signature.sign();
 
-    } catch (Exception e)
-    {
+    } catch (Exception e) {
       return null;
     }
   }

@@ -109,57 +109,56 @@ CHIP_ERROR DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKe
     const chip::ByteSpan & messageToSign, chip::MutableByteSpan & outSignatureBuffer)
 {
     ChipLogProgress(AppServer, "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey called");
-    
-    CHIP_ERROR                          result                  = CHIP_NO_ERROR;
-    CFDataRef                           dataToSign              = nil;
-    CFDataRef                           asn1SignatureData       = nil;
-    uint8_t                             mAsn1SignatureBytes[256];
-    chip::MutableByteSpan               asn1SignatureByteSpan   = chip::MutableByteSpan(mAsn1SignatureBytes, sizeof(mAsn1SignatureBytes));
-    CFErrorRef                          error                   = nil;
-    size_t                              signatureLen            = 0;
-    
-    do
-    {
+
+    CHIP_ERROR result = CHIP_NO_ERROR;
+    CFDataRef dataToSign = nil;
+    CFDataRef asn1SignatureData = nil;
+    uint8_t mAsn1SignatureBytes[256];
+    chip::MutableByteSpan asn1SignatureByteSpan = chip::MutableByteSpan(mAsn1SignatureBytes, sizeof(mAsn1SignatureBytes));
+    CFErrorRef error = nil;
+    size_t signatureLen = 0;
+
+    do {
         dataToSign = CFDataCreate(CFAllocatorGetDefault(), messageToSign.data(), messageToSign.size());
-        if (nil == dataToSign)
-        {
-            ChipLogError(AppServer, "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to create buffer");
+        if (nil == dataToSign) {
+            ChipLogError(
+                AppServer, "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to create buffer");
             result = CHIP_ERROR_NO_MEMORY;
             break;
         }
-        
-        asn1SignatureData = SecKeyCreateSignature(mDeviceAttestationCertPrivateKeyRef, kSecKeyAlgorithmECDSASignatureMessageX962SHA256, dataToSign, &error);
-        if (nil != error || nil == asn1SignatureData)
-        {
-            ChipLogError(AppServer, "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to sign the message. error = %lu", CFErrorGetCode(error));
+
+        asn1SignatureData = SecKeyCreateSignature(
+            mDeviceAttestationCertPrivateKeyRef, kSecKeyAlgorithmECDSASignatureMessageX962SHA256, dataToSign, &error);
+        if (nil != error || nil == asn1SignatureData) {
+            ChipLogError(AppServer,
+                "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to sign the message. error = %lu",
+                CFErrorGetCode(error));
             result = CHIP_ERROR_INVALID_ARGUMENT;
             break;
         }
-        
+
         signatureLen = CFDataGetLength(asn1SignatureData);
-        
+
         CFDataGetBytes(asn1SignatureData, CFRangeMake(0, signatureLen), asn1SignatureByteSpan.data());
         asn1SignatureByteSpan.reduce_size(signatureLen);
-        
-        CHIP_ERROR conversionError = chip::Crypto::EcdsaAsn1SignatureToRaw(32, chip::ByteSpan(asn1SignatureByteSpan.data(), asn1SignatureByteSpan.size()), outSignatureBuffer);
-        if (CHIP_NO_ERROR != conversionError)
-        {
-            ChipLogError(AppServer, "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to convert to raw signature.");
+
+        CHIP_ERROR conversionError = chip::Crypto::EcdsaAsn1SignatureToRaw(
+            32, chip::ByteSpan(asn1SignatureByteSpan.data(), asn1SignatureByteSpan.size()), outSignatureBuffer);
+        if (CHIP_NO_ERROR != conversionError) {
+            ChipLogError(AppServer,
+                "DeviceAttestationCredentialsProviderImpl::SignWithDeviceAttestationKey failed to convert to raw signature.");
             result = conversionError;
             break;
         }
-    }
-    while(0);
+    } while (0);
 
-    if (dataToSign != nil)
-    {
+    if (dataToSign != nil) {
         CFRelease(dataToSign);
     }
-    
-    if (asn1SignatureData != nil)
-    {
+
+    if (asn1SignatureData != nil) {
         CFRelease(asn1SignatureData);
     }
-    
+
     return result;
 }
