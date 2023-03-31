@@ -28,7 +28,6 @@ import chip.platform.ChipMdnsCallbackImpl;
 import chip.platform.DiagnosticDataProviderImpl;
 import chip.platform.NsdManagerServiceBrowser;
 import chip.platform.NsdManagerServiceResolver;
-import chip.platform.PreferencesConfigurationManager;
 import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
@@ -49,7 +48,10 @@ public class TvCastingApp {
   private NsdDiscoveryListener nsdDiscoveryListener;
 
   public boolean initApp(Context applicationContext, AppParameters appParameters) {
-    if (applicationContext == null || appParameters == null) {
+    if (applicationContext == null
+        || appParameters == null
+        || appParameters.getConfigurationManager() == null) {
+      Log.e(TAG, "TvCastingApp.initApp received invalid arguments");
       return false;
     }
 
@@ -62,7 +64,7 @@ public class TvCastingApp {
         new AndroidChipPlatform(
             new AndroidBleManager(),
             new PreferencesKeyValueStoreManager(applicationContext),
-            new PreferencesConfigurationManager(applicationContext),
+            appParameters.getConfigurationManager(),
             nsdManagerServiceResolver,
             new NsdManagerServiceBrowser(applicationContext),
             new ChipMdnsCallbackImpl(),
