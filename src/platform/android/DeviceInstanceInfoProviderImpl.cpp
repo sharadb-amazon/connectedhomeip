@@ -41,17 +41,7 @@ CHIP_ERROR DeviceInstanceInfoProviderImpl::GetHardwareVersionString(char * buf, 
 
 CHIP_ERROR DeviceInstanceInfoProviderImpl::GetProductId(uint16_t & productId)
 {
-    CHIP_ERROR err;
-    uint32_t u32ProductId = 0;
-    err                   = Internal::AndroidConfig::ReadConfigValue(Internal::AndroidConfig::kConfigKey_ProductId, u32ProductId);
-    if (err == CHIP_DEVICE_ERROR_CONFIG_NOT_FOUND)
-    {
-        productId = static_cast<uint16_t>(CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID);
-    }
-    else
-    {
-        productId = static_cast<uint16_t>(u32ProductId);
-    }
+    productId = static_cast<uint16_t>(CHIP_DEVICE_CONFIG_DEVICE_PRODUCT_ID);
     return CHIP_NO_ERROR;
 }
 
