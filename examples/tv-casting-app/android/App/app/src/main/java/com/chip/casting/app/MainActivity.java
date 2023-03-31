@@ -82,7 +82,8 @@ public class MainActivity extends AppCompatActivity
 
     AppParameters appParameters = new AppParameters();
     appParameters.setConfigurationManager(
-        new PreferencesConfigurationManager(this.getApplicationContext()));
+        new PreferencesConfigurationManager(
+            this.getApplicationContext(), "chip.platform.ConfigurationManager"));
     byte[] rotatingDeviceIdUniqueId =
         new byte[AppParameters.MIN_ROTATING_DEVICE_ID_UNIQUE_ID_LENGTH];
     new Random().nextBytes(rotatingDeviceIdUniqueId);
