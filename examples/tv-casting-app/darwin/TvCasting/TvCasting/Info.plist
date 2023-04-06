@@ -19,5 +19,10 @@
 		<string>_matterc._udp</string>
 		<string>_matterd._udp</string>
 	</array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<false/>
+	</dict>
 </dict>
 </plist>
