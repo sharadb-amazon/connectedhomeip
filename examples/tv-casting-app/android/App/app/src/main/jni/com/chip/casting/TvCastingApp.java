@@ -32,13 +32,13 @@ import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
 
-public final class TvCastingApp {
+public class TvCastingApp {
   private static final String TAG = TvCastingApp.class.getSimpleName();
   private static final String DISCOVERY_TARGET_SERVICE_TYPE = "_matterd._udp.";
   private static final List<Long> DISCOVERY_TARGET_DEVICE_TYPE_FILTER =
       Arrays.asList(35L); // Video player = 35;
 
-  private static TvCastingApp _instance;
+  private static TvCastingApp sInstance;
   private Context applicationContext;
   private ChipAppServer chipAppServer;
   private NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
@@ -52,10 +52,10 @@ public final class TvCastingApp {
   private TvCastingApp() {}
 
   public static TvCastingApp getInstance() {
-    if (_instance == null) {
-      _instance = new TvCastingApp();
+    if (sInstance == null) {
+      sInstance = new TvCastingApp();
     }
-    return _instance;
+    return sInstance;
   }
 
   public boolean initApp(Context applicationContext, AppParameters appParameters) {
@@ -165,7 +165,7 @@ public final class TvCastingApp {
         try {
           nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
         } catch (IllegalArgumentException e) {
-          Log.e(
+          Log.w(
               TAG,
               "TvCastingApp received exception on calling nsdManager.stopServiceDiscovery() "
                   + e.getMessage());
