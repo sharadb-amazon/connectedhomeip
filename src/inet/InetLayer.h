@@ -56,12 +56,7 @@ public:
     using EndPointVisitor = Loop (*)(EndPoint *);
 
     EndPointManager() {}
-    virtual ~EndPointManager()
-    {
-        // TODO: Implement a mechanism to pass error status to app code instead of "Dieing"
-        // VerifyOrDie(mLayerState.Destroy());
-        mLayerState.Destroy();
-    }
+    virtual ~EndPointManager() { VerifyOrDie(mLayerState.Destroy()); }
 
     CHIP_ERROR Init(System::Layer & systemLayer)
     {
