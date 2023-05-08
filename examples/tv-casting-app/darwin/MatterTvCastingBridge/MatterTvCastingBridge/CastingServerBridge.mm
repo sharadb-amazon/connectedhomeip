@@ -481,7 +481,7 @@
                                  if (err == CHIP_NO_ERROR) {
                                      self->_cancelDiscoveryCommissionersWork
                                          = dispatch_block_create(static_cast<dispatch_block_flags_t>(0), ^{
-                                               if (dispatch_block_testcancel(self->_cancelDiscoveryCommissionersWork)) {
+                                               if (self->_cancelDiscoveryCommissionersWork == nil || dispatch_block_testcancel(self->_cancelDiscoveryCommissionersWork)) {
                                                    ChipLogProgress(AppServer,
                                                        "CastingServerBridge().discoverCommissioners() cancel timer invalidated.");
                                                    return;
