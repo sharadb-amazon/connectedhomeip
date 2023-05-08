@@ -65,6 +65,7 @@
 
 #define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE 20202021
 #define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_DISCRIMINATOR 0xF00
+#define CHIP_DEVICE_CONFIG_MINIMUM_DISK_SPACE 1024 * 1024
 
 @end
 
@@ -89,6 +90,12 @@
             return nil;
         }
 
+        uint64_t freespace = [self getFreeDiskspace];
+        if (freespace < CHIP_DEVICE_CONFIG_MINIMUM_DISK_SPACE) {
+            ChipLogError(AppServer, "DiskInit check failed: space=%llu", freespace);
+            return nil;
+        }
+
         // TODO: Constructors should not perform heavy work like initializing the Matter SDK. This should
         // be moved to initializeApp or another suitable location.
         err = chip::DeviceLayer::PlatformMgr().InitChipStack();
@@ -106,6 +113,29 @@
         _readFailureCallbacks = [NSMutableDictionary dictionary];
     }
     return self;
+}
+
+- (uint64_t)getFreeDiskspace
+{
+    uint64_t totalSpace = 0;
+    uint64_t totalFreeSpace = 0;
+    NSError * error = nil;
+    NSArray * paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSDictionary * dictionary = [[NSFileManager defaultManager] attributesOfFileSystemForPath:[paths lastObject] error:&error];
+
+    if (dictionary) {
+        NSNumber * fileSystemSizeInBytes = [dictionary objectForKey:NSFileSystemSize];
+        NSNumber * freeFileSystemSizeInBytes = [dictionary objectForKey:NSFileSystemFreeSize];
+        totalSpace = [fileSystemSizeInBytes unsignedLongLongValue];
+        totalFreeSpace = [freeFileSystemSizeInBytes unsignedLongLongValue];
+        ChipLogProgress(AppServer, "Memory Capacity of %llu MiB with %llu MiB Free memory available.",
+            ((totalSpace / 1024ll) / 1024ll), ((totalFreeSpace / 1024ll) / 1024ll));
+    } else {
+        ChipLogProgress(AppServer, "Error Obtaining System Memory Info: Domain = %s, Code = %ld", [error domain].UTF8String,
+            (long) [error code]);
+    }
+
+    return totalFreeSpace;
 }
 
 /**
