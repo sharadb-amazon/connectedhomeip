@@ -52,9 +52,9 @@ for define in "${defines[@]}"; do
 
     # skip over those that GN does for us
     case "$define" in
-        CHIP_HAVE_CONFIG_H)
-            continue
-            ;;
+    CHIP_HAVE_CONFIG_H)
+        continue
+        ;;
     esac
     target_defines+=,\"${define//\"/\\\"}\"
 done
@@ -62,21 +62,21 @@ target_defines=[${target_defines:1}]
 
 declare target_cpu=
 case $PLATFORM_PREFERRED_ARCH in
-    i386)
-        target_cpu=x86
-        ;;
-    x86_64)
-        target_cpu=x64
-        ;;
-    armv7)
-        target_cpu=arm
-        ;;
-    arm64)
-        target_cpu=arm64
-        ;;
-    *)
-        echo >&2
-        ;;
+i386)
+    target_cpu=x86
+    ;;
+x86_64)
+    target_cpu=x64
+    ;;
+armv7)
+    target_cpu=arm
+    ;;
+arm64)
+    target_cpu=arm64
+    ;;
+*)
+    echo >&2
+    ;;
 esac
 
 declare target_cflags='"-target","'"$PLATFORM_PREFERRED_ARCH"'-'"$LLVM_TARGET_TRIPLE_VENDOR"'-'"$LLVM_TARGET_TRIPLE_OS_VERSION"'"'
@@ -90,6 +90,8 @@ done
 [[ $ENABLE_BITCODE == YES ]] && {
     target_cflags+=',"-flto"'
 }
+
+target_cflags+=',"-fno-c++-static-destructors"'
 
 declare -a args=(
     'default_configs_cosmetic=[]' # suppress colorization
