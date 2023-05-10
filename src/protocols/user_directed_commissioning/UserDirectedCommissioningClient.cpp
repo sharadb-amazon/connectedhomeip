@@ -43,31 +43,42 @@ CHIP_ERROR UserDirectedCommissioningClient::SendUDCMessage(TransportMgrBase * tr
     }
     ChipLogProgress(Inet, "Sending UDC msg");
 
-    mUdcAttemptsRemaining = 5; // send UDC message 5 times per spec (no ACK on this message)
-    mTransportMgr         = transportMgr;
-    mTargetPayload        = payload.CloneData();
-    mTargetPeerAddress    = peerAddress;
-    DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(0), SendUDCTask, this);
+    UDCClientContext * udcClientContext = new UDCClientContext();
+
+    udcClientContext->mUdcAttemptsRemaining =
+        CHIP_DEVICE_CONFIG_TOTAL_UDC_MSG_COUNT; // repeat sending UDC message per spec (no ACK on this message)
+    udcClientContext->mTransportMgr      = transportMgr;
+    udcClientContext->mTargetPayload     = payload.CloneData();
+    udcClientContext->mTargetPeerAddress = peerAddress;
+    DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(0), SendUDCTask, udcClientContext);
 
     return err;
 }
 
 void UserDirectedCommissioningClient::SendUDCTask(System::Layer * aSystemLayer, void * aAppState)
 {
-    UserDirectedCommissioningClient * thiz = reinterpret_cast<UserDirectedCommissioningClient *>(aAppState);
+    UDCClientContext * udcClientContext = reinterpret_cast<UDCClientContext *>(aAppState);
 
-    // Schedule next UDC msg, if any, 100ms later
-    thiz->mUdcAttemptsRemaining--;
-    if (thiz->mUdcAttemptsRemaining > 0)
+    // Schedule next UDC msg, if any, after a delay
+    udcClientContext->mUdcAttemptsRemaining--;
+    if (udcClientContext->mUdcAttemptsRemaining > 0)
     {
-        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(100), SendUDCTask, thiz);
+        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_UDC_MSG_DELAY_MS), SendUDCTask,
+                                              udcClientContext);
     }
 
     // send UDC message
-    CHIP_ERROR err = thiz->mTransportMgr->SendMessage(thiz->mTargetPeerAddress, thiz->mTargetPayload.CloneData());
+    ChipLogProgress(Inet, "Sending UDC message, attempts remaining %d", udcClientContext->mUdcAttemptsRemaining);
+    CHIP_ERROR err = udcClientContext->mTransportMgr->SendMessage(udcClientContext->mTargetPeerAddress,
+                                                                  udcClientContext->mTargetPayload.CloneData());
     if (err != CHIP_NO_ERROR)
     {
         ChipLogError(Inet, "UDC SendMessage failed: %" CHIP_ERROR_FORMAT, err.Format());
+    }
+
+    if (udcClientContext->mUdcAttemptsRemaining == 0)
+    {
+        delete udcClientContext;
     }
 }
 

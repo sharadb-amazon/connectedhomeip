@@ -68,6 +68,12 @@ if (chip_device_platform != "none" && chip_device_platform != "external") {
 
     # Define the default number of ip addresses to discover
     chip_max_discovered_ip_addresses = 5
+
+    # Total number of UDC messages to be sent
+    chip_total_udc_message_count = 5
+
+    # Delay between sending repeated UDC messages (in ms)
+    chip_udc_message_delay_ms = 100
   }
 
   if (chip_stack_lock_tracking == "auto") {
@@ -287,6 +293,13 @@ if (chip_device_platform != "none" && chip_device_platform != "external") {
     if (chip_device_config_device_software_version_string != "") {
       defines += [ "CHIP_DEVICE_CONFIG_DEVICE_SOFTWARE_VERSION_STRING=\"${chip_device_config_device_software_version_string}\"" ]
     }
+
+    defines += [ "CHIP_DEVICE_CONFIG_MAX_DISCOVERED_IP_ADDRESSES=${chip_max_discovered_ip_addresses}" ]
+
+    defines += [
+      "CHIP_DEVICE_CONFIG_TOTAL_UDC_MSG_COUNT=${chip_total_udc_message_count}",
+      "CHIP_DEVICE_CONFIG_UDC_MSG_DELAY_MS=${chip_udc_message_delay_ms}",
+    ]
 
     defines += [ "CHIP_DEVICE_CONFIG_MAX_DISCOVERED_IP_ADDRESSES=${chip_max_discovered_ip_addresses}" ]
   }

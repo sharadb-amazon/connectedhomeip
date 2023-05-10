@@ -89,6 +89,32 @@ public:
     virtual ~UserConfirmationProvider() = default;
 };
 
+/**
+ * Context used by the UserDirectedCommissioningClient for sending UDC messages
+ */
+struct UDCClientContext
+{
+    /**
+     * Number of UDC messages remaining to be sent
+     */
+    unsigned int mUdcAttemptsRemaining;
+
+    /**
+     * A transport to use for sending the message.
+     */
+    TransportMgrBase * mTransportMgr;
+
+    /**
+     * A PacketBufferHandle with the payload.
+     */
+    System::PacketBufferHandle mTargetPayload;
+
+    /**
+     * Address of destination.
+     */
+    chip::Transport::PeerAddress mTargetPeerAddress;
+};
+
 class DLL_EXPORT UserDirectedCommissioningClient
 {
 public:
@@ -107,8 +133,6 @@ public:
     CHIP_ERROR SendUDCMessage(TransportMgrBase * transportMgr, System::PacketBufferHandle && payload,
                               chip::Transport::PeerAddress peerAddress);
 
-    static void SendUDCTask(System::Layer * aSystemLayer, void * aAppState);
-
     /**
      * Encode a User Directed Commissioning message.
      *
@@ -122,10 +146,13 @@ public:
     CHIP_ERROR EncodeUDCMessage(const System::PacketBufferHandle & payload);
 
 private:
-    unsigned int mUdcAttemptsRemaining;
-    TransportMgrBase * mTransportMgr;
-    System::PacketBufferHandle mTargetPayload;
-    chip::Transport::PeerAddress mTargetPeerAddress;
+    /**
+     * A Task scheduled to send a UDC message as per the UDCClientContext passed in as aAppState
+     *
+     * @param aSystemLayer
+     * @param aAppState UDCClientContext used to send the UDC messages
+     */
+    static void SendUDCTask(System::Layer * aSystemLayer, void * aAppState);
 };
 
 class DLL_EXPORT UserDirectedCommissioningServer : public TransportMgrDelegate
