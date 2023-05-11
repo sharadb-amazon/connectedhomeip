@@ -225,6 +225,11 @@ enum PublicEventTypes
      * Signals that the state of the OTA engine changed.
      */
     kOtaStateChanged,
+
+    /**
+     * Signals that the Server is Shutting down.
+     */
+    kServerShuttingDown,
 };
 
 /**

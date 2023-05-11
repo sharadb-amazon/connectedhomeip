@@ -153,6 +153,14 @@ private:
      * @param aAppState UDCClientContext used to send the UDC messages
      */
     static void SendUDCTask(System::Layer * aSystemLayer, void * aAppState);
+
+    /**
+     * A callback to listen to CHIPDeviceEvents
+     *
+     * @param event A CHIPDeviceEvent
+     * @param arg UDCClientContext used to send the UDC messages
+     */
+    static void DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
 };
 
 class DLL_EXPORT UserDirectedCommissioningServer : public TransportMgrDelegate
