@@ -24,7 +24,7 @@ public abstract class SubscriptionEstablishedCallback {
 
   public abstract void handle();
 
-  public void handleInternal() {
+  private void handleInternal() {
     try {
       handle();
     } catch (Throwable t) {
