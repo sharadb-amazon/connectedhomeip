@@ -424,6 +424,8 @@ private:
 
     CHIP_ERROR SetRotatingDeviceIdUniqueId(chip::Optional<chip::ByteSpan> rotatingDeviceIdUniqueId);
 
+    static void OpenBasicCommissioningWindowTask(chip::System::Layer * aSystemLayer, void * aAppState);
+
     static void DeviceEventCallback(const chip::DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
     void ReadServerClusters(chip::EndpointId endpointId);
 
@@ -441,8 +443,9 @@ private:
     static chip::Inet::IPAddress * getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs);
 
     PersistenceManager mPersistenceManager;
-    bool mInited        = false;
-    bool mUdcInProgress = false;
+    bool mInited                              = false;
+    bool mUdcInProgress                       = false;
+    bool mOpenBasicCommissioningWindowPending = false;
     TargetVideoPlayerInfo mActiveTargetVideoPlayerInfo;
     TargetVideoPlayerInfo mCachedTargetVideoPlayerInfo[kMaxCachedVideoPlayers];
     uint16_t mTargetVideoPlayerVendorId                                   = 0;

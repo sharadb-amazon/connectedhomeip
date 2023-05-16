@@ -151,7 +151,24 @@ CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_E
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
-    return Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+
+    if (Server::GetInstance().GetFailSafeContext().IsFailSafeArmed())
+    {
+        ChipLogProgress(AppServer, "Forcing expiry of FailSafe timer");
+        CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending = true;
+        Server::GetInstance().GetFailSafeContext().ForceFailSafeTimerExpiry();
+        return CHIP_NO_ERROR;
+    }
+    else
+    {
+        return Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+    }
+}
+
+void CastingServer::OpenBasicCommissioningWindowTask(System::Layer * aSystemLayer, void * aAppState)
+{
+    ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindowTask called");
+    Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
 }
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
@@ -452,6 +469,12 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
         targetPeerNodeId                             = event->CommissioningComplete.nodeId;
         targetFabricIndex                            = event->CommissioningComplete.fabricIndex;
         runPostCommissioning                         = true;
+    }
+    else if (event->Type == DeviceLayer::DeviceEventType::kFailSafeTimerExpired &&
+             CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending)
+    {
+        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(50), OpenBasicCommissioningWindowTask, nullptr);
+        CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending = false;
     }
 
     if (runPostCommissioning)
