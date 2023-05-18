@@ -26,6 +26,7 @@
 class TvCastingAppJNI
 {
 public:
+    MatterCallbackHandlerJNI & getCommissioningWindowOpenedHandler() { return mCommissioningWindowOpenedHandler; }
     MatterCallbackHandlerJNI & getCommissioningCompleteHandler() { return mCommissioningCompleteHandler; }
     OnConnectionSuccessHandlerJNI & getOnConnectionSuccessHandler(bool preCommissioned)
     {
@@ -96,6 +97,7 @@ private:
 
     static TvCastingAppJNI sInstance;
 
+    MatterCallbackHandlerJNI mCommissioningWindowOpenedHandler;
     MatterCallbackHandlerJNI mCommissioningCompleteHandler;
     OnConnectionSuccessHandlerJNI mCommissioningOnConnectionSuccessHandler;
     FailureHandlerJNI mCommissioningOnConnectionFailureHandler;

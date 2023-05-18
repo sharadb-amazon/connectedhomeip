@@ -142,11 +142,13 @@ CHIP_ERROR CastingServer::StopDiscoverCommissioners()
     return mCommissionableNodeController.StopDiscoverCommissioners();
 }
 
-CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
+CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback,
+                                                       std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
                                                        std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                        std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                        std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
+    mCommissioningWindowOpenedCallback = commissioningWindowOpenedCallback;
     mCommissioningCompleteCallback     = commissioningCompleteCallback;
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
@@ -161,14 +163,19 @@ CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_E
     }
     else
     {
-        return Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+        CHIP_ERROR err =
+            Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+        mCommissioningWindowOpenedCallback(err);
+        return err;
     }
 }
 
 void CastingServer::OpenBasicCommissioningWindowTask(System::Layer * aSystemLayer, void * aAppState)
 {
     ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindowTask called");
-    Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+    CHIP_ERROR err =
+        Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+    CastingServer::GetInstance()->mCommissioningWindowOpenedCallback(err);
 }
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT

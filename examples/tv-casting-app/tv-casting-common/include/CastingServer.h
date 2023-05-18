@@ -61,7 +61,8 @@ public:
     CHIP_ERROR StopDiscoverCommissioners();
     const chip::Dnssd::DiscoveredNodeData *
     GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPlayerInfo *> & outAssociatedConnectableVideoPlayer);
-    CHIP_ERROR OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
+    CHIP_ERROR OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback,
+                                            std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
                                             std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                             std::function<void(CHIP_ERROR)> onConnectionFailure,
                                             std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
@@ -457,6 +458,7 @@ private:
     chip::Inet::IPAddress mTargetVideoPlayerIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
     chip::Controller::CommissionableNodeController mCommissionableNodeController;
+    std::function<void(CHIP_ERROR)> mCommissioningWindowOpenedCallback;
     std::function<void(CHIP_ERROR)> mCommissioningCompleteCallback;
 
     std::function<void(TargetEndpointInfo *)> mOnNewOrUpdatedEndpoint;
