@@ -480,7 +480,7 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
     else if (event->Type == DeviceLayer::DeviceEventType::kFailSafeTimerExpired &&
              CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending)
     {
-        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(50), OpenBasicCommissioningWindowTask, nullptr);
+        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(1), OpenBasicCommissioningWindowTask, nullptr);
         CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending = false;
     }
 
