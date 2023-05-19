@@ -591,10 +591,10 @@
 
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
     commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
-          commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
-            onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
-            onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
-         onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
+        commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
+          onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
+          onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
+       onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
 {
     [self
         dispatchOnMatterSDKQueue:@"openBasicCommissioningWindow(...)"
@@ -606,7 +606,7 @@
                                                      description:
                                                          @"openBasicCommissioningWindow(...) commissioningWindowRequestedCallback"
                                                            block:^{
-                                                                commissioningWindowOpenedCallback([[MatterError alloc]
+                                                               commissioningWindowOpenedCallback([[MatterError alloc]
                                                                    initWithCode:err.AsInteger()
                                                                         message:[NSString stringWithUTF8String:err.AsString()]]);
                                                            }];
