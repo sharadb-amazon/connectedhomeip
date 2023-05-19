@@ -61,7 +61,8 @@ public:
     CHIP_ERROR StopDiscoverCommissioners();
     const chip::Dnssd::DiscoveredNodeData *
     GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPlayerInfo *> & outAssociatedConnectableVideoPlayer);
-    CHIP_ERROR OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
+    CHIP_ERROR OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback,
+                                            std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
                                             std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                             std::function<void(CHIP_ERROR)> onConnectionFailure,
                                             std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
@@ -424,6 +425,8 @@ private:
 
     CHIP_ERROR SetRotatingDeviceIdUniqueId(chip::Optional<chip::ByteSpan> rotatingDeviceIdUniqueId);
 
+    static void OpenBasicCommissioningWindowTask(chip::System::Layer * aSystemLayer, void * aAppState);
+
     static void DeviceEventCallback(const chip::DeviceLayer::ChipDeviceEvent * event, intptr_t arg);
     void ReadServerClusters(chip::EndpointId endpointId);
 
@@ -441,8 +444,9 @@ private:
     static chip::Inet::IPAddress * getIpAddressForUDCRequest(chip::Inet::IPAddress ipAddresses[], const size_t numIPs);
 
     PersistenceManager mPersistenceManager;
-    bool mInited        = false;
-    bool mUdcInProgress = false;
+    bool mInited                              = false;
+    bool mUdcInProgress                       = false;
+    bool mOpenBasicCommissioningWindowPending = false;
     TargetVideoPlayerInfo mActiveTargetVideoPlayerInfo;
     TargetVideoPlayerInfo mCachedTargetVideoPlayerInfo[kMaxCachedVideoPlayers];
     uint16_t mTargetVideoPlayerVendorId                                   = 0;
@@ -454,6 +458,7 @@ private:
     chip::Inet::IPAddress mTargetVideoPlayerIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
     chip::Controller::CommissionableNodeController mCommissionableNodeController;
+    std::function<void(CHIP_ERROR)> mCommissioningWindowOpenedCallback;
     std::function<void(CHIP_ERROR)> mCommissioningCompleteCallback;
 
     std::function<void(TargetEndpointInfo *)> mOnNewOrUpdatedEndpoint;

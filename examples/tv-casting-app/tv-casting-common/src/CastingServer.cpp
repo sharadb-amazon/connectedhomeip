@@ -142,16 +142,40 @@ CHIP_ERROR CastingServer::StopDiscoverCommissioners()
     return mCommissionableNodeController.StopDiscoverCommissioners();
 }
 
-CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
+CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback,
+                                                       std::function<void(CHIP_ERROR)> commissioningCompleteCallback,
                                                        std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                        std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                        std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
+    mCommissioningWindowOpenedCallback = commissioningWindowOpenedCallback;
     mCommissioningCompleteCallback     = commissioningCompleteCallback;
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
-    return Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+
+    if (Server::GetInstance().GetFailSafeContext().IsFailSafeArmed())
+    {
+        ChipLogProgress(AppServer, "Forcing expiry of FailSafe timer");
+        CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending = true;
+        Server::GetInstance().GetFailSafeContext().ForceFailSafeTimerExpiry();
+        return CHIP_NO_ERROR;
+    }
+    else
+    {
+        CHIP_ERROR err =
+            Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+        mCommissioningWindowOpenedCallback(err);
+        return err;
+    }
+}
+
+void CastingServer::OpenBasicCommissioningWindowTask(System::Layer * aSystemLayer, void * aAppState)
+{
+    ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindowTask called");
+    CHIP_ERROR err =
+        Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
+    CastingServer::GetInstance()->mCommissioningWindowOpenedCallback(err);
 }
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
@@ -452,6 +476,12 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
         targetPeerNodeId                             = event->CommissioningComplete.nodeId;
         targetFabricIndex                            = event->CommissioningComplete.fabricIndex;
         runPostCommissioning                         = true;
+    }
+    else if (event->Type == DeviceLayer::DeviceEventType::kFailSafeTimerExpired &&
+             CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending)
+    {
+        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(1), OpenBasicCommissioningWindowTask, nullptr);
+        CastingServer::GetInstance()->mOpenBasicCommissioningWindowPending = false;
     }
 
     if (runPostCommissioning)
