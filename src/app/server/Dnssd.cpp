@@ -177,12 +177,13 @@ CHIP_ERROR DnssdServer::AdvertiseOperational()
     return CHIP_NO_ERROR;
 }
 
-CHIP_ERROR DnssdServer::Advertise(bool commissionableNode, chip::Dnssd::CommissioningMode mode)
+CHIP_ERROR DnssdServer::GetCommissionAdvertisingParameters(chip::Dnssd::CommissionAdvertisingParameters &advertiseParameters, bool commissionableNode, chip::Dnssd::CommissioningMode mode)
 {
-    auto advertiseParameters = chip::Dnssd::CommissionAdvertisingParameters()
-                                   .SetPort(commissionableNode ? GetSecuredPort() : GetUnsecuredPort())
+    advertiseParameters.SetPort(commissionableNode ? GetSecuredPort() : GetUnsecuredPort())
                                    .SetInterfaceId(GetInterfaceId())
                                    .EnableIpV4(true);
+
+                                       
     advertiseParameters.SetCommissionAdvertiseMode(commissionableNode ? chip::Dnssd::CommssionAdvertiseMode::kCommissionableNode
                                                                       : chip::Dnssd::CommssionAdvertiseMode::kCommissioner);
 
@@ -296,6 +297,14 @@ CHIP_ERROR DnssdServer::Advertise(bool commissionableNode, chip::Dnssd::Commissi
             advertiseParameters.SetPairingInstruction(chip::Optional<const char *>::Value(pairingInst));
         }
     }
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR DnssdServer::Advertise(bool commissionableNode, chip::Dnssd::CommissioningMode mode)
+{
+    auto advertiseParameters = chip::Dnssd::CommissionAdvertisingParameters();
+                                   
+    GetCommissionAdvertisingParameters(advertiseParameters, commissionableNode, mode);
 
     auto & mdnsAdvertiser = chip::Dnssd::ServiceAdvertiser::Instance();
 

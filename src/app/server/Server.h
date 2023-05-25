@@ -358,6 +358,7 @@ private:
     static Server sServer;
 
     void InitFailSafe();
+    CHIP_ERROR BuildUDCPayload(chip::System::PacketBufferHandle &payloadBuf);
 
     class GroupDataProviderListener final : public Credentials::GroupDataProvider::GroupListener
     {

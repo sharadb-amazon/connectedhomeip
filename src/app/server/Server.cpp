@@ -446,14 +446,10 @@ void Server::Shutdown()
 }
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
-// NOTE: UDC client is located in Server.cpp because it really only makes sense
-// to send UDC from a Matter device. The UDC message payload needs to include the device's
-// randomly generated service name.
-CHIP_ERROR Server::SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress commissioner)
-{
-    ChipLogDetail(AppServer, "SendUserDirectedCommissioningRequest2");
 
-    CHIP_ERROR err;
+CHIP_ERROR Server::BuildUDCPayload(chip::System::PacketBufferHandle &payloadBuf)
+{
+    /*
     char nameBuffer[chip::Dnssd::Commission::kInstanceNameMaxLength + 1];
     err = app::DnssdServer::Instance().GetCommissionableInstanceName(nameBuffer, sizeof(nameBuffer));
     if (err != CHIP_NO_ERROR)
@@ -463,12 +459,29 @@ CHIP_ERROR Server::SendUserDirectedCommissioningRequest(chip::Transport::PeerAdd
     }
     ChipLogDetail(AppServer, "instanceName=%s", nameBuffer);
 
-    chip::System::PacketBufferHandle payloadBuf = chip::MessagePacketBuffer::NewWithData(nameBuffer, strlen(nameBuffer));
+    payloadBuf = chip::MessagePacketBuffer::NewWithData(nameBuffer, strlen(nameBuffer));
     if (payloadBuf.IsNull())
     {
         ChipLogError(AppServer, "Unable to allocate packet buffer\n");
         return CHIP_ERROR_NO_MEMORY;
-    }
+    }*/
+
+    auto advertiseParameters = chip::Dnssd::CommissionAdvertisingParameters();
+    app::DnssdServer::Instance().GetCommissionAdvertisingParameters(advertiseParameters, true /* true for Commissionable Node */, Server::GetInstance().GetCommissioningWindowManager().GetCommissioningMode());
+
+    return CHIP_NO_ERROR;
+}
+
+// NOTE: UDC client is located in Server.cpp because it really only makes sense
+// to send UDC from a Matter device. The UDC message payload needs to include the device's
+// randomly generated service name.
+CHIP_ERROR Server::SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress commissioner)
+{
+    ChipLogDetail(AppServer, "SendUserDirectedCommissioningRequest2");
+
+    CHIP_ERROR err;
+    chip::System::PacketBufferHandle payloadBuf;
+    BuildUDCPayload(payloadBuf);
 
     err = gUDCClient.SendUDCMessage(&mTransports, std::move(payloadBuf), commissioner);
     if (err == CHIP_NO_ERROR)
