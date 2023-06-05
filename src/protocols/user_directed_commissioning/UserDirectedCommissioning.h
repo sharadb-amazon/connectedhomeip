@@ -89,6 +89,18 @@ public:
     virtual ~UserConfirmationProvider() = default;
 };
 
+enum UDCTLVTag
+{
+    kDeviceNameTag = 1,
+    kLongDiscriminatorTag,
+    kVendorIdTag,
+    kProductIdTag,
+    kRotatingIdTag,
+    kRotatingIdLenTag,
+
+    kContextTagMaxNum = UINT8_MAX
+};
+
 class DLL_EXPORT UserDirectedCommissioningClient
 {
 public:

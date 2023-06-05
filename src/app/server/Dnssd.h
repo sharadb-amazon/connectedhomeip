@@ -110,9 +110,10 @@ public:
      */
     CHIP_ERROR SetEphemeralDiscriminator(Optional<uint16_t> discriminator);
 
-    CHIP_ERROR GetCommissionAdvertisingParameters(chip::Dnssd::CommissionAdvertisingParameters &advertiseParameters, bool commissionableNode, chip::Dnssd::CommissioningMode mode);
+    CHIP_ERROR GetCommissionAdvertisingParameters(chip::Dnssd::CommissionAdvertisingParameters & advertiseParameters,
+                                                  bool commissionableNode, chip::Dnssd::CommissioningMode mode);
 
-private:    
+private:
     /// Overloaded utility method for commissioner and commissionable advertisement
     /// This method is used for both commissioner discovery and commissionable node discovery since
     /// they share many fields.

@@ -447,7 +447,7 @@ void Server::Shutdown()
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
 
-CHIP_ERROR Server::BuildUDCPayload(chip::System::PacketBufferHandle &payloadBuf)
+CHIP_ERROR Server::BuildUDCPayload(chip::System::PacketBufferHandle & payloadBuf)
 {
     /*
     char nameBuffer[chip::Dnssd::Commission::kInstanceNameMaxLength + 1];
@@ -467,7 +467,41 @@ CHIP_ERROR Server::BuildUDCPayload(chip::System::PacketBufferHandle &payloadBuf)
     }*/
 
     auto advertiseParameters = chip::Dnssd::CommissionAdvertisingParameters();
-    app::DnssdServer::Instance().GetCommissionAdvertisingParameters(advertiseParameters, true /* true for Commissionable Node */, Server::GetInstance().GetCommissioningWindowManager().GetCommissioningMode());
+    app::DnssdServer::Instance().GetCommissionAdvertisingParameters(
+        advertiseParameters, true /* true for Commissionable Node */,
+        Server::GetInstance().GetCommissioningWindowManager().GetCommissioningMode());
+
+    System::PacketBufferTLVWriter tlvWriter;
+    tlvWriter.Init(std::move(payloadBuf));
+
+    TLV::TLVType outerContainerType = TLV::kTLVType_Structure;
+    ReturnErrorOnFailure(tlvWriter.StartContainer(TLV::AnonymousTag(), TLV::kTLVType_Structure, outerContainerType));
+
+    VerifyOrReturnError(advertiseParameters.GetDeviceName().HasValue(), CHIP_ERROR_INCORRECT_STATE);
+    ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(Protocols::UserDirectedCommissioning::kDeviceNameTag),
+                                            (const uint8_t *) advertiseParameters.GetDeviceName().Value(),
+                                            sizeof(advertiseParameters.GetDeviceName().Value())));
+
+    ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(Protocols::UserDirectedCommissioning::kLongDiscriminatorTag),
+                                       advertiseParameters.GetLongDiscriminator()));
+
+    VerifyOrReturnError(advertiseParameters.GetVendorId().HasValue(), CHIP_ERROR_INCORRECT_STATE);
+    ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(Protocols::UserDirectedCommissioning::kVendorIdTag),
+                                       advertiseParameters.GetVendorId().Value()));
+
+    VerifyOrReturnError(advertiseParameters.GetProductId().HasValue(), CHIP_ERROR_INCORRECT_STATE);
+    ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(Protocols::UserDirectedCommissioning::kProductIdTag),
+                                       advertiseParameters.GetProductId().Value()));
+
+    VerifyOrReturnError(advertiseParameters.GetRotatingDeviceId().HasValue(), CHIP_ERROR_INCORRECT_STATE);
+    ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(Protocols::UserDirectedCommissioning::kRotatingIdTag),
+                                            (const uint8_t *) advertiseParameters.GetRotatingDeviceId().Value(),
+                                            sizeof(advertiseParameters.GetRotatingDeviceId().Value())));
+    ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(Protocols::UserDirectedCommissioning::kRotatingIdLenTag),
+                                       sizeof(advertiseParameters.GetRotatingDeviceId().Value())));
+
+    ReturnErrorOnFailure(tlvWriter.EndContainer(outerContainerType));
+    ReturnErrorOnFailure(tlvWriter.Finalize(&payloadBuf));
 
     return CHIP_NO_ERROR;
 }
@@ -481,7 +515,7 @@ CHIP_ERROR Server::SendUserDirectedCommissioningRequest(chip::Transport::PeerAdd
 
     CHIP_ERROR err;
     chip::System::PacketBufferHandle payloadBuf;
-    BuildUDCPayload(payloadBuf);
+    ReturnErrorOnFailure(BuildUDCPayload(payloadBuf));
 
     err = gUDCClient.SendUDCMessage(&mTransports, std::move(payloadBuf), commissioner);
     if (err == CHIP_NO_ERROR)
