@@ -104,6 +104,8 @@
         _subscriptionReadFailureCallbacks = [NSMutableDictionary dictionary];
         _readSuccessCallbacks = [NSMutableDictionary dictionary];
         _readFailureCallbacks = [NSMutableDictionary dictionary];
+
+        _chipWorkQueue = chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue();
     }
     return self;
 }
@@ -363,8 +365,6 @@
         ChipLogError(AppServer, "chip::Server init failed: %s", ErrorStr(err));
         return [[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]];
     }
-
-    _chipWorkQueue = chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue();
 
     chip::DeviceLayer::PlatformMgrImpl().StartEventLoopTask();
 
