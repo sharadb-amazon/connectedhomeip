@@ -11,23 +11,30 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-public class CastingClient {
-  private static String Tag = CastingClient.class.getSimpleName();
+public class CommandInvocationExample {
+  private static final String TAG = CommandInvocationExample.class.getSimpleName();
 
   private static final String SAMPLE_CONTENT_APP_VID = "12345";
 
-  public static void runAndLaunchContent(CastingPlayer castingPlayer)
+  public static void demoCommandInvocation(CastingPlayer castingPlayer)
       throws MalformedURLException, UnsupportedCommandException, UnsupportedClusterException {
+
+    // pick the Content app Endpoint to invoke the command on
     Optional<Endpoint> contentAppEndpoint =
         castingPlayer
             .getEndpoints()
             .stream()
             .filter(endpoint -> SAMPLE_CONTENT_APP_VID.equals(endpoint.getVendorId()))
             .findAny();
+
     if (contentAppEndpoint.isPresent()) {
+      // check if the Endpoint supports the Cluster to use
       if (contentAppEndpoint.get().hasCluster(ContentLauncher.class)) {
-        ContentLauncher contentLauncher = null;
-        contentLauncher = contentAppEndpoint.get().getCluster(ContentLauncher.class);
+        // get the Cluster to use
+        ContentLauncher contentLauncher =
+            contentAppEndpoint.get().getCluster(ContentLauncher.class);
+
+        // invoke the command
         CompletableFuture<ContentLauncher.LauncherResponse> contentLauncherResponseFuture =
             contentLauncher.launchURL(
                 new URL("https://www.samplemattercontent.xyz/id"), "displaystring", null);
@@ -38,7 +45,7 @@ public class CastingClient {
             });
       }
     } else {
-      Log.d(Tag, "Content app endpoint not found");
+      Log.d(TAG, "Content app endpoint not found");
     }
   }
 }

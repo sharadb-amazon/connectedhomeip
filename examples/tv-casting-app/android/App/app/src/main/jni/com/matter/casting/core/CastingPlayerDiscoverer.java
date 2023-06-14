@@ -2,7 +2,7 @@ package com.matter.casting.core;
 
 import java.util.List;
 
-public interface CastingPlayerDiscovery {
+public interface CastingPlayerDiscoverer {
   List<CastingPlayer> getDiscoveredCastingPlayers();
 
   void startDiscovery();
