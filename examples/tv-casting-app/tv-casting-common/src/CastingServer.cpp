@@ -123,6 +123,7 @@ CHIP_ERROR CastingServer::TargetVideoPlayerInfoInit(NodeId nodeId, FabricIndex f
 
 CHIP_ERROR CastingServer::DiscoverCommissioners(DeviceDiscoveryDelegate * deviceDiscoveryDelegate)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     TargetVideoPlayerInfo * connectableVideoPlayerList = ReadCachedTargetVideoPlayerInfos();
     if (connectableVideoPlayerList == nullptr || !connectableVideoPlayerList[0].IsInitialized())
     {
@@ -138,6 +139,7 @@ CHIP_ERROR CastingServer::DiscoverCommissioners(DeviceDiscoveryDelegate * device
 
 CHIP_ERROR CastingServer::StopDiscoverCommissioners()
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     // Send discover commissioners request
     return mCommissionableNodeController.StopDiscoverCommissioners();
 }
@@ -148,6 +150,7 @@ CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_E
                                                        std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                        std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     mCommissioningWindowOpenedCallback = commissioningWindowOpenedCallback;
     mCommissioningCompleteCallback     = commissioningCompleteCallback;
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
@@ -181,6 +184,7 @@ void CastingServer::OpenBasicCommissioningWindowTask(System::Layer * aSystemLaye
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
 CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(chip::Transport::PeerAddress commissioner)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     return Server::GetInstance().SendUserDirectedCommissioningRequest(commissioner);
 }
 
@@ -207,6 +211,7 @@ chip::Inet::IPAddress * CastingServer::getIpAddressForUDCRequest(chip::Inet::IPA
 
 CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::DiscoveredNodeData * selectedCommissioner)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     chip::TransportMgrBase transport = Server::GetInstance().GetTransportManager();
     mUdcInProgress                   = true;
     // Send User Directed commissioning request
@@ -233,6 +238,7 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::Discovered
 const Dnssd::DiscoveredNodeData *
 CastingServer::GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPlayerInfo *> & outAssociatedConnectableVideoPlayer)
 {
+    VerifyOrReturnValue(mInited, nullptr);
     const Dnssd::DiscoveredNodeData * discoveredNodeData = mCommissionableNodeController.GetDiscoveredCommissioner(index);
     if (discoveredNodeData != nullptr)
     {
@@ -348,6 +354,7 @@ void CastingServer::OnDescriptorReadFailureResponse(void * context, CHIP_ERROR e
 
 TargetVideoPlayerInfo * CastingServer::ReadCachedTargetVideoPlayerInfos()
 {
+    VerifyOrReturnValue(mInited, nullptr);
     CHIP_ERROR err = mPersistenceManager.ReadAllVideoPlayers(mCachedTargetVideoPlayerInfo);
     if (err != CHIP_NO_ERROR)
     {
@@ -371,6 +378,7 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
                                                       std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                       std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     LogCachedVideoPlayers();
 
     if (!targetVideoPlayerInfo.IsInitialized())
@@ -401,6 +409,7 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
 
 CHIP_ERROR CastingServer::PurgeCache()
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     return mPersistenceManager.PurgeVideoPlayerCache();
 }
 
@@ -597,12 +606,14 @@ void CastingServer::SetDefaultFabricIndex(std::function<void(TargetVideoPlayerIn
 
 void CastingServer::ShutdownAllSubscriptions()
 {
+    VerifyOrReturn(mInited);
     ChipLogProgress(AppServer, "Shutting down ALL Subscriptions");
     app::InteractionModelEngine::GetInstance()->ShutdownAllSubscriptions();
 }
 
 void CastingServer::Disconnect()
 {
+    VerifyOrReturn(mInited);
     TargetVideoPlayerInfo * currentVideoPlayer = GetActiveTargetVideoPlayer();
 
     if (currentVideoPlayer != nullptr && currentVideoPlayer->IsInitialized())
@@ -625,6 +636,7 @@ CHIP_ERROR CastingServer::ContentLauncher_LaunchURL(
     chip::Optional<chip::app::Clusters::ContentLauncher::Structs::BrandingInformation::Type> brandingInformation,
     std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mLaunchURLCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mLaunchURLCommand.Invoke(contentUrl, contentDisplayStr, brandingInformation, responseCallback);
 }
@@ -634,6 +646,7 @@ CHIP_ERROR CastingServer::ContentLauncher_LaunchContent(TargetEndpointInfo * end
                                                         bool autoPlay, chip::Optional<chip::CharSpan> data,
                                                         std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mLaunchContentCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mLaunchContentCommand.Invoke(search, autoPlay, data, responseCallback);
 }
@@ -647,6 +660,7 @@ CastingServer::ContentLauncher_SubscribeToAcceptHeader(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mAcceptHeaderSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mAcceptHeaderSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                       onSubscriptionEstablished);
@@ -661,6 +675,7 @@ CastingServer::ContentLauncher_SubscribeToSupportedStreamingProtocols(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSupportedStreamingProtocolsSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSupportedStreamingProtocolsSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                                      onSubscriptionEstablished);
@@ -673,6 +688,7 @@ CHIP_ERROR CastingServer::LevelControl_Step(TargetEndpointInfo * endpoint, chip:
                                             uint8_t stepSize, uint16_t transitionTime, uint8_t optionMask, uint8_t optionOverride,
                                             std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStepCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
 
     app::DataModel::Nullable<uint16_t> nullableTransitionTime;
@@ -685,6 +701,7 @@ CHIP_ERROR CastingServer::LevelControl_MoveToLevel(TargetEndpointInfo * endpoint
                                                    uint8_t optionMask, uint8_t optionOverride,
                                                    std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mMoveToLevelCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
 
     app::DataModel::Nullable<uint16_t> nullableTransitionTime;
@@ -699,6 +716,7 @@ CHIP_ERROR CastingServer::LevelControl_SubscribeToCurrentLevel(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mCurrentLevelSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mCurrentLevelSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                       onSubscriptionEstablished);
@@ -710,6 +728,7 @@ CHIP_ERROR CastingServer::LevelControl_SubscribeToMinLevel(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mMinLevelSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mMinLevelSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                   onSubscriptionEstablished);
@@ -721,6 +740,7 @@ CHIP_ERROR CastingServer::LevelControl_SubscribeToMaxLevel(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mMaxLevelSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mMaxLevelSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                   onSubscriptionEstablished);
@@ -731,18 +751,21 @@ CHIP_ERROR CastingServer::LevelControl_SubscribeToMaxLevel(
  */
 CHIP_ERROR CastingServer::OnOff_On(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mOnCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mOnCommand.Invoke(responseCallback);
 }
 
 CHIP_ERROR CastingServer::OnOff_Off(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mOffCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mOffCommand.Invoke(responseCallback);
 }
 
 CHIP_ERROR CastingServer::OnOff_Toggle(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mToggleCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mToggleCommand.Invoke(responseCallback);
 }
@@ -752,12 +775,14 @@ CHIP_ERROR CastingServer::OnOff_Toggle(TargetEndpointInfo * endpoint, std::funct
  */
 CHIP_ERROR CastingServer::MediaPlayback_Play(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mPlayCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mPlayCommand.Invoke(responseCallback);
 }
 
 CHIP_ERROR CastingServer::MediaPlayback_Pause(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mPauseCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mPauseCommand.Invoke(responseCallback);
 }
@@ -765,12 +790,14 @@ CHIP_ERROR CastingServer::MediaPlayback_Pause(TargetEndpointInfo * endpoint, std
 CHIP_ERROR CastingServer::MediaPlayback_StopPlayback(TargetEndpointInfo * endpoint,
                                                      std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStopPlaybackCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mStopPlaybackCommand.Invoke(responseCallback);
 }
 
 CHIP_ERROR CastingServer::MediaPlayback_Next(TargetEndpointInfo * endpoint, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mNextCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mNextCommand.Invoke(responseCallback);
 }
@@ -778,6 +805,7 @@ CHIP_ERROR CastingServer::MediaPlayback_Next(TargetEndpointInfo * endpoint, std:
 CHIP_ERROR CastingServer::MediaPlayback_Seek(TargetEndpointInfo * endpoint, uint64_t position,
                                              std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSeekCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSeekCommand.Invoke(position, responseCallback);
 }
@@ -785,6 +813,7 @@ CHIP_ERROR CastingServer::MediaPlayback_Seek(TargetEndpointInfo * endpoint, uint
 CHIP_ERROR CastingServer::MediaPlayback_SkipForward(TargetEndpointInfo * endpoint, uint64_t deltaPositionMilliseconds,
                                                     std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSkipForwardCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSkipForwardCommand.Invoke(deltaPositionMilliseconds, responseCallback);
 }
@@ -792,6 +821,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SkipForward(TargetEndpointInfo * endpoin
 CHIP_ERROR CastingServer::MediaPlayback_SkipBackward(TargetEndpointInfo * endpoint, uint64_t deltaPositionMilliseconds,
                                                      std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSkipBackwardCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSkipBackwardCommand.Invoke(deltaPositionMilliseconds, responseCallback);
 }
@@ -802,6 +832,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToCurrentState(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mCurrentStateSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mCurrentStateSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                       onSubscriptionEstablished);
@@ -813,6 +844,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToStartTime(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStartTimeSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mStartTimeSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                    onSubscriptionEstablished);
@@ -824,6 +856,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToDuration(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mDurationSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mDurationSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                   onSubscriptionEstablished);
@@ -836,6 +869,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToSampledPosition(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSampledPositionSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSampledPositionSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                          onSubscriptionEstablished);
@@ -848,6 +882,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToPlaybackSpeed(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mPlaybackSpeedSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mPlaybackSpeedSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                        onSubscriptionEstablished);
@@ -859,6 +894,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToSeekRangeEnd(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSeekRangeEndSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSeekRangeEndSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                       onSubscriptionEstablished);
@@ -871,6 +907,7 @@ CHIP_ERROR CastingServer::MediaPlayback_SubscribeToSeekRangeStart(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSeekRangeStartSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSeekRangeStartSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                         onSubscriptionEstablished);
@@ -884,6 +921,7 @@ CastingServer::ApplicationLauncher_LaunchApp(TargetEndpointInfo * endpoint,
                                              chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application,
                                              chip::Optional<chip::ByteSpan> data, std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mLaunchAppCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mLaunchAppCommand.Invoke(application, data, responseCallback);
 }
@@ -893,6 +931,7 @@ CastingServer::ApplicationLauncher_StopApp(TargetEndpointInfo * endpoint,
                                            chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application,
                                            std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStopAppCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mStopAppCommand.Invoke(application, responseCallback);
 }
@@ -902,6 +941,7 @@ CastingServer::ApplicationLauncher_HideApp(TargetEndpointInfo * endpoint,
                                            chip::app::Clusters::ApplicationLauncher::Structs::Application::Type application,
                                            std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mHideAppCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mHideAppCommand.Invoke(application, responseCallback);
 }
@@ -913,6 +953,7 @@ CHIP_ERROR CastingServer::ApplicationLauncher_SubscribeToCurrentApp(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mCurrentAppSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mCurrentAppSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                     onSubscriptionEstablished);
@@ -925,6 +966,7 @@ CHIP_ERROR CastingServer::TargetNavigator_NavigateTarget(TargetEndpointInfo * en
                                                          const chip::Optional<chip::CharSpan> data,
                                                          std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mNavigateTargetCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mNavigateTargetCommand.Invoke(target, data, responseCallback);
 }
@@ -935,6 +977,7 @@ CHIP_ERROR CastingServer::TargetNavigator_SubscribeToTargetList(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mTargetListSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mTargetListSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                     onSubscriptionEstablished);
@@ -947,6 +990,7 @@ CHIP_ERROR CastingServer::TargetNavigator_SubscribeToCurrentTarget(
     ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mCurrentTargetSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mCurrentTargetSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                        onSubscriptionEstablished);
@@ -959,6 +1003,7 @@ CHIP_ERROR CastingServer::KeypadInput_SendKey(TargetEndpointInfo * endpoint,
                                               const chip::app::Clusters::KeypadInput::CecKeyCode keyCode,
                                               std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mSendKeyCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mSendKeyCommand.Invoke(keyCode, responseCallback);
 }
@@ -974,6 +1019,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_SubscribeToVendorName(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mVendorNameSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mVendorNameSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                     onSubscriptionEstablished);
@@ -988,6 +1034,7 @@ CastingServer::ApplicationBasic_SubscribeToVendorID(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mVendorIDSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mVendorIDSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                   onSubscriptionEstablished);
@@ -1001,6 +1048,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_SubscribeToApplicationName(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationNameSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationNameSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                          onSubscriptionEstablished);
@@ -1015,6 +1063,7 @@ CastingServer::ApplicationBasic_SubscribeToProductID(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mProductIDSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mProductIDSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                    onSubscriptionEstablished);
@@ -1028,6 +1077,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_SubscribeToApplication(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                      onSubscriptionEstablished);
@@ -1042,6 +1092,7 @@ CastingServer::ApplicationBasic_SubscribeToStatus(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStatusSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mStatusSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval, onSubscriptionEstablished);
 }
@@ -1054,6 +1105,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_SubscribeToApplicationVersion(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationVersionSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationVersionSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                             onSubscriptionEstablished);
@@ -1067,6 +1119,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_SubscribeToAllowedVendorList(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mAllowedVendorListSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mAllowedVendorListSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval,
                                                            onSubscriptionEstablished);
@@ -1079,6 +1132,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadVendorName(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mVendorNameReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mVendorNameReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1091,6 +1145,7 @@ CastingServer::ApplicationBasic_ReadVendorID(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mVendorIDReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mVendorIDReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1102,6 +1157,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadApplicationName(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationNameReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationNameReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1114,6 +1170,7 @@ CastingServer::ApplicationBasic_ReadProductID(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mProductIDReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mProductIDReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1125,6 +1182,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadApplication(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1137,6 +1195,7 @@ CastingServer::ApplicationBasic_ReadStatus(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mStatusReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mStatusReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1148,6 +1207,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadApplicationVersion(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mApplicationVersionReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mApplicationVersionReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1159,6 +1219,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadAllowedVendorList(
         successFn,
     chip::Controller::ReadResponseFailureCallback failureFn)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mAllowedVendorListReader.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mAllowedVendorListReader.ReadAttribute(context, successFn, failureFn);
 }
@@ -1169,6 +1230,7 @@ CHIP_ERROR CastingServer::ApplicationBasic_ReadAllowedVendorList(
 CHIP_ERROR CastingServer::Channel_ChangeChannelCommand(TargetEndpointInfo * endpoint, const chip::CharSpan & match,
                                                        std::function<void(CHIP_ERROR)> responseCallback)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mChangeChannelCommand.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mChangeChannelCommand.Invoke(match, responseCallback);
 }
@@ -1180,6 +1242,7 @@ CHIP_ERROR CastingServer::Channel_SubscribeToLineup(
     chip::Controller::ReadResponseFailureCallback failureFn, uint16_t minInterval, uint16_t maxInterval,
     chip::Controller::SubscriptionEstablishedCallback onSubscriptionEstablished)
 {
+    VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
     ReturnErrorOnFailure(mLineupSubscriber.SetTarget(mActiveTargetVideoPlayerInfo, endpoint->GetEndpointId()));
     return mLineupSubscriber.SubscribeAttribute(context, successFn, failureFn, minInterval, maxInterval, onSubscriptionEstablished);
 }

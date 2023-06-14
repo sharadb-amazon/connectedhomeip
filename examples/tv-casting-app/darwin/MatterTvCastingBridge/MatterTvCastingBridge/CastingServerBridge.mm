@@ -104,6 +104,8 @@
         _subscriptionReadFailureCallbacks = [NSMutableDictionary dictionary];
         _readSuccessCallbacks = [NSMutableDictionary dictionary];
         _readFailureCallbacks = [NSMutableDictionary dictionary];
+
+        _chipWorkQueue = chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue();
     }
     return self;
 }
@@ -116,6 +118,11 @@
  */
 - (void)dispatchOnMatterSDKQueue:(const NSString * _Nullable)description block:(dispatch_block_t)block
 {
+    if (_chipWorkQueue == nullptr) {
+        ChipLogError(AppServer, "CastingServerBridge().dispatchOnMatterSDKQueue() chipWorkQueue uninitialized. Cannot dispatch");
+        return;
+    }
+
     if (nil != description) {
         ChipLogProgress(AppServer, "[SYNC] CastingServerBridge %s", [description UTF8String]);
     }
@@ -148,6 +155,11 @@
                   description:(const NSString * _Nullable)description
                         block:(dispatch_block_t)block
 {
+    if (_chipWorkQueue == nullptr) {
+        ChipLogError(AppServer, "CastingServerBridge().dispatchOnMatterSDKQueue() chipWorkQueue uninitialized. Cannot dispatch");
+        return;
+    }
+
     // Within the CastingServerBridge, the usage pattern is typically to expose asynchronous public APIs that
     // take a callback to indicate that the low-level SDK operation has been initiated (the "started"
     // callback), and a separate set of result callbacks to be invoked when the low-level SDK operation
@@ -270,7 +282,7 @@
     // Note that it is presently safe to do at this point because InitChipStack is called in the
     // constructor for the CastingServerBridge.
     chip::DeviceLayer::StackLock lock;
-    ChipLogProgress(AppServer, "CastingServerBridge().initApp() called");
+    ChipLogProgress(AppServer, "CastingServerBridge().initializeApp() called");
 
     CHIP_ERROR err = CHIP_NO_ERROR;
     _commissionableDataProvider = new CommissionableDataProviderImpl();
@@ -353,8 +365,6 @@
         ChipLogError(AppServer, "chip::Server init failed: %s", ErrorStr(err));
         return [[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]];
     }
-
-    _chipWorkQueue = chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue();
 
     chip::DeviceLayer::PlatformMgrImpl().StartEventLoopTask();
 
