@@ -24,3 +24,19 @@ FOUNDATION_EXPORT double MatterTvCastingBridgeVersionNumber;
 FOUNDATION_EXPORT const unsigned char MatterTvCastingBridgeVersionString[];
 
 #import "CastingServerBridge.h"
+
+#import "MTRCommissioningData.h"
+#import "MTRAppParameters.h"
+#import "MTRDataSource.h"
+#import "MTRCastingApp.h"
+#import "MTRCastingPlayerDiscovery.h"
+#import "MTRCastingPlayer.h"
+#import "MTREndpointClusterType.h"
+#import "MTREndpoint.h"
+#import "MTRCluster.h"
+#import "MTRObserver.h"
+#import "MTRAttribute.h"
+#import "MTRLaunchResponse.h"
+#import "MTRContentLauncherCluster.h"
+#import "MTRPlaybackState.h"
+#import "MTRMediaPlaybackCluster.h"
