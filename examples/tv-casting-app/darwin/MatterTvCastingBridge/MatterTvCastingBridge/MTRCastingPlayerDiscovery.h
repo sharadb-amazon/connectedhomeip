@@ -20,12 +20,11 @@
 #ifndef MTRCastingPlayerDiscovery_h
 #define MTRCastingPlayerDiscovery_h
 
-/**
- NotificationCenter.default.addObserver(self, selector: #selector(self.methodOfReceivedNotification(notification:)), name: Notification.Name("NotificationIdentifier"), object: nil)
- ^ This is how classes will listen to the event in swift
- @objc func methodOfReceivedNotification(notification: Notification) {}
- */
 NSString * _Nonnull const MTRCastingPlayerDiscoveryPlayersDidUpdateNotification = @"MTRCastingPlayerDiscoveryPlayersDidUpdateNotification";
+extern NSString * _Nonnull const didAddCastingPlayersNotification;
+extern NSString * _Nonnull const didRemoveCastingPlayersNotification;
+extern NSString * _Nonnull const didUpdateCastingPlayersNotification;
+extern NSString * _Nonnull const castingPlayersUserInfo;
 
 @interface MTRCastingPlayerDiscovery : NSObject
 + (MTRCastingPlayerDiscovery * _Nonnull)sharedInstance;
@@ -35,9 +34,9 @@ NSString * _Nonnull const MTRCastingPlayerDiscoveryPlayersDidUpdateNotification 
 
 @property (nonatomic, strong) NSArray<MTRCastingPlayer * > * _Nonnull castingPlayers;
 
-- (void)startDiscovery;
+- (void)start;
 
-- (void)stopDiscovery;
+- (void)stop;
 
 @end
 
