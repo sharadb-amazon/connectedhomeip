@@ -15,11 +15,11 @@
  *    limitations under the License.
  */
 
-#ifndef MTRPlaybackState_h
-#define MTRPlaybackState_h
+#ifndef MTRCurrentState_h
+#define MTRCurrentState_h
 
-@interface MTRPlaybackState : NSObject
+@interface MTRCurrentState : NSObject
 
 @end
 
-#endif /* MTRPlaybackState_h */
+#endif /* MTRCurrentState_h */

@@ -21,8 +21,8 @@
 @interface MTRMediaPlaybackCluster : NSObject <MTRCluster>
 @property (nonatomic, weak, readonly) MTREndpoint* _Nullable endpoint;
 
-@property (nonatomic, strong, readonly) MTRAttribute<MTRPlaybackState*>* _Nonnull playbackState; // Nonnull for required attr
-@property (nonatomic, strong, readonly) MTRAttribute<MTRPlaybackState*>* _Nullable optionalAttribute; // Nullable for optional attr
+@property (nonatomic, strong, readonly) MTRAttribute<MTRCurrentState*>* _Nonnull currentState; // Nonnull for required attr
+@property (nonatomic, strong, readonly) MTRAttribute<MTRCurrentState*>* _Nullable optionalAttribute; // Nullable for optional attr
 
 
 // can support commands

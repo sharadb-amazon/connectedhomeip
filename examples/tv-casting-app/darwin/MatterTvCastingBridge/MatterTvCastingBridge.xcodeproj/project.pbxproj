@@ -40,7 +40,7 @@
 		3CF2F4872A3B99170053A281 /* MTRAttribute.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F4862A3B99170053A281 /* MTRAttribute.h */; };
 		3CF2F4892A3B99C50053A281 /* MTRLaunchResponse.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F4882A3B99C50053A281 /* MTRLaunchResponse.h */; };
 		3CF2F48B2A3B99E90053A281 /* MTRContentLauncherCluster.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F48A2A3B99E90053A281 /* MTRContentLauncherCluster.h */; };
-		3CF2F48E2A3B9A1B0053A281 /* MTRPlaybackState.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F48D2A3B9A1B0053A281 /* MTRPlaybackState.h */; };
+		3CF2F48E2A3B9A1B0053A281 /* MTRCurrentState.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F48D2A3B9A1B0053A281 /* MTRCurrentState.h */; };
 		3CF2F4902A3B9A380053A281 /* MTRMediaPlaybackCluster.h in Headers */ = {isa = PBXBuildFile; fileRef = 3CF2F48F2A3B9A380053A281 /* MTRMediaPlaybackCluster.h */; };
 		3CF8532728E37F1000F07B9F /* MatterError.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3CF8532628E37F1000F07B9F /* MatterError.mm */; };
 		3CFC02552A4262FE0015EAA0 /* MTRCastingPlayerDiscovery.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CFC02542A4262FE0015EAA0 /* MTRCastingPlayerDiscovery.m */; };
@@ -92,7 +92,7 @@
 		3CF2F4862A3B99170053A281 /* MTRAttribute.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRAttribute.h; sourceTree = "<group>"; };
 		3CF2F4882A3B99C50053A281 /* MTRLaunchResponse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRLaunchResponse.h; sourceTree = "<group>"; };
 		3CF2F48A2A3B99E90053A281 /* MTRContentLauncherCluster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRContentLauncherCluster.h; sourceTree = "<group>"; };
-		3CF2F48D2A3B9A1B0053A281 /* MTRPlaybackState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRPlaybackState.h; sourceTree = "<group>"; };
+		3CF2F48D2A3B9A1B0053A281 /* MTRCurrentState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRCurrentState.h; sourceTree = "<group>"; };
 		3CF2F48F2A3B9A380053A281 /* MTRMediaPlaybackCluster.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRMediaPlaybackCluster.h; sourceTree = "<group>"; };
 		3CF8532528E37ED800F07B9F /* MatterError.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MatterError.h; sourceTree = "<group>"; };
 		3CF8532628E37F1000F07B9F /* MatterError.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MatterError.mm; sourceTree = "<group>"; };
@@ -135,7 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				3CF2F48F2A3B9A380053A281 /* MTRMediaPlaybackCluster.h */,
-				3CF2F48D2A3B9A1B0053A281 /* MTRPlaybackState.h */,
+				3CF2F48D2A3B9A1B0053A281 /* MTRCurrentState.h */,
 				3CF2F48A2A3B99E90053A281 /* MTRContentLauncherCluster.h */,
 				3CF2F4882A3B99C50053A281 /* MTRLaunchResponse.h */,
 				3CF2F4862A3B99170053A281 /* MTRAttribute.h */,
@@ -199,7 +199,7 @@
 				3CF2F4892A3B99C50053A281 /* MTRLaunchResponse.h in Headers */,
 				3C26AC8C2926FE0C00BA6881 /* DeviceAttestationCredentialsProviderImpl.hpp in Headers */,
 				3CF2F4792A3B97540053A281 /* MTRCastingApp.h in Headers */,
-				3CF2F48E2A3B9A1B0053A281 /* MTRPlaybackState.h in Headers */,
+				3CF2F48E2A3B9A1B0053A281 /* MTRCurrentState.h in Headers */,
 				3CF2F47D2A3B97CB0053A281 /* MTRCastingPlayer.h in Headers */,
 				3CF2F4902A3B9A380053A281 /* MTRMediaPlaybackCluster.h in Headers */,
 				3CF2F47B2A3B979D0053A281 /* MTRCastingPlayerDiscovery.h in Headers */,

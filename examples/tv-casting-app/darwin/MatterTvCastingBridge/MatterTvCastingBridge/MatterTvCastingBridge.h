@@ -38,5 +38,5 @@ FOUNDATION_EXPORT const unsigned char MatterTvCastingBridgeVersionString[];
 #import "MTRAttribute.h"
 #import "MTRLaunchResponse.h"
 #import "MTRContentLauncherCluster.h"
-#import "MTRPlaybackState.h"
+#import "MTRCurrentState.h"
 #import "MTRMediaPlaybackCluster.h"

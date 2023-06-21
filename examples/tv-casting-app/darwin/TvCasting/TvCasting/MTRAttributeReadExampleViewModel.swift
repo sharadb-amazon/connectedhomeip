@@ -19,38 +19,37 @@
 import Foundation
 import os.log
 
-class MTRCommandInvocationExampleViewModel: ObservableObject {
+class MTRAttributeReadExampleViewModel: ObservableObject {
     let Log = Logger(subsystem: "com.matter.casting",
-                     category: "MTRCommandInvocationExampleViewModel")
+                     category: "MTRAttributeReadExampleViewModel")
     
     let sampleContentAppVid: String = "12345"
     
     @Published var status: String?;
     
-    func invokeCommand(castingPlayer: MTRCastingPlayer)
+    func readAttribute(castingPlayer: MTRCastingPlayer)
     {
         if let endpoint: MTREndpoint = castingPlayer.endpoints.filter({ $0.identifier == sampleContentAppVid }).first
         {
             if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
             {
-                let cluster: MTRContentLauncherCluster = endpoint.cluster(for: MTREndpointClusterTypeContentLauncher) as! MTRContentLauncherCluster
-                if(cluster.canLaunchURL())
-                {
-                    cluster.launch(URL(string: "https://www.samplemattercontent.xyz/id")!) { launchResponse, err in
-                        self.Log.info("invokeCommand completed with \(err)")
-                        self.status = "ContentLauncher.LaunchURL completed!"
-
-                        // consume the launchResponse
+                let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
+                let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
+                
+                currentStateAttribute.read { currentStateValue, err in
+                    if(err == nil)
+                    {
+                        self.status = "Read CurrentState value \(String(describing: currentStateValue))"
                     }
-                }
-                else
-                {
-                    self.status = "Cannot launchURL on cluster"
+                    else
+                    {
+                        self.status = "Error when reading CurrentState value \(String(describing: err))"
+                    }
                 }
             }
             else
             {
-                self.status = "No ContentLauncher cluster supporting endpoint found"
+                self.status = "No MediaPlayback cluster supporting endpoint found"
             }
         }
         else

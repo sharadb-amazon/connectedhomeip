@@ -19,7 +19,8 @@
 #define MTREndpointClusterType_h
 
 typedef enum _MTREndpointClusterType {
-    MTREndpointClusterTypeContentLauncher
+    MTREndpointClusterTypeContentLauncher,
+    MTREndpointClusterTypeMediaPlayback
 }MTREndpointClusterType;
 
 #endif /* MTREndpointClusterType_h */
