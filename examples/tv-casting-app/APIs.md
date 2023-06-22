@@ -130,7 +130,59 @@ public class InitializationExample {
   <summary>iOS example</summary>
   
   ```objectivec
-      enter code here   
+  import SwiftUI
+import os.log
+
+@main
+struct TvCastingApp: App {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "TvCastingApp")
+    @State
+    var firstAppActivation: Bool = true
+
+    init()
+    {
+        class AppParametersDataSource : NSObject, MTRDataSource
+        {
+            func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
+                return Data()
+            }
+            
+            func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
+                return MTRCommissioningData()
+            }
+            
+            @nonobjc
+            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, completionBlock completed: @escaping (Data) -> Void) {
+                
+            }
+            
+            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
+                return Data()
+            }
+        }
+        MTRCastingApp.initialize(with: AppParametersDataSource())
+        MTRCastingApp.start()
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                    self.Log.info("TvCastingApp: UIApplication.willResignActiveNotification")
+                    MTRCastingApp.stop()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                    self.Log.info("TvCastingApp: UIApplication.didBecomeActiveNotification")
+                    if(!firstAppActivation)
+                    {
+                      MTRCastingApp.start()
+                    }
+                    firstAppActivation = false
+                }
+        }
+    }
+}
   ```
   </details>
 
@@ -204,13 +256,71 @@ public class DiscoveryExample {
   <summary>iOS example</summary>
   
   ```objectivec
-      enter code here   
+  import Foundation
+import os.log
+
+class MTRDiscoveryExampleViewModel: ObservableObject {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRDiscoveryExampleViewModel")
+    
+    @Published var displayedCastingPlayers: [MTRCastingPlayer] = []
+    
+    @Published var discoveryRequestStatus: Bool?;
+    
+    func startDiscovery() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.addDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.removeDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.updateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
+
+        MTRCastingPlayerDiscovery.sharedInstance().start()
+        self.discoveryRequestStatus = true
+    }
+    
+    @objc
+    func addDiscoveredCastingPlayers(notification: Notification)
+    {
+        guard let userInfo = notification.userInfo,
+              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+              print("No MTRCastingPlayer found in notification")
+              return
+            }
+        displayedCastingPlayers.append(contentsOf: castingPlayers)
+    }
+    
+    @objc
+    func removeDiscoveredCastingPlayers(notification: Notification)
+    {
+        guard let userInfo = notification.userInfo,
+              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+            print("No MTRCastingPlayer found in notification")
+            return
+        }
+        displayedCastingPlayers = displayedCastingPlayers.filter { !castingPlayers.contains($0)}
+    }
+    
+    @objc
+    func updateDiscoveredCastingPlayers(notification: Notification)
+    {
+        guard let userInfo = notification.userInfo,
+              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+            print("No MTRCastingPlayer found in notification")
+            return
+        }
+        for castingPlayer in castingPlayers
+        {
+            if let index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier == $0.identifier })
+            {
+                displayedCastingPlayers[index] = castingPlayer
+            }
+        }
+    }
+}
   ```
   </details>
 
 Note: at this point, the list of Endpoints in the discovered CastingPlayers will be empty, as this information is not revealed at the time of Matter Commissioner discovery.
 ## Connection
-After discovery, the Casting client may use user input to select on of the CastingPlayers to connect it. Each CastingPlayer object contains information such as deviceName, vendorId, productId, etc. to help make this selection. It can then attempt to connect to the selectedCastingPlayer. This is implemented based on Matter User Directed Commissioning (UDC). The Matter TV Casting library also locally caches information required to re-connect to a CastingPlayer. Once it does that, it is able to skip UDC and establishes CASE directly.
+After discovery, the Casting client may use user input to select on of the CastingPlayers to connect it. Each CastingPlayer object contains information such as deviceName, vendorId, productId, etc. to help make this selection. It can then attempt to connect to the selectedCastingPlayer. This is implemented based on Matter User Directed Commissioning (UDC). The Matter TV Casting library also locally caches information required to re-connect to a CastingPlayer. Once it does that, it is able to skip UDC and establishes CASE directly. Once connected, the CastingPlayer object would contain the list of available Endpoints on it.
 
 <details>
   <summary>Android example</summary>
@@ -241,16 +351,43 @@ public class ConnectionExample {
 ```
 </details>
 
+<details>
+  <summary>iOS example</summary>
+  
+  ```objectivec
+  import Foundation
+import os.log
+
+class MTRConnectionExampleViewModel: ObservableObject {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRConnectionExampleViewModel")
+        
+    @Published var connectionSuccess: Bool?;
+
+    @Published var connectionStatus: String?;
+
+    func connect(selectedCastingPlayer: MTRCastingPlayer?) {
+        selectedCastingPlayer?.connect(withTimeout: 60, withCompletionBlock: { err in
+            self.Log.error("MTRConnectionExampleViewModel connect() completed with \(err)")
+            if(err == nil)
+            {
+                self.connectionSuccess = true
+                self.connectionStatus = "Connected!"
+            }
+            else
+            {
+                self.connectionSuccess = false
+                self.connectionStatus = "Connection failed with \(String(describing: err))"
+            }
+        })
+    }
+}
+   
+  ```
+  </details>
+
 ## Interactions
-On a successful connection with the CastingPlayer, a Casting client may pick of of the Endpoints to interact with based on its attributes (like Vendor or Product IDs, list of supported Clusters, etc). Here is an example, where the client code selects an Endpoint on the CastingPlayer with VendorID ("12345") that supports the ContentLauncher cluster LaunchURL command.
-
-On Android,
-
-    enter code here
-
-On iOS,
-
-    enter code here
+On a successful connection with the CastingPlayer, a Casting client may pick of of the Endpoints to interact with based on its attributes (like Vendor or Product IDs, list of supported Clusters, etc). It may then send commands to it, or subscribe to / read attribute values from it.
 
 ### Commands
 The CastingClient may send a command to the selectedEndpoint on the selectedCastingPlayer and handle the command response, like so:
@@ -315,31 +452,301 @@ public class CommandInvocationExample {
   <summary>iOS example</summary>
   
   ```objectivec
-      enter code here   
+  import Foundation
+import os.log
+
+class MTRCommandInvocationExampleViewModel: ObservableObject {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRCommandInvocationExampleViewModel")
+    
+    let sampleContentAppVid: String = "12345"
+    
+    @Published var status: String?;
+    
+    func invokeCommand(castingPlayer: MTRCastingPlayer)
+    {
+        if let endpoint: MTREndpoint = castingPlayer.endpoints.filter({ $0.identifier == sampleContentAppVid }).first
+        {
+            if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
+            {
+                let cluster: MTRContentLauncherCluster = endpoint.cluster(for: MTREndpointClusterTypeContentLauncher) as! MTRContentLauncherCluster
+                if(cluster.canLaunchURL())
+                {
+                    cluster.launch(URL(string: "https://www.samplemattercontent.xyz/id")!) { launchResponse, err in
+                        self.Log.info("invokeCommand completed with \(err)")
+                        self.status = "ContentLauncher.LaunchURL completed!"
+
+                        // consume the launchResponse
+                    }
+                }
+                else
+                {
+                    self.status = "Cannot launchURL on cluster"
+                }
+            }
+            else
+            {
+                self.status = "No ContentLauncher cluster supporting endpoint found"
+            }
+        }
+        else
+        {
+            self.status = "No endpoint matching the example VID found"
+        }
+    }
+}     
   ```
   </details>
 
 ### Reads
 The CastingClient may read an Attribute from the selectedEndpoint on the selectedCastingPlayer, like so:
 
-On Android,
+<details>
+  <summary>Android example</summary>
+  
+  ```java
+  package com.matter.casting;
 
-    enter code here
+import android.util.Log;
 
-On iOS,
+import com.matter.casting.clusters.MediaPlayback;
+import com.matter.casting.core.Attribute;
+import com.matter.casting.core.CastingPlayer;
+import com.matter.casting.core.Endpoint;
+import com.matter.casting.err.UnsupportedClusterException;
 
-    enter code here
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+public class AttributeReadExample {
+    private static final String TAG = AttributeReadExample.class.getSimpleName();
+
+    private static final String SAMPLE_CONTENT_APP_VID = "12345";
+
+    public static void demoRead(CastingPlayer castingPlayer) throws UnsupportedClusterException {
+
+        // pick the Content app Endpoint to invoke the command on
+        Optional<Endpoint> contentAppEndpoint =
+                castingPlayer
+                        .getEndpoints()
+                        .stream()
+                        .filter(endpoint -> SAMPLE_CONTENT_APP_VID.equals(endpoint.getVendorId()))
+                        .findAny();
+
+        if (contentAppEndpoint.isPresent()) {
+            // check if the Endpoint supports the Cluster to use
+            if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
+                // get the Cluster to use
+                MediaPlayback mediaPlayback =
+                        contentAppEndpoint.get().getCluster(MediaPlayback.class);
+
+                Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
+                if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
+                {
+                    CompletableFuture<MediaPlayback.CurrentState> currentStateValue = currentStateAttribute.get().read();
+                    try {
+                        Log.i(TAG, "Read Current State value: " + currentStateValue.get(1, TimeUnit.SECONDS));
+
+                    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+                        Log.e(TAG, "Exception when reading CurrentState " + e);
+                    }
+                }
+                else
+                {
+                    Log.e(TAG, "Attribute unavailable on the selected endpoint");
+                }
+            }
+            else
+            {
+                Log.e(TAG, "Required cluster not found on the selected endpoint");
+            }
+        } else {
+            Log.e(TAG, "Content app endpoint not found");
+        }
+    }
+}
+  ```
+</details>
+
+<details>
+  <summary>iOS example</summary>
+  
+  ```objectivec
+  import Foundation
+import os.log
+
+class MTRAttributeReadExampleViewModel: ObservableObject {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRAttributeReadExampleViewModel")
+    
+    let sampleContentAppVid: String = "12345"
+    
+    @Published var status: String?;
+    
+    func readAttribute(castingPlayer: MTRCastingPlayer)
+    {
+        if let endpoint: MTREndpoint = castingPlayer.endpoints.filter({ $0.identifier == sampleContentAppVid }).first
+        {
+            if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
+            {
+                let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
+                let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
+                
+                currentStateAttribute.read { currentStateValue, err in
+                    if(err == nil)
+                    {
+                        self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+                    }
+                    else
+                    {
+                        self.status = "Error when reading CurrentState value \(String(describing: err))"
+                    }
+                }
+            }
+            else
+            {
+                self.status = "No MediaPlayback cluster supporting endpoint found"
+            }
+        }
+        else
+        {
+            self.status = "No endpoint matching the example VID found"
+        }
+    }
+}
+  ```
+</details>
 
 ### Subscriptions
 The CastingClient may subscribe to an Attribute from the selectedEndpoint on the selectedCastingPlayer, like so:
 
-On Android,
+<details>
+  <summary>Android example</summary>
+  
+  ```java
+  package com.matter.casting;
 
-    enter code here
+import android.util.Log;
 
-On iOS,
+import com.matter.casting.clusters.MediaPlayback;
+import com.matter.casting.core.Attribute;
+import com.matter.casting.core.CastingPlayer;
+import com.matter.casting.core.Endpoint;
+import com.matter.casting.err.UnsupportedClusterException;
 
-    enter code here
+import java.util.Optional;
+
+public class AttributeSubscriptionExample {
+    private static final String TAG = AttributeSubscriptionExample.class.getSimpleName();
+
+    private static final String SAMPLE_CONTENT_APP_VID = "12345";
+
+    public static void demoSubscription(CastingPlayer castingPlayer) throws UnsupportedClusterException {
+
+        // pick the Content app Endpoint to invoke the command on
+        Optional<Endpoint> contentAppEndpoint =
+                castingPlayer
+                        .getEndpoints()
+                        .stream()
+                        .filter(endpoint -> SAMPLE_CONTENT_APP_VID.equals(endpoint.getVendorId()))
+                        .findAny();
+
+        if (contentAppEndpoint.isPresent()) {
+            // check if the Endpoint supports the Cluster to use
+            if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
+                // get the Cluster to use
+                MediaPlayback mediaPlayback =
+                        contentAppEndpoint.get().getCluster(MediaPlayback.class);
+
+                Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
+                if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
+                {
+                    currentStateAttribute.get().addObserver(new Attribute.Listener() {
+                        @Override
+                        public void onError(Error error) {
+                            Log.e(TAG, "Error when listening to CurrentState " + error);
+                        }
+
+                        @Override
+                        public void onChange(Object currentStateValue) {
+                            Log.i(TAG, "CurrentState changed to value " + currentStateValue);
+                        }
+                    }, 0, 1);
+                }
+                else
+                {
+                    Log.e(TAG, "Attribute unavailable on the selected endpoint");
+                }
+            }
+            else
+            {
+                Log.e(TAG, "Required cluster not found on the selected endpoint");
+            }
+        } else {
+            Log.d(TAG, "Content app endpoint not found");
+        }
+    }
+}
+  ```
+</details>
+
+<details>
+  <summary>iOS example</summary>
+  
+  ```objectivec
+  import Foundation
+import os.log
+
+class MTRAttributeSubscriptionExampleViewModel: ObservableObject {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRAttributeSubscriptionExampleViewModel")
+    
+    let sampleContentAppVid: String = "12345"
+    
+    @Published var status: String?;
+    
+    func subscribeToAttribute(castingPlayer: MTRCastingPlayer)
+    {
+        if let endpoint: MTREndpoint = castingPlayer.endpoints.filter({ $0.identifier == sampleContentAppVid }).first
+        {
+            if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
+            {
+                let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
+                let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
+                
+                class CurrentStateObserver : NSObject, MTRObserver
+                {
+                    weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
+                    
+                    init(parent: MTRAttributeSubscriptionExampleViewModel!) {
+                        self.parent = parent
+                    }
+                    
+                    func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
+                        self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+                    }
+                }
+                
+                currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: 0, maxInterval: 1) { err in
+                    self.status = "Could not establish subscription"
+                }
+            }
+            else
+            {
+                self.status = "No MediaPlayback cluster supporting endpoint found"
+            }
+        }
+        else
+        {
+            self.status = "No endpoint matching the example VID found"
+        }
+    }
+}
+  ```
+</details>
 
 ## Conclusion
 As described above, the Casting APIs allows a Casting Client to discover CastingPlayers on a users network, connect to one of them and interact with various Endpoints on them using Matter commands, attribute reads and subscriptions.
