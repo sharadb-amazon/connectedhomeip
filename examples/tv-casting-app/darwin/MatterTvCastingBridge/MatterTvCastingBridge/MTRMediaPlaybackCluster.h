@@ -15,6 +15,11 @@
  *    limitations under the License.
  */
 
+#import "MTREndpoint.h"
+#import "MTRCluster.h"
+#import "MTRCurrentState.h"
+#import "MTRAttribute.h"
+
 #ifndef MTRMediaPlaybackCluster_h
 #define MTRMediaPlaybackCluster_h
 
@@ -25,9 +30,9 @@
 @property (nonatomic, strong, readonly) MTRAttribute<MTRCurrentState*>* _Nullable optionalAttribute; // Nullable for optional attr
 
 
-// can support commands
+// TODO: can support commands
 
-// commands
+// TODO: commands
 
 @end
 

@@ -15,24 +15,21 @@
  *    limitations under the License.
  */
 
-#import "MTREndpoint.h"
-#import "MTRCluster.h"
-#import "MTRLaunchResponse.h"
+#import <Foundation/Foundation.h>
+#import "MTRCastingApp.h"
 
-#ifndef MTRContentLauncherCluster_h
-#define MTRContentLauncherCluster_h
+@implementation MTRCastingApp
 
-@interface MTRContentLauncherCluster : NSObject <MTRCluster>
-@property (nonatomic, weak, readonly) MTREndpoint* _Nullable endpoint;
++ (void)initializeWithDataSource:(id _Nonnull)datasource {
+    // TODO: replace stub implementation
+}
 
--(BOOL)canLaunchURL;
++ (void)start {
+    // TODO: replace stub implementation
+}
 
--(BOOL)canLaunchCommand;
-
-- (void)launchURL:(NSURL* _Nonnull)url options:(NSDictionary* _Nullable)options completionBlock:(void (^ _Nonnull)(MTRLaunchResponse*  _Nullable response, NSError* _Nullable error))completionBlock;
-
-// launchCommand
++ (void)stop {
+    // TODO: replace stub implementation
+}
 
 @end
-
-#endif /* MTRContentLauncherCluster_h */

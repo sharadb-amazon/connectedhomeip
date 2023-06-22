@@ -25,38 +25,35 @@ struct TvCastingApp: App {
     @State
     var firstAppActivation: Bool = true
 
+    init()
+    {
+        class AppParametersDataSource : NSObject, MTRDataSource
+        {
+            func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
+                return Data()
+            }
+            
+            func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
+                return MTRCommissioningData()
+            }
+            
+            @nonobjc
+            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, completionBlock completed: @escaping (Data) -> Void) {
+                
+            }
+            
+            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
+                return Data()
+            }
+        }
+        MTRCastingApp.initialize(with: AppParametersDataSource())
+        MTRCastingApp.start()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .onAppear(perform: {
-                    /*
-                    var appParameters: MTRAppParameters = MTRAppParameters()
-                    class CastingAppDataSource : NSObject, MTRDataSource
-                    {
-                        func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
-                            
-                        }
-                        
-                        func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
-                            
-                        }
-                        
-                        @nonobjc
-                        func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, completionBlock completed: @escaping (Data) -> Void) {
-                            
-                        }
-                        
-                        func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
-                            
-                        }
-                    }
-                    var castingAppDataSource = CastingAppDataSource()
-                    MTRCastingApp.initialize(with: appParameters, dataSource: castingAppDataSource)
-                    
-                    MTRCastingApp.start()
-                    */
-                    
-                    
                     if let castingServerBridge = CastingServerBridge.getSharedInstance()
                     {
                         let appParameters: AppParameters = AppParameters()

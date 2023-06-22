@@ -15,13 +15,14 @@
  *    limitations under the License.
  */
 
+#import "MTRDataSource.h"
+
 #ifndef MTRCastingApp_h
 #define MTRCastingApp_h
 
 @interface MTRCastingApp : NSObject
 
-+(void)initializeWithAppParameters:(MTRAppParameters* _Nonnull)appParameters
-                        dataSource:(id<MTRDataSource> _Nonnull)datasource;
++(void)initializeWithDataSource:(id<MTRDataSource> _Nonnull)datasource;
 
 +(void)start;
 

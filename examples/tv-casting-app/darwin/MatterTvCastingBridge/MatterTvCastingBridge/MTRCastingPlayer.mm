@@ -62,9 +62,11 @@
 
 
 - (void)connectWithTimeout:(long)timeout withCompletionBlock:(void (^ _Nonnull __strong)(NSError * _Nullable __strong))completion {
+    // TODO: replace stub implementation
 }
 
 - (void)disconnect {
+    // TODO: replace stub implementation
 }
 
 @end

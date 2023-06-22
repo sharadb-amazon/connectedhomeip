@@ -36,9 +36,11 @@ NSString *const castingPlayersUserInfo = @"castingPlayers";
 }
 
 - (void)start {
+    // TODO: replace stub implementation
 }
 
 - (void)stop {
+    // TODO: replace stub implementation
 }
 
 @end

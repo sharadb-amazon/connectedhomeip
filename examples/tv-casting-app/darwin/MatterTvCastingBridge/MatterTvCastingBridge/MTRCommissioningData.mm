@@ -15,24 +15,10 @@
  *    limitations under the License.
  */
 
-#import "MTREndpoint.h"
-#import "MTRCluster.h"
-#import "MTRLaunchResponse.h"
+#import <Foundation/Foundation.h>
+#import "MTRCommissioningData.h"
 
-#ifndef MTRContentLauncherCluster_h
-#define MTRContentLauncherCluster_h
+@implementation MTRCommissioningData
 
-@interface MTRContentLauncherCluster : NSObject <MTRCluster>
-@property (nonatomic, weak, readonly) MTREndpoint* _Nullable endpoint;
-
--(BOOL)canLaunchURL;
-
--(BOOL)canLaunchCommand;
-
-- (void)launchURL:(NSURL* _Nonnull)url options:(NSDictionary* _Nullable)options completionBlock:(void (^ _Nonnull)(MTRLaunchResponse*  _Nullable response, NSError* _Nullable error))completionBlock;
-
-// launchCommand
 
 @end
-
-#endif /* MTRContentLauncherCluster_h */

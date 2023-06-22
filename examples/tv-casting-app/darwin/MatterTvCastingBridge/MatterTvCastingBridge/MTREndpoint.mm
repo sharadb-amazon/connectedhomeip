@@ -15,11 +15,19 @@
  *    limitations under the License.
  */
 
-#ifndef MTRAppParameters_h
-#define MTRAppParameters_h
+#import <Foundation/Foundation.h>
+#import "MTREndpoint.h"
 
-@interface MTRAppParameters : NSObject
+@implementation MTREndpoint
+
+- (id<MTRCluster> _Nullable)clusterForType:(MTREndpointClusterType)type {
+    // TODO: replace stub implementation
+    return nil;
+}
+
+- (BOOL)hasCluster:(MTREndpointClusterType)type {
+    // TODO: replace stub implementation
+    return false;
+}
 
 @end
-
-#endif /* MTRAppParameters_h */

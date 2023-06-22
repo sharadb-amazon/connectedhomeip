@@ -67,7 +67,7 @@ class MTRDiscoveryExampleViewModel: ObservableObject {
         }
         for castingPlayer in castingPlayers
         {
-            if var index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier == $0.identifier })
+            if let index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier == $0.identifier })
             {
                 displayedCastingPlayers[index] = castingPlayer
             }

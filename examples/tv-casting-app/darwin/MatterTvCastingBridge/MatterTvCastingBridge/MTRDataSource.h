@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#import "MTRCommissioningData.h"
+
 #ifndef MTRDataSource_h
 #define MTRDataSource_h
 

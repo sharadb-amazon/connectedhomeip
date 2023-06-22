@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#import "MTRObserver.h"
+
 #ifndef MTRAttribute_h
 #define MTRAttribute_h
 

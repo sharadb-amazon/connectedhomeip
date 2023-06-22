@@ -26,7 +26,6 @@ FOUNDATION_EXPORT const unsigned char MatterTvCastingBridgeVersionString[];
 #import "CastingServerBridge.h"
 
 #import "MTRCommissioningData.h"
-#import "MTRAppParameters.h"
 #import "MTRDataSource.h"
 #import "MTRCastingApp.h"
 #import "MTRCastingPlayerDiscovery.h"

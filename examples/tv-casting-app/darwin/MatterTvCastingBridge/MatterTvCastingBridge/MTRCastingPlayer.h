@@ -20,6 +20,8 @@
 #ifndef MTRCastingPlayer_h
 #define MTRCastingPlayer_h
 
+@class MTREndpoint;
+
 @interface MTRCastingPlayer : NSObject
 @property (nonatomic, strong, readonly) NSString* _Nonnull identifier; // hash of hostname
 @property (nonatomic, strong, readonly) NSString* _Nonnull name;
