@@ -4,7 +4,7 @@
   
 
 The Matter SDK can be used by a Matter Casting client to cast content to a Matter Casting server. The [example Matter tv-casting-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-casting-app) for Android / iOS and Linux builds on top of the Matter SDK to demonstrate this capability. This document describes how the Casting APIs built and tested with the example Matter tv-casting-app can be consumed by any Android/iOS casting app. 
-<a word about the refactor>
+
 ## Introduction
 The Matter Casting APIs are consumed by a Casting client like an Android / iOS app that may want to cast videos, music, pictures or some other content on a `CastingPlayer`. The Casting client is expected to be a Matter Commissionable Node and a `CastingPlayer` is expected to be a Matter Commissioner. In the context of the [Matter Video Player architecture](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc), a `CastingPlayer` would map to [Casting "Video" Player](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction). The `CastingPlayer` is expected to be hosting one or more `Endpoints` (similar to [Content Apps](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction) in the Matter Video Player architecture) that support one or more Matter Media `Clusters`. 
 The Casting client can use the Matter Casting APIs to **discover** CastingPlayers, **connect** to them and **interact** with one or more of their Endpoints i.e send Cluster commands and read / subscribe to attributes, to realize an End-to-End Casting experience.
@@ -13,257 +13,226 @@ The Casting client can use the Matter Casting APIs to **discover** CastingPlayer
 The Casting Client is expected to consume the Matter TV Casting library built for its respective platform to consume any of the APIs described in this document. Refer to the tv-casting-app READMEs for Android and iOS to understand how the libraries can be built and consumed.
 
 ## Initialization
-The Casting Client must first initialize the Matter TV Casting library and provide values for global AppParameters and a few DataProviders that are required through the lifecycle of the client.
-
-<details>
-  <summary>Android example</summary>
-  
-  ```java
-import android.util.Base64;  
-import android.util.Log;  
-  
-import com.matter.casting.core.CastingApp;  
-import com.matter.casting.err.MatterError;  
-import com.matter.casting.params.AppParameters;  
-import com.matter.casting.params.CommissioningData;  
-import com.matter.casting.params.DataProvider;  
-import com.matter.casting.params.DeviceAttestationCredentials;  
-  
-import java.math.BigInteger;  
-import java.security.AlgorithmParameters;  
-import java.security.KeyFactory;  
-import java.security.PrivateKey;  
-import java.security.Signature;  
-import java.security.spec.ECGenParameterSpec;  
-import java.security.spec.ECParameterSpec;  
-import java.security.spec.ECPrivateKeySpec;  
-  
-public class InitializationExample {  
-	private final static String TAG = InitializationExample.class.getSimpleName();  
-  
-  /**  
-   * DataProvider implementation for the Unique ID that is used by the SDK to generate the Rotating Device ID   
-   */  
- private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {  
+The Casting Client must first initialize the Matter TV Casting library and provide values for a few `DataProviders` that are required through the lifecycle of the client:
+1. A Unique ID used to generate the Rotating Device ID - The generated Rotating Device ID is used to uniquely identify the Casting Client before it has been commissioned and is advertised as part of the DNS-SD based Commissionable Node discovery. ([See spec - Rotating Device ID](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/DeviceDiscovery.adoc#245-rotating-device-identifier))
+    
+    On Android, define a `rotatingDeviceIdUniqueIdProvider` to provide the Casting Client's RotatingDeviceIdUniqueId, by implementing a `DataSource`:
+    ```java
+    private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {  
         private static final String APP_ID = "EXAMPLE_APP_ID";  
-  @Override  
-  public byte[] get() {  
+        @Override  
+        public byte[] get() {  
             return APP_ID.getBytes();  
-  }  
-    };  
-  
-  /**  
-   * DataProvider implementation for the Commissioning Data used by the SDK when the CastingApp goes through commissioning 
-   */
-   private final static DataProvider<CommissioningData> commissioningDataProvider = () -> {  
-	   CommissioningData commissioningData = new CommissioningData();  
-	   commissioningData.setSetupPasscode(20202021);  
-	   commissioningData.setDiscriminator(3874);  
-	   return commissioningData;  
-  };  
-  
-  /**  
-   * DataProvider implementation for the Device Attestation Credentials required at the time of commissioning 
-   */
-   private final static DataProvider<DeviceAttestationCredentials> dacProvider = new DataProvider<DeviceAttestationCredentials>() {  
-        private static final String kDevelopmentDAC_Cert_FFF1_8001 =  
-                "MIIB5zCCAY6gAwIBAgIIac3xDenlTtEwCgYIKoZIzj0EAwIwPTElMCMGA1UEAwwcTWF0dGVyIERldiBQQUkgMHhGRkYxIG5vIFBJRDEUMBIGCisGAQQBgqJ8AgEMBEZGRjEwIBcNMjIwMjA1MDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMFMxJTAjBgNVBAMMHE1hdHRlciBEZXYgREFDIDB4RkZGMS8weDgwMDExFDASBgorBgEEAYKifAIBDARGRkYxMRQwEgYKKwYBBAGConwCAgwEODAwMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABEY6xpNCkQoOVYj8b/Vrtj5i7M7LFI99TrA+5VJgFBV2fRalxmP3k+SRIyYLgpenzX58/HsxaznZjpDSk3dzjoKjYDBeMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBSI3eezADgpMs/3NMBGJIEPRBaKbzAfBgNVHSMEGDAWgBRjVA5H9kscONE4hKRi0WwZXY/7PDAKBggqhkjOPQQDAgNHADBEAiABJ6J7S0RhDuL83E0reIVWNmC8D3bxchntagjfsrPBzQIga1ngr0Xz6yqFuRnTVzFSjGAoxBUjlUXhCOTlTnCXE1M=";  
-  
- private static final String kDevelopmentDAC_PrivateKey_FFF1_8001 =  
-                "qrYAroroqrfXNifCF7fCBHCcppRq9fL3UwgzpStE+/8=";  
-  
- private static final String KPAI_FFF1_8000_Cert_Array =  
-                "MIIByzCCAXGgAwIBAgIIVq2CIq2UW2QwCgYIKoZIzj0EAwIwMDEYMBYGA1UEAwwPTWF0dGVyIFRlc3QgUEFBMRQwEgYKKwYBBAGConwCAQwERkZGMTAgFw0yMjAyMDUwMDAwMDBaGA85OTk5MTIzMTIzNTk1OVowPTElMCMGA1UEAwwcTWF0dGVyIERldiBQQUkgMHhGRkYxIG5vIFBJRDEUMBIGCisGAQQBgqJ8AgEMBEZGRjEwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARBmpMVwhc+DIyHbQPM/JRIUmR/f+xeUIL0BZko7KiUxZQVEwmsYx5MsDOSr2hLC6+35ls7gWLC9Sv5MbjneqqCo2YwZDASBgNVHRMBAf8ECDAGAQH/AgEAMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUY1QOR/ZLHDjROISkYtFsGV2P+zwwHwYDVR0jBBgwFoAUav0idx9RH+y/FkGXZxDc3DGhcX4wCgYIKoZIzj0EAwIDSAAwRQIhALLvJ/Sa6bUPuR7qyUxNC9u415KcbLiPrOUpNo0SBUwMAiBlXckrhr2QmIKmxiF3uCXX0F7b58Ivn+pxIg5+pwP4kQ==";  
-  
-  @Override  
-  public DeviceAttestationCredentials get() {  
+        }
+    }
+    ```
+    On iOS, define the `func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId` in a class, `AppParametersDataSource`, that implements the `MTRDataSource`:
+    ```objectivec
+    class AppParametersDataSource : NSObject, MTRDataSource
+    {
+        func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
+            return "EXAMPLE_APP_ID".data(using: .utf8)!
+        }
+        ...
+    }
+    ```
+
+2. CommissioningData - This contains the passcode, discriminator, etc) which is required to verify an incoming commissioning request. ([See spec - Onboarding Payload ID](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload))
+    
+    On Android, define a `commissioningDataProvider` that can provide the required values to the CastingApp.
+    ```java
+    private final static DataProvider<CommissioningData> commissioningDataProvider = () -> {  
+	    CommissioningData commissioningData = new CommissioningData();  
+        commissioningData.setSetupPasscode(20202021);  
+        commissioningData.setDiscriminator(3874);  
+        return commissioningData;  
+    }; 
+    ```
+    On iOS, add a `func commissioningDataProvider` to the `AppParametersDataSource` class defined above, that can provide the required values to the `MTRCastingApp`.
+    ```objectivec
+    func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
+        return MTRCommissioningData(passcode: 20202021, discriminator: 3874, spake2pIterationCount: 1000, spake2pVerifier: nil, spake2pSalt: nil)
+    }
+    ```
+
+3. DeviceAttestationCredentials - This contains the DeviceAttestationCertificate, ProductAttestationIntermediateCertificate, etc. and implements a way to sign messages when called upon by the Matter TV Casting Library as part of the Device Attestation process during commissoning. ([See spec - Device Attestation](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/device_attestation/Device_Attestation_Specification.adoc)) 
+
+    On Android, define a `dacProvider` to provide the Casting Client's Device Attestation Credentials, by implementing a `DataSource`:
+    ```java
+    private final static DataProvider<DeviceAttestationCredentials> dacProvider = new DataProvider<DeviceAttestationCredentials>() {  
+        private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";  
+        private static final String kDevelopmentDAC_PrivateKey_FFF1_8001 = "qrYAror...<snipped>...StE+/8=";  
+        private static final String KPAI_FFF1_8000_Cert_Array = "MIIByzC...<snipped>...pwP4kQ==";  
+        
+        @Override  
+        public DeviceAttestationCredentials get() {  
             DeviceAttestationCredentials deviceAttestationCredentials = new DeviceAttestationCredentials() {  
                 @Override  
-  public byte[] SignWithDeviceAttestationKey(byte[] message) {  
+                public byte[] SignWithDeviceAttestationKey(byte[] message) {  
                     try {  
                         byte[] privateKeyBytes = Base64.decode(kDevelopmentDAC_PrivateKey_FFF1_8001, Base64.DEFAULT);  
-  
-  AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");  
-  algorithmParameters.init(new ECGenParameterSpec("secp256r1"));  
-  ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);  
-  ECPrivateKeySpec ecPrivateKeySpec =  
-                                new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);  
-  
-  KeyFactory keyFactory = KeyFactory.getInstance("EC");  
-  PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);  
-  
-  Signature signature = Signature.getInstance("SHA256withECDSA");  
-  signature.initSign(privateKey);  
-  
-  signature.update(message);  
-  
- return signature.sign();  
-  
-  } catch (Exception e) {  
+                        AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");  
+                        algorithmParameters.init(new ECGenParameterSpec("secp256r1"));  
+                        ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);  
+                        ECPrivateKeySpec ecPrivateKeySpec =  
+                        new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);  
+     
+                        KeyFactory keyFactory = KeyFactory.getInstance("EC");  
+                        PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);  
+     
+                        Signature signature = Signature.getInstance("SHA256withECDSA");  
+                        signature.initSign(privateKey);  
+     
+                        signature.update(message);  
+     
+                        return signature.sign();  
+                    } catch (Exception e) {  
                         return null;  
-  }  
+                    }  
                 }  
             };  
-  
-  deviceAttestationCredentials.setDeviceAttestationCert(Base64.decode(kDevelopmentDAC_Cert_FFF1_8001, Base64.DEFAULT));  
-  deviceAttestationCredentials.setProductAttestationIntermediateCert(Base64.decode(KPAI_FFF1_8000_Cert_Array, Base64.DEFAULT));  
- return deviceAttestationCredentials;  
-  }  
+     
+            deviceAttestationCredentials.setDeviceAttestationCert(Base64.decode(kDevelopmentDAC_Cert_FFF1_8001, Base64.DEFAULT));  
+            deviceAttestationCredentials.setProductAttestationIntermediateCert(Base64.decode(KPAI_FFF1_8000_Cert_Array, Base64.DEFAULT));  
+            return deviceAttestationCredentials;  
+        }  
     };  
-  
-	public static void demoInitialization() {  
-      // Create an AppParameters object to pass in global casting parameters to the SDK  
-	  final AppParameters appParameters = new AppParameters(rotatingDeviceIdUniqueIdProvider, 	
+    ```
+    
+    On iOS, add a `func didReceiveRequestToSignCertificateRequest` to the `AppParametersDataSource` class defined above, that can sign messages for the Casting Client.
+    ```objectivec
+    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
+        // sign the message and return the value
+        return Data()
+    }
+    ```
+    
+Finally, use the parameters defined above to initialize the CastingApp. Make sure this call is made from a place in the Casting client that would be called only once, before it starts doing Matter casting.
+
+On Android, create an AppParameters object using the `rotatingDeviceIdUniqueIdProvider`, `commissioningDataProvider` and `dacProvider`, and call `CastingApp.initialize` with it. 
+```java
+public static void demoInitialization() 
+{  
+    // Create an AppParameters object to pass in global casting parameters to the SDK  
+    final AppParameters appParameters = new AppParameters(rotatingDeviceIdUniqueIdProvider, 	
 												  commissioningDataProvider, dacProvider);  
   
-	  // Initialize the SDK using the appParameters and check if it returns successfully  
-	  MatterError err = CastingApp.initialize(appParameters);  
-	  if(err.hasError()) {  
-            Log.e(TAG, "Failed to initialize Matter CastingApp");  
-	  }  
+    // Initialize the SDK using the appParameters and check if it returns successfully  
+    MatterError err = CastingApp.initialize(appParameters);  
+    if(err.hasError()) {  
+        Log.e(TAG, "Failed to initialize Matter CastingApp");  
     }  
+}  
+```
+
+On iOS, call `MTRCastingApp.initialize` with an object of the `AppParametersDataSource`.  
+```objectivec
+init()
+{
+    ...
+    MTRCastingApp.initialize(with: AppParametersDataSource())
 }
 ```
-</details>
-
-<details>
-  <summary>iOS example</summary>
-  
-  ```objectivec
-  import SwiftUI
-import os.log
-
-@main
-struct TvCastingApp: App {
-    let Log = Logger(subsystem: "com.matter.casting",
-                     category: "TvCastingApp")
-    @State
-    var firstAppActivation: Bool = true
-
-    init()
-    {
-        class AppParametersDataSource : NSObject, MTRDataSource
-        {
-            func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
-                return "EXAMPLE_APP_ID".data(using: .utf8)!
-            }
-            
-            func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
-                return MTRCommissioningData(passcode: 20202021, discriminator: 3874, spake2pIterationCount: 1000, spake2pVerifier: nil, spake2pSalt: nil)
-            }
-            
-            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
-                // sign the message and return that
-                return Data()
-            }
-        }
-        MTRCastingApp.initialize(with: AppParametersDataSource())
-        MTRCastingApp.start()
-    }
-    
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                    self.Log.info("TvCastingApp: UIApplication.willResignActiveNotification")
-                    MTRCastingApp.stop()
-                }
-                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-                    self.Log.info("TvCastingApp: UIApplication.didBecomeActiveNotification")
-                    if(!firstAppActivation)
-                    {
-                      MTRCastingApp.start()
-                    }
-                    firstAppActivation = false
-                }
-        }
-    }
-}
-  ```
-  </details>
 
 ## Discovery
 The Casting Client can then start discovery of `CastingPlayers` using the discovery APIs as shown below. This is implemented based on Matter Commissioner discovery over DNS-SD. The client can listen for CastingPlayers as they are discovered, updated or lost from the network.
 
-<details>
-  <summary>Android example</summary>
+First, define the necessary listeners that the Casting Client will be called on, when a CastingPlayer is added / removed / updated in the list of discovered CastingPlayers.
+
+On Android, define a concrete anonymous `class castingPlayerChangeListener` that implements the CastingPlayerChangeListener.
+```java
+private static final CastingPlayerChangeListener castingPlayerChangeListener = new CastingPlayerChangeListener() 
+{  
+    private final String TAG = CastingPlayerChangeListener.class.getSimpleName();  
   
-  ```java
-import android.util.Log;  
+    @Override  
+    public void onChanged(List<CastingPlayer> castingPlayers) {  
+        Log.i(TAG, "Discovered changes to " + castingPlayers.size() + " CastingPlayers");  
+        // consume changes to the provided castingPlayers  
+    }  
   
-import com.matter.casting.core.CastingPlayer;  
-import com.matter.casting.core.CastingPlayerDiscoverer;  
-import com.matter.casting.core.CastingPlayerDiscoverer.CastingPlayerChangeListener;  
-import com.matter.casting.core.MatterCastingPlayerDiscoverer;  
+    @Override  
+    public void onAdded(List<CastingPlayer> castingPlayers) {  
+        Log.i(TAG, "Discovered " + castingPlayers.size() + " CastingPlayers");  
+        // consume discovered castingPlayers  
+    }  
   
-import java.util.List;  
-import java.util.concurrent.Executors;  
-import java.util.concurrent.ScheduledExecutorService;  
-import java.util.concurrent.TimeUnit;  
-  
-public class DiscoveryExample {  
-    private static final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();  
-  
-  /**  
- * Implementation of a CastingPlayerChangeListener used to listen to changes in the discovered CastingPlayers */  private static final CastingPlayerChangeListener castingPlayerChangeListener = new CastingPlayerChangeListener() {  
-        private final String TAG = CastingPlayerChangeListener.class.getSimpleName();  
-  
-  @Override  
-  public void onChanged(List<CastingPlayer> castingPlayers) {  
-            Log.i(TAG, "Discovered changes to " + castingPlayers.size() + " CastingPlayers");  
-  // consume changes to the provided castingPlayers  
-  }  
-  
-        @Override  
-  public void onAdded(List<CastingPlayer> castingPlayers) {  
-            Log.i(TAG, "Discovered " + castingPlayers.size() + " CastingPlayers");  
-  // consume discovered castingPlayers  
-  }  
-  
-        @Override  
-  public void onRemoved(List<CastingPlayer> castingPlayers) {  
-            Log.i(TAG, "Removed " + castingPlayers.size() + " CastingPlayers");  
-  // consume castingPlayers removed or lost from the network  
-  }  
-    };  
-  
- public static void demoDiscovery()  
-    {  
-        // Get the singleton instance of the MatterCastingPlayerDiscoverer  
-  CastingPlayerDiscoverer discoverer = MatterCastingPlayerDiscoverer.getInstance();  
-  
-  // Add our castingPlayerChangeListener to listen to changes in the discovered CastingPlayers  
-  discoverer.addCastingPlayerChangeListener(castingPlayerChangeListener);  
-  
-  // Start discovery  
-  discoverer.startDiscovery();  
-  
-  // After some time, stop discovering and remove our castingPlayerChangeListener from the set of listeners the CastingPlayerDiscoverer informs  
-  executorService.schedule(() -> {  
-            discoverer.stopDiscovery();  
-  discoverer.removeCastingPlayerChangeListener(castingPlayerChangeListener);  
-  }, 30, TimeUnit.SECONDS);  
-  }  
+    @Override  
+    public void onRemoved(List<CastingPlayer> castingPlayers) {  
+        Log.i(TAG, "Removed " + castingPlayers.size() + " CastingPlayers");  
+        // consume castingPlayers removed or lost from the network  
+    }  
+};  
+```
+On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which will listen to Notifications when discovered CastingPlayers are added/removed/updated 
+```objectivec
+@objc
+func addDiscoveredCastingPlayers(notification: Notification)
+{
+    guard let userInfo = notification.userInfo,
+            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+            print("No MTRCastingPlayer found in notification")
+            return
+        }
+    displayedCastingPlayers.append(contentsOf: castingPlayers)
+}
+    
+@objc
+func removeDiscoveredCastingPlayers(notification: Notification)
+{
+    guard let userInfo = notification.userInfo,
+            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+        print("No MTRCastingPlayer found in notification")
+        return
+    }
+    displayedCastingPlayers = displayedCastingPlayers.filter { !castingPlayers.contains($0)}
+}
+    
+@objc
+func updateDiscoveredCastingPlayers(notification: Notification)
+{
+    guard let userInfo = notification.userInfo,
+            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+        print("No MTRCastingPlayer found in notification")
+        return
+    }
+    for castingPlayer in castingPlayers
+    {
+        if let index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier == $0.identifier })
+        {
+            displayedCastingPlayers[index] = castingPlayer
+        }
+    }
 }
 ```
-</details>
 
-<details>
-  <summary>iOS example</summary>
+Finally, register these listeners and start discovery.
+
+On Android, call `addCastingPlayerChangeListener` on the singleton instance of `MatterCastingPlayerDiscoverer` to register the listener, and then call `startDiscovery`.
+```java
+public static void demoDiscovery()  
+{  
+    // Get the singleton instance of the MatterCastingPlayerDiscoverer  
+    CastingPlayerDiscoverer discoverer = MatterCastingPlayerDiscoverer.getInstance();  
   
-  ```objectivec
-  import Foundation
-import os.log
+    // Add our castingPlayerChangeListener to listen to changes in the discovered CastingPlayers  
+    discoverer.addCastingPlayerChangeListener(castingPlayerChangeListener);  
+  
+    // Start discovery  
+    discoverer.startDiscovery();  
+  
+    // After some time, stop discovering and remove our castingPlayerChangeListener 
+    // from the set of listeners the CastingPlayerDiscoverer informs  
+    executorService.schedule(() -> {  
+            discoverer.stopDiscovery();  
+    discoverer.removeCastingPlayerChangeListener(castingPlayerChangeListener);  
+    },     30, TimeUnit.SECONDS);  
+}  
+```
 
-class MTRDiscoveryExampleViewModel: ObservableObject {
-    let Log = Logger(subsystem: "com.matter.casting",
-                     category: "MTRDiscoveryExampleViewModel")
-    
-    @Published var displayedCastingPlayers: [MTRCastingPlayer] = []
-    
-    @Published var discoveryRequestStatus: Bool?;
-    
-    func startDiscovery() {
+On iOS, register the listeners by calling `addObserver` on the `NotificationCenter` with the appropriate selector, and then call `start` on the `sharedInstance` of `MTRCastingPlayerDiscovery`.
+```objectivec
+func startDiscovery() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.addDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.removeDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.updateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
@@ -271,48 +240,7 @@ class MTRDiscoveryExampleViewModel: ObservableObject {
         MTRCastingPlayerDiscovery.sharedInstance().start()
         self.discoveryRequestStatus = true
     }
-    
-    @objc
-    func addDiscoveredCastingPlayers(notification: Notification)
-    {
-        guard let userInfo = notification.userInfo,
-              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
-              print("No MTRCastingPlayer found in notification")
-              return
-            }
-        displayedCastingPlayers.append(contentsOf: castingPlayers)
-    }
-    
-    @objc
-    func removeDiscoveredCastingPlayers(notification: Notification)
-    {
-        guard let userInfo = notification.userInfo,
-              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
-            print("No MTRCastingPlayer found in notification")
-            return
-        }
-        displayedCastingPlayers = displayedCastingPlayers.filter { !castingPlayers.contains($0)}
-    }
-    
-    @objc
-    func updateDiscoveredCastingPlayers(notification: Notification)
-    {
-        guard let userInfo = notification.userInfo,
-              let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
-            print("No MTRCastingPlayer found in notification")
-            return
-        }
-        for castingPlayer in castingPlayers
-        {
-            if let index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier == $0.identifier })
-            {
-                displayedCastingPlayers[index] = castingPlayer
-            }
-        }
-    }
-}
-  ```
-  </details>
+```
 
 Note: at this point, the list of Endpoints in the discovered CastingPlayers will be empty, as this information is not revealed at the time of Matter Commissioner discovery.
 ## Connection
