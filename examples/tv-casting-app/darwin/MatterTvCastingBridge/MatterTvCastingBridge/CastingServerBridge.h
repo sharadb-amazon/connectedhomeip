@@ -120,14 +120,14 @@
  @param onNewOrUpdatedEndpointCallback Handles a ContentApp * for each new ContentApp is found. May be called multiple times based
  on the number of ContentApp
 
- @param commissioningWindowOpenedCallback Callback to call after the opening of a commissioning window
+ @param commissioningWindowRequestedHandler Handler to call on requesting the opening of a commissioning window
  */
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
-    commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
-        commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
-          onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
-          onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
-       onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback;
+    commissioningWindowRequestedHandler:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowRequestedHandler
+          commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
+            onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
+            onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
+         onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback;
 
 /*!
  @brief Gets the list of VideoPlayers currently connected

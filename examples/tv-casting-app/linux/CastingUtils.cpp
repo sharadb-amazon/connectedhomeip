@@ -62,27 +62,26 @@ void PrepareForCommissioning(const Dnssd::DiscoveredNodeData * selectedCommissio
 {
     CastingServer::GetInstance()->Init();
 
-    CastingServer::GetInstance()->OpenBasicCommissioningWindow(
-        [selectedCommissioner](CHIP_ERROR err) {
-#if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
-            if (selectedCommissioner != nullptr)
-            {
-                // Send User Directed commissioning request
-                // Wait 1 second to allow our commissionee DNS records to publish (needed on Mac)
-                int32_t expiration = 1;
-                ReturnOnFailure(DeviceLayer::SystemLayer().StartTimer(System::Clock::Seconds32(expiration), HandleUDCSendExpiration,
-                                                                      (void *) selectedCommissioner));
-            }
-            else
-            {
-                ChipLogProgress(AppServer, "To run discovery again, enter: cast discover");
-            }
-#endif // CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
-        },
-        HandleCommissioningCompleteCallback, OnConnectionSuccess, OnConnectionFailure, OnNewOrUpdatedEndpoint);
+    CastingServer::GetInstance()->OpenBasicCommissioningWindow(HandleCommissioningCompleteCallback, OnConnectionSuccess,
+                                                               OnConnectionFailure, OnNewOrUpdatedEndpoint);
 
     // Display onboarding payload
     chip::DeviceLayer::ConfigurationMgr().LogDeviceConfig();
+
+#if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
+    if (selectedCommissioner != nullptr)
+    {
+        // Send User Directed commissioning request
+        // Wait 1 second to allow our commissionee DNS records to publish (needed on Mac)
+        int32_t expiration = 1;
+        ReturnOnFailure(DeviceLayer::SystemLayer().StartTimer(System::Clock::Seconds32(expiration), HandleUDCSendExpiration,
+                                                              (void *) selectedCommissioner));
+    }
+    else
+    {
+        ChipLogProgress(AppServer, "To run discovery again, enter: cast discover");
+    }
+#endif // CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
 }
 
 void InitCommissioningFlow(intptr_t commandArg)

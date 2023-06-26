@@ -113,17 +113,13 @@ JNI_METHOD(void, setDACProvider)(JNIEnv *, jobject, jobject provider)
 }
 
 JNI_METHOD(jboolean, openBasicCommissioningWindow)
-(JNIEnv * env, jobject, jint duration, jobject jCommissioningWindowOpenedHandler, jobject jCommissioningCompleteHandler,
- jobject jOnConnectionSuccessHandler, jobject jOnConnectionFailureHandler, jobject jOnNewOrUpdatedEndpointHandler)
+(JNIEnv * env, jobject, jint duration, jobject jCommissioningCompleteHandler, jobject jOnConnectionSuccessHandler,
+ jobject jOnConnectionFailureHandler, jobject jOnNewOrUpdatedEndpointHandler)
 {
     chip::DeviceLayer::StackLock lock;
 
     ChipLogProgress(AppServer, "JNI_METHOD openBasicCommissioningWindow called with duration %d", duration);
-    CHIP_ERROR err = TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().SetUp(env, jCommissioningWindowOpenedHandler);
-    VerifyOrExit(CHIP_NO_ERROR == err,
-                 ChipLogError(AppServer, "MatterCallbackHandlerJNI::SetUp failed %" CHIP_ERROR_FORMAT, err.Format()));
-
-    err = TvCastingAppJNIMgr().getCommissioningCompleteHandler().SetUp(env, jCommissioningCompleteHandler);
+    CHIP_ERROR err = TvCastingAppJNIMgr().getCommissioningCompleteHandler().SetUp(env, jCommissioningCompleteHandler);
     VerifyOrExit(CHIP_NO_ERROR == err,
                  ChipLogError(AppServer, "MatterCallbackHandlerJNI::SetUp failed %" CHIP_ERROR_FORMAT, err.Format()));
 
@@ -140,7 +136,6 @@ JNI_METHOD(jboolean, openBasicCommissioningWindow)
                  ChipLogError(AppServer, "OnNewOrUpdatedEndpointHandler.SetUp failed %" CHIP_ERROR_FORMAT, err.Format()));
 
     err = CastingServer::GetInstance()->OpenBasicCommissioningWindow(
-        [](CHIP_ERROR err) { TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().Handle(err); },
         [](CHIP_ERROR err) { TvCastingAppJNIMgr().getCommissioningCompleteHandler().Handle(err); },
         [](TargetVideoPlayerInfo * videoPlayer) { TvCastingAppJNIMgr().getOnConnectionSuccessHandler(false).Handle(videoPlayer); },
         [](CHIP_ERROR err) { TvCastingAppJNIMgr().getOnConnectionFailureHandler(false).Handle(err); },

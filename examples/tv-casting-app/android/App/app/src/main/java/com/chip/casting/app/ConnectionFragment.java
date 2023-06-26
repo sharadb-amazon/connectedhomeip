@@ -126,40 +126,33 @@ public class ConnectionFragment extends Fragment {
             new MatterCallbackHandler() {
               @Override
               public void handle(MatterError error) {
-                Log.d(TAG, "handle() called on CommissioningWindowOpened event with " + error);
-                if (error.isNoError()) {
-                  if (selectedCommissioner != null && selectedCommissioner.getNumIPs() > 0) {
-                    String ipAddress =
-                        selectedCommissioner.getIpAddresses().get(0).getHostAddress();
-                    Log.d(
-                        TAG,
-                        "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
-                            + ipAddress
-                            + " port: "
-                            + selectedCommissioner.getPort());
-
-                    sendUdcSuccess = tvCastingApp.sendCommissioningRequest(selectedCommissioner);
-                    updateUiOnConnectionSuccess();
-                  }
-                } else {
-                  getActivity()
-                      .runOnUiThread(
-                          () -> {
-                            commissioningWindowStatusView.setText(
-                                "Failed to open commissioning window");
-                          });
-                }
-              }
-            },
-            new MatterCallbackHandler() {
-              @Override
-              public void handle(MatterError error) {
                 Log.d(TAG, "handle() called on CommissioningComplete event with " + error);
               }
             },
             onConnectionSuccess,
             onConnectionFailure,
             onNewOrUpdatedEndpoints);
+
+    if (this.openCommissioningWindowSuccess) {
+      if (selectedCommissioner != null && selectedCommissioner.getNumIPs() > 0) {
+        String ipAddress = selectedCommissioner.getIpAddresses().get(0).getHostAddress();
+        Log.d(
+            TAG,
+            "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
+                + ipAddress
+                + " port: "
+                + selectedCommissioner.getPort());
+
+        this.sendUdcSuccess = tvCastingApp.sendCommissioningRequest(selectedCommissioner);
+        updateUiOnConnectionSuccess();
+      }
+    } else {
+      getActivity()
+          .runOnUiThread(
+              () -> {
+                commissioningWindowStatusView.setText("Failed to open commissioning window");
+              });
+    }
   }
 
   private void updateUiOnConnectionSuccess() {
