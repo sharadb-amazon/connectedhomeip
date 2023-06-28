@@ -1,107 +1,137 @@
 
 # Matter Casting APIs
 
-  
+Matter Casting consists of three parts:
 
-A Casting client can leverage the Matter SDK to cast content to a Matter Casting server. The [example Matter tv-casting-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-casting-app) for Android / iOS and Linux builds on top of the Matter SDK to demonstrate this capability. This document describes how the Casting APIs built and tested with the example Matter tv-casting-app can be consumed by any Android/iOS casting app. 
+* **The mobile app**: For most conent providers, this would be your consumer-facing mobile app.  By adding a Matter "Casting Client" to your mobile app, you enable the user to discover casting targets, cast content, and control casting sessions.
+* **The TV content app**: For most conent providers, this would be your consumer-facing app on a Smart TV.  By enhancing your TV app to act as a Matter "Casting Player", you enable Matter Casting Clients like your mobile app to cast content. The [example Matter tv-casting-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-casting-app) for Android / iOS and Linux builds on top of the Matter SDK to demonstrate how a TV app works.
+* **The TV platform app**: The TV platform app is generally implemented by the TV manufacturer and provides common capabilities around media playback on the TV like the Basic Video Player.
+
+This document describes how enable your Android and iOS apps to act as a Matter "Casting Client".  This documentation is also designed to work with the example [example Matter tv-casting-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-casting-app) samples so you can see the experience end to end.
 
 ## Introduction
-The Matter Casting APIs are consumed by a Casting client like an Android / iOS app that may want to cast videos, music, pictures or some other content on a `CastingPlayer`. The Casting client is expected to be a Matter Commissionable Node and a `CastingPlayer` is expected to be a Matter Commissioner. In the context of the [Matter Video Player architecture](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc), a `CastingPlayer` would map to [Casting "Video" Player](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction). The `CastingPlayer` is expected to be hosting one or more `Endpoints` (similar to [Content Apps](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction) in the Matter Video Player architecture) that support one or more Matter Media `Clusters`. 
-The Casting client can use the Matter Casting APIs to **discover** CastingPlayers, **connect** to them and **interact** with one or more of their Endpoints i.e send Cluster commands and read / subscribe to attributes, to realize an End-to-End Casting experience.
+
+A Casting client (e.g. a mobile phone app) is expected to be a Matter Commissionable Node and a `CastingPlayer` (i.e. a TV) is expected to be a Matter Commissioner. In the context of the [Matter Video Player architecture](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc), a `CastingPlayer` would map to [Casting "Video" Player](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction). The `CastingPlayer` is expected to be hosting one or more `Endpoints` (similar to [Content Apps](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/app_clusters/media/VideoPlayerArchitecture.adoc#1-introduction) in the Matter Video Player architecture) that support one or more Matter Media `Clusters`.
+
+The steps to start a casting session are:
+
+1. [Initialize](#initialize-the-casting-client) the `CastingClient` using the Matter SDK.
+1. [Discover](#discover-casting-players) `CastingPlayer` devices using Matter Commissioner discovery.
+1. [Connect](#connect-to-a-casting-player) to the `CastingPlayer` to discover available endpoints.
+1. [Select](#select-an-endpoint-on-the-casting-player) an available `Endpoint` hosted by the `CastingPlayer`.
+
+Next, you're ready to:
+
+1. [Issue commands](#issuing-commands) to the `Endpoint`.
+1. [Read](#read-operations) playback state.
+1. [Subscribe](#subscriptions) to playback events.
 
 ## Build and Setup
-The Casting Client is expected to consume the Matter TV Casting library built for its respective platform to consume any of the APIs described in this document. Refer to the tv-casting-app READMEs for Android and iOS to understand how the libraries can be built and consumed.
+The Casting Client is expected to consume the Matter TV Casting library built for its respective platform to consume any of the APIs described in this document. Refer to the tv-casting-app READMEs for [Android](android) and [iOS](darwin) to understand how to build and consume each platform's specicific libraries.
 
-## Initialization
-_{Complete Initialization examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/InitializationExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/TvCastingApp.swift)}_
+### Initialize the Casting Client
+_{Complete Initialization examples: [Android](android/App/app/src/main/java/com/matter/casting/InitializationExample.java) |  [iOS](darwin/TvCasting/TvCasting/TvCastingApp.swift)}_
 
-The Casting Client must first initialize the Matter TV Casting library and provide values for a few `DataProviders` that are required through the lifecycle of the client:
-1. A Unique ID used to generate the Rotating Device ID - The generated Rotating Device ID is used to uniquely identify the Casting Client before it has been commissioned and is advertised as part of the DNS-SD based Commissionable Node discovery. ([See spec - Rotating Device ID](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/DeviceDiscovery.adoc#245-rotating-device-identifier))
+A Casting Client must first define the following [`DataProvider`](android/App/app/src/main/jni/com/matter/casting/params/DataProvider.java) objects for the the Matter Casting library to use throughout the client's lifecycle:
+
+1.  **Rotating Device Identifier** - Refer to the Matter specification for details on how to generate the [Rotating Device Identifier](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/DeviceDiscovery.adoc#245-rotating-device-identifier)).  Then, instantiate a `DataProvider` object as described below.
     
     On Android, define a `rotatingDeviceIdUniqueIdProvider` to provide the Casting Client's RotatingDeviceIdUniqueId, by implementing a `DataSource`:
+
     ```java
     private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {  
-        private static final String APP_ID = "EXAMPLE_APP_ID";  
+        private static final String APP_ID = "YOUR_GENERATED_ROTATING_DEVICE_ID";  
         @Override  
         public byte[] get() {  
             return APP_ID.getBytes();  
         }
     }
     ```
+
     On iOS, define the `func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId` in a class, `AppParametersDataSource`, that implements the `MTRDataSource`:
+
     ```objectivec
     class AppParametersDataSource : NSObject, MTRDataSource
     {
         func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
-            return "EXAMPLE_APP_ID".data(using: .utf8)!
+            return "YOUR_GENERATED_ROTATING_DEVICE_ID".data(using: .utf8)!
         }
         ...
     }
     ```
 
-2. CommissioningData - This contains the passcode, discriminator, etc) which is required to verify an incoming commissioning request. ([See spec - Onboarding Payload Contents](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload))
+3. **Commissioning Data** - This object contains the passcode, discriminator, etc needed to verify an incoming commissioning request. Refer to the Matter specification's [Onboarding Payload](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload)) section for details on commissioning data.
     
     On Android, define a `commissioningDataProvider` that can provide the required values to the CastingApp.
+
     ```java
     private final static DataProvider<CommissioningData> commissioningDataProvider = () -> {  
-	    CommissioningData commissioningData = new CommissioningData();  
+        CommissioningData commissioningData = new CommissioningData();  
         commissioningData.setSetupPasscode(20202021);  
         commissioningData.setDiscriminator(3874);  
         return commissioningData;  
     }; 
     ```
+
     On iOS, add a `func commissioningDataProvider` to the `AppParametersDataSource` class defined above, that can provide the required values to the `MTRCastingApp`.
+
     ```objectivec
     func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
-        return MTRCommissioningData(passcode: 20202021, discriminator: 3874, spake2pIterationCount: 1000, spake2pVerifier: nil, spake2pSalt: nil)
+        return MTRCommissioningData(
+            passcode: 20202021,
+            discriminator: 3874,
+            spake2pIterationCount: 1000,
+            spake2pVerifier: nil,
+            spake2pSalt: nil)
     }
     ```
 
-3. DeviceAttestationCredentials - This contains the DeviceAttestationCertificate, ProductAttestationIntermediateCertificate, etc. and implements a way to sign messages when called upon by the Matter TV Casting Library as part of the Device Attestation process during commissoning. ([See spec - Device Attestation](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/device_attestation/Device_Attestation_Specification.adoc)) 
+4. **Device Attestation Credentials** - This object contains the `DeviceAttestationCertificate`, `ProductAttestationIntermediateCertificate`, etc. and implements a way to sign messages when called upon by the Matter TV Casting Library as part of the [Device Attestation process](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/device_attestation/Device_Attestation_Specification.adoc) during commissoning. 
 
     On Android, define a `dacProvider` to provide the Casting Client's Device Attestation Credentials, by implementing a `DataSource`:
+
     ```java
     private final static DataProvider<DeviceAttestationCredentials> dacProvider = new DataProvider<DeviceAttestationCredentials>() {  
         private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";  
         private static final String kDevelopmentDAC_PrivateKey_FFF1_8001 = "qrYAror...<snipped>...StE+/8=";  
         private static final String KPAI_FFF1_8000_Cert_Array = "MIIByzC...<snipped>...pwP4kQ==";  
-        
+
         @Override  
         public DeviceAttestationCredentials get() {  
             DeviceAttestationCredentials deviceAttestationCredentials = new DeviceAttestationCredentials() {  
-                @Override  
-                public byte[] SignWithDeviceAttestationKey(byte[] message) {  
-                    try {  
-                        byte[] privateKeyBytes = Base64.decode(kDevelopmentDAC_PrivateKey_FFF1_8001, Base64.DEFAULT);  
-                        AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");  
-                        algorithmParameters.init(new ECGenParameterSpec("secp256r1"));  
-                        ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);  
-                        ECPrivateKeySpec ecPrivateKeySpec =  
-                        new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);  
-     
-                        KeyFactory keyFactory = KeyFactory.getInstance("EC");  
-                        PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);  
-     
-                        Signature signature = Signature.getInstance("SHA256withECDSA");  
-                        signature.initSign(privateKey);  
-     
-                        signature.update(message);  
-     
-                        return signature.sign();  
-                    } catch (Exception e) {  
-                        return null;  
-                    }  
-                }  
-            };  
-     
-            deviceAttestationCredentials.setDeviceAttestationCert(Base64.decode(kDevelopmentDAC_Cert_FFF1_8001, Base64.DEFAULT));  
-            deviceAttestationCredentials.setProductAttestationIntermediateCert(Base64.decode(KPAI_FFF1_8000_Cert_Array, Base64.DEFAULT));  
-            return deviceAttestationCredentials;  
-        }  
-    };  
+	        @Override  
+	        public byte[] SignWithDeviceAttestationKey(byte[] message) {  
+	            try {  
+		        byte[] privateKeyBytes = Base64.decode(kDevelopmentDAC_PrivateKey_FFF1_8001, Base64.DEFAULT);  
+		        AlgorithmParameters algorithmParameters = AlgorithmParameters.getInstance("EC");  
+		        algorithmParameters.init(new ECGenParameterSpec("secp256r1"));  
+		        ECParameterSpec parameterSpec = algorithmParameters.getParameterSpec(ECParameterSpec.class);  
+		        ECPrivateKeySpec ecPrivateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateKeyBytes), parameterSpec);  
+
+		        KeyFactory keyFactory = KeyFactory.getInstance("EC");
+		        PrivateKey privateKey = keyFactory.generatePrivate(ecPrivateKeySpec);
+
+		        Signature signature = Signature.getInstance("SHA256withECDSA");
+		        signature.initSign(privateKey);
+		        signature.update(message);
+
+		        return signature.sign();
+	            } catch (Exception e) {
+		        return null;
+	            }
+	        }
+            };
+
+            deviceAttestationCredentials.setDeviceAttestationCert(
+            Base64.decode(kDevelopmentDAC_Cert_FFF1_8001, Base64.DEFAULT));
+            deviceAttestationCredentials.setProductAttestationIntermediateCert(
+            Base64.decode(KPAI_FFF1_8000_Cert_Array, Base64.DEFAULT));
+            return deviceAttestationCredentials;
+        }
+    };
     ```
-    
-    On iOS, add a `func didReceiveRequestToSignCertificateRequest` to the `AppParametersDataSource` class defined above, that can sign messages for the Casting Client.
+
+On iOS, add a `func didReceiveRequestToSignCertificateRequest` to the `AppParametersDataSource` class defined above, that can sign messages for the Casting Client.
     ```objectivec
     func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
         // sign the message and return the value
@@ -109,15 +139,17 @@ The Casting Client must first initialize the Matter TV Casting library and provi
     }
     ```
     
-Finally, use the parameters defined above to initialize the CastingApp. Make sure this call is made from a place in the Casting client that would be called only once, before it starts doing Matter casting.
+Once you have created the `DataProvider` objects above, you are ready to initialize the Casting App as described below.  Note: When you initialize the Casting client, make sure your code initializes it only once, before it starts a Matter casting session.
 
 On Android, create an AppParameters object using the `rotatingDeviceIdUniqueIdProvider`, `commissioningDataProvider` and `dacProvider`, and call `CastingApp.initialize` with it. 
+
 ```java
-public static void demoInitialization() 
-{  
+public static void demoInitialization() {  
     // Create an AppParameters object to pass in global casting parameters to the SDK  
-    final AppParameters appParameters = new AppParameters(rotatingDeviceIdUniqueIdProvider, 	
-												  commissioningDataProvider, dacProvider);  
+    final AppParameters appParameters = new AppParameters(
+        rotatingDeviceIdUniqueIdProvider,
+        commissioningDataProvider,
+        dacProvider);  
   
     // Initialize the SDK using the appParameters and check if it returns successfully  
     MatterError err = CastingApp.initialize(appParameters);  
@@ -128,6 +160,7 @@ public static void demoInitialization()
 ```
 
 On iOS, call `MTRCastingApp.initialize` with an object of the `AppParametersDataSource`.  
+
 ```objectivec
 init()
 {
@@ -136,16 +169,13 @@ init()
 }
 ```
 
-_{Complete Initialization examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/InitializationExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/TvCastingApp.swift)}_
+### Discover Casting Players
+_{Complete Discovery examples: [Android](android/App/app/src/main/java/com/matter/casting/DiscoveryExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRDiscoveryExampleViewModel.swift)}_
 
-## Discovery
-_{Complete Discovery examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/DiscoveryExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRDiscoveryExampleViewModel.swift)}_
+The Casting Client discovers `CastingPlayers` using Matter Commissioner discovery over DNS-SD by listening for CastingPlayer events as they are discovered, updated, or lost from the network.
 
-The Casting Client can then start discovery of `CastingPlayers` using the discovery APIs as shown below. This is implemented based on Matter Commissioner discovery over DNS-SD. The client can listen for CastingPlayers as they are discovered, updated or lost from the network.
+On Android, define a concrete anonymous `class castingPlayerChangeListener` that implements the `CastingPlayerChangeListener`.
 
-First, define the necessary listeners that the Casting Client will be called on, when a CastingPlayer is added / removed / updated in the list of discovered CastingPlayers.
-
-On Android, define a concrete anonymous `class castingPlayerChangeListener` that implements the CastingPlayerChangeListener.
 ```java
 private static final CastingPlayerChangeListener castingPlayerChangeListener = new CastingPlayerChangeListener() 
 {  
@@ -170,16 +200,19 @@ private static final CastingPlayerChangeListener castingPlayerChangeListener = n
     }  
 };  
 ```
-On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which will listen to Notifications when discovered CastingPlayers are added/removed/updated 
+
+On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which to listen to notifications as Casting Players are added, removed, or updated.
+
 ```objectivec
 @objc
 func addDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
-            print("No MTRCastingPlayer found in notification")
-            return
-        }
+        let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
+    else {
+        print("No MTRCastingPlayer found in notification")
+        return
+    }
     displayedCastingPlayers.append(contentsOf: castingPlayers)
 }
     
@@ -187,7 +220,8 @@ func addDiscoveredCastingPlayers(notification: Notification)
 func removeDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
+    else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -198,7 +232,8 @@ func removeDiscoveredCastingPlayers(notification: Notification)
 func updateDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-            let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
+    else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -239,41 +274,50 @@ public static void demoDiscovery()
 On iOS, register the listeners by calling `addObserver` on the `NotificationCenter` with the appropriate selector, and then call `start` on the `sharedInstance` of `MTRCastingPlayerDiscovery`.
 ```objectivec
 func startDiscovery() {
-        NotificationCenter.default.addObserver(self, selector: #selector(self.addDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.removeDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.updateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
+    NotificationCenter.default.addObserver(
+    self,
+    selector: #selector(self.addDiscoveredCastingPlayers),
+    name: NSNotification.Name.didAddCastingPlayers,
+    object: nil)
+    NotificationCenter.default.addObserver(
+    self,
+    selector: #selector(self.removeDiscoveredCastingPlayers),
+    name: NSNotification.Name.didRemoveCastingPlayers,
+    object: nil)
+    NotificationCenter.default.addObserver(
+    self,
+    selector: #selector(self.updateDiscoveredCastingPlayers),
+    name: NSNotification.Name.didUpdateCastingPlayers,
+    object: nil)
 
-        MTRCastingPlayerDiscovery.sharedInstance().start()
-        self.discoveryRequestStatus = true
-    }
+    MTRCastingPlayerDiscovery.sharedInstance().start()
+    self.discoveryRequestStatus = true
+}
 ```
 
-Note: at this point, the list of Endpoints in the discovered CastingPlayers will be empty, as this information is not revealed at the time of Matter Commissioner discovery.
+Note: You will need to connect with a Casting Player as described below to see the list of Endpoints that they support.  Refer to the [Connection](#connection) section for details on how to discover available endpoints supported by a Casting Player.
 
-_{Complete Discovery examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/DiscoveryExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRDiscoveryExampleViewModel.swift)}_
+### Connect to a Casting Player
+_{Complete Connection examples: [Android](android/App/app/src/main/java/com/matter/casting/ConnectionExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRConnectionExampleViewModel.swift)}_
 
-## Connection
-_{Complete Connection examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/ConnectionExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRConnectionExampleViewModel.swift)}_
-
-After discovery, the Casting client may use user input to select one of the CastingPlayers to connect it. Each CastingPlayer object contains information such as deviceName, vendorId, productId, etc. to help make this selection. It can then attempt to connect to the selectedCastingPlayer. This is implemented based on Matter User Directed Commissioning (UDC). The Matter TV Casting library also locally caches information required to re-connect to a CastingPlayer, once it has commissioned with it. After that, it is able to skip the full UDC process and instead establishes CASE with the CastingPlayer directly. Once connected, the CastingPlayer object would contain the list of available Endpoints on it.
+Each CastingPlayer object created during [Discovery](#discovery) contains information such as deviceName, vendorId, productId, etc. which can help the user pick the right CastingPlayer. A Casting Client can attempt to connect to the selectedCastingPlayer using [Matter User Directed Commissioning (UDC)](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/UserDirectedCommissioning.adoc). The Matter TV Casting library locally caches information required to reconnect to a CastingPlayer, once it has commissioned with it. After that, it is able to skip the full UDC process by establishing CASE with the CastingPlayer directly. Once connected, the CastingPlayer object would contain the list of available Endpoints on it.
 
 On Android, the Casting Client can connect to a `CastingPlayer` by calling `connect` on it, and handling any exceptions that may arise in the process.
 
 ```java
-    // Maximum time in seconds we'll wait for the connection to the CastingPlayer to go through  
-    private static final long CONNECTION_TIMEOUT_SECS = 45;  
+// Maximum time in seconds we'll wait for the connection to the CastingPlayer to go through  
+private static final long CONNECTION_TIMEOUT_SECS = 45;  
   
-    public static void demoConnection(CastingPlayer castingPlayer) {  
-        // Connect to the castingPlayer  
-        CompletableFuture<Void> connectionFuture = castingPlayer.connect(CONNECTION_TIMEOUT_SECS);  
+public static void demoConnection(CastingPlayer castingPlayer) {  
+    // Connect to the castingPlayer  
+    CompletableFuture<Void> connectionFuture = castingPlayer.connect(CONNECTION_TIMEOUT_SECS);  
   
-        // handle exception, if any  
-        connectionFuture.exceptionally(exc -> {  
-            Log.e(TAG, "Exception in connecting to castingPlayer" + exc.getMessage());  
-            return null;  
-            }
-        );  
-  }  
+    // handle exception, if any  
+    connectionFuture.exceptionally(exc -> {  
+        Log.e(TAG, "Exception in connecting to castingPlayer" + exc.getMessage());  
+        return null;  
+    });
+}
 ```
 
 On iOS, the Casting Client may call `connect` on the `MTRCastingPlayer` object it wants to connect to and handle any `NSErrors` that may happen in the process.
@@ -299,22 +343,25 @@ func connect(selectedCastingPlayer: MTRCastingPlayer?) {
     })
 }
 ```
-_{Complete Connection examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/ConnectionExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRConnectionExampleViewModel.swift)}_
-## Interactions
-On a successful connection with the `castingPlayer`, a Casting client may pick one of the `Endpoints` to interact with based on its attributes (like Vendor or Product IDs, list of supported Clusters, etc). It may then send commands to it, or subscribe to / read attribute values from it.
+
+### Select an Endpoint on the Casting Player
+_{Endpoing selections is demonstrated in the Command invocation examples: [Android](android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
+
+On a successful connection with a `CastingPlayer`, a Casting Client may select one of the `Endpoints` to interact with based on its attributes (e.g. Vendor ID, Product ID, list of supported Clusters, etc).
 
 On Android, for example, it may select an Endpoint with a particular vendorID.
 
 ```java
 ...  
 Optional<Endpoint> contentAppEndpoint =  
-        castingPlayer  
-            .getEndpoints()  
-            .stream()  
-            .filter(endpoint -> SAMPLE_CONTENT_APP_VID.equals(endpoint.getVendorId()))  
-            .findAny();
+    castingPlayer  
+        .getEndpoints()  
+        .stream()  
+        .filter(endpoint -> SAMPLE_CONTENT_APP_VID.equals(endpoint.getVendorId()))  
+        .findAny();
 ...
 ```
+
 
 On iOS, it can do the above Endpoint selection like the following.
 ```objectivec
@@ -322,12 +369,17 @@ On iOS, it can do the above Endpoint selection like the following.
 if let endpoint: MTREndpoint = castingPlayer.endpoints.filter({ $0.identifier == sampleContentAppVid }).first
 ...
 ```
-### Commands
-_{Complete Command invocation examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
 
-The CastingClient may send a command to the `contentAppEndpoint` on the CastingPlayer it connected to and handle the command response. It would first ensure the endpoint supports the required cluster/command.
+## Interacting with a Casting Endpoint
 
-On Android, this can be implemented in the following way:
+Once the Casting Client has selected an `Endpoint`, it is ready to [issue commands](#issuing-commands) to it, [read](#read-operations) current playback state, and [subscribe](#subscriptions) to playback events.
+
+### Issuing Commands
+_{Complete Command invocation examples: [Android](android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
+
+To issue a command, the Casting Client can  `contentAppEndpoint` on the CastingPlayer it connected to and handle the command response. It would first ensure the endpoint supports the required cluster/command.
+
+On Android, this can be implemented as follows:
 
 ```java
 ...
@@ -337,17 +389,18 @@ if (contentAppEndpoint.get().hasCluster(ContentLauncher.class)) {
   
     // invoke the command  
     CompletableFuture<ContentLauncher.LauncherResponse> contentLauncherResponseFuture =  
-                contentLauncher.launchURL(  
-                    new URL("https://www.samplemattercontent.xyz/id"), "displaystring", null);  
-    contentLauncherResponseFuture.thenApply(  
-        (response) -> {  
-            // handle the response  
-            return null;  
-    });
+                contentLauncher.launchURL(
+		            new URL("https://YOUR_URL/id"), "displaystring", null);  
+    		contentLauncherResponseFuture.thenApply(  
+			(response) -> {  
+				// handle the response  
+				return null;  
+			});
 }  
 ```
 
-On iOS, the commands can be sent this way.
+On iOS, the commands can be sent as follows:
+
 ```objectivec
 ...
 if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
@@ -355,7 +408,7 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
     let cluster: MTRContentLauncherCluster = endpoint.cluster(for: MTREndpointClusterTypeContentLauncher) as! MTRContentLauncherCluster
     if(cluster.canLaunchURL())
     {
-        cluster.launch(URL(string: "https://www.samplemattercontent.xyz/id")!) { launchResponse, err in
+        cluster.launch(URL(string: "https://YOUR_URL/id")!) { launchResponse, err in
             self.Log.info("invokeCommand completed with \(err)")
             self.status = "ContentLauncher.LaunchURL completed!"
 
@@ -373,9 +426,9 @@ else
 }
 ...
 ```
-_{Complete Command invocation examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
-### Reads
-_{Complete Attribute Read examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/AttributeReadExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRAttributeReadExampleViewModel.swift)}_
+
+### Read Operations
+_{Complete Attribute Read examples: [Android](android/App/app/src/main/java/com/matter/casting/AttributeReadExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRAttributeReadExampleViewModel.swift)}_
 
 The CastingClient may read an Attribute from the `contentAppEndpoint` on the CastingPlayer. It would ensure that the desired cluster / attribute are available for reading on the endpoint before trying to read it.
 
@@ -432,11 +485,10 @@ else
 }
 ```
 
-_{Complete Attribute Read examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/AttributeReadExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRAttributeReadExampleViewModel.swift)}_
 ### Subscriptions
-_{Complete Attribute subscription examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/AttributeSubscriptionExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
+_{Complete Attribute subscription examples: [Android](android/App/app/src/main/java/com/matter/casting/AttributeSubscriptionExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
 
-The CastingClient may subscribe to an Attribute from the `contentAppEndpoint` on the CastingPlayer. It would ensure that the desired cluster / attribute are available for subscription on the endpoint before subsceibing to it.
+A Casting Client may subscribe to an attribute from the `contentAppEndpoint` on the CastingPlayer to get event notifications related to that attribute.
 
 On Android, an attribute can be subscribed to in the following way.
 
@@ -501,7 +553,4 @@ else
     self.status = "No MediaPlayback cluster supporting endpoint found"
 }
 ```
-_{Complete Attribute subscription examples: [Android](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/android/App/app/src/main/java/com/matter/casting/AttributeSubscriptionExample.java) |  [iOS](https://github.com/sharadb-amazon/connectedhomeip/blob/casting/examples/tv-casting-app/darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
-
-## Conclusion
-As described above, the Casting APIs allows a Casting Client to discover CastingPlayers on a users network, connect to one of them and interact with various Endpoints on them using Matter commands, attribute reads and subscriptions.
+_{Complete Attribute subscription examples: [Android](android/App/app/src/main/java/com/matter/casting/AttributeSubscriptionExample.java) |  [iOS](darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
