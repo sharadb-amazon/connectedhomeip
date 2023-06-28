@@ -104,6 +104,8 @@
         _subscriptionReadFailureCallbacks = [NSMutableDictionary dictionary];
         _readSuccessCallbacks = [NSMutableDictionary dictionary];
         _readFailureCallbacks = [NSMutableDictionary dictionary];
+        
+        _chipWorkQueue = chip::DeviceLayer::PlatformMgrImpl().GetWorkQueue();
     }
     return self;
 }
@@ -463,7 +465,7 @@
                                                CastingServer::GetInstance()->StopDiscoverCommissioners();
                                                self->_cancelDiscoveryCommissionersWork = nil;
                                            });
-                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), clientQueue,
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), self->_chipWorkQueue,
                                          self->_cancelDiscoveryCommissionersWork);
                                  }
 
