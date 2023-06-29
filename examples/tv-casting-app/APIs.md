@@ -32,7 +32,7 @@ The Casting Client is expected to consume the Matter TV Casting library built fo
 ### Initialize the Casting Client
 _{Complete Initialization examples: [Android](android/App/app/src/main/java/com/matter/casting/InitializationExample.java) |  [iOS](darwin/TvCasting/TvCasting/TvCastingApp.swift)}_
 
-A Casting Client must first define the following [`DataProvider`](android/App/app/src/main/jni/com/matter/casting/params/DataProvider.java) objects for the the Matter Casting library to use throughout the client's lifecycle:
+A Casting Client must first initialize the Matter SDK and define the following [`DataProvider`](android/App/app/src/main/jni/com/matter/casting/params/DataProvider.java) objects for the the Matter Casting library to use throughout the client's lifecycle:
 
 1.  **Rotating Device Identifier** - Refer to the Matter specification for details on how to generate the [Rotating Device Identifier](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/DeviceDiscovery.adoc#245-rotating-device-identifier)).  Then, instantiate a `DataProvider` object as described below.
     
