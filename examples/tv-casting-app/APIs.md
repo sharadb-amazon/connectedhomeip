@@ -201,7 +201,7 @@ private static final CastingPlayerChangeListener castingPlayerChangeListener = n
 };  
 ```
 
-On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which to listen to notifications as Casting Players are added, removed, or updated.
+On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which listen to notifications as Casting Players are added, removed, or updated.
 
 ```objectivec
 @objc
