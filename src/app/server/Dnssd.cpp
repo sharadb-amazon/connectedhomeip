@@ -24,6 +24,7 @@
 #include <lib/dnssd/ServiceNaming.h>
 #include <lib/support/DefaultStorageKeyAllocator.h>
 #include <lib/support/Span.h>
+#include <lib/support/FeatureOverrides.h>
 #include <lib/support/logging/CHIPLogging.h>
 #include <messaging/ReliableMessageProtocolConfig.h>
 #include <platform/CHIPDeviceLayer.h>
@@ -313,15 +314,24 @@ CHIP_ERROR DnssdServer::AdvertiseCommissioner()
 
 CHIP_ERROR DnssdServer::AdvertiseCommissionableNode(chip::Dnssd::CommissioningMode mode)
 {
-#if CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
-    mCurrentCommissioningMode = mode;
-    if (mode != Dnssd::CommissioningMode::kDisabled)
+    int enableExtendedDiscoveryOverride = -1;
+    if(FeatureOverrides::GetInstance()->IsDefined(std::string("CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY")))
     {
-        // We're not doing extended discovery right now.
-        DeviceLayer::SystemLayer().CancelTimer(HandleExtendedDiscoveryExpiration, nullptr);
-        mExtendedDiscoveryExpiration = kTimeoutCleared;
+        FeatureOverrides::GetInstance()->Value(std::string("CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY"), enableExtendedDiscoveryOverride);
     }
-#endif // CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
+
+//#if CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
+    if(enableExtendedDiscoveryOverride == -1 ? (CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY == 1): (enableExtendedDiscoveryOverride == 1))  // use FeatureOverride value if defined, else use macro
+    {
+        mCurrentCommissioningMode = mode;
+        if (mode != Dnssd::CommissioningMode::kDisabled)
+        {
+            // We're not doing extended discovery right now.
+            DeviceLayer::SystemLayer().CancelTimer(HandleExtendedDiscoveryExpiration, nullptr);
+            mExtendedDiscoveryExpiration = kTimeoutCleared;
+        }
+    }
+//#endif // CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
 
     return Advertise(true /* commissionableNode */, mode);
 }
@@ -340,6 +350,12 @@ void DnssdServer::StartServer(Dnssd::CommissioningMode mode)
 {
     ChipLogProgress(Discovery, "Updating services using commissioning mode %d", static_cast<int>(mode));
 
+    int enableExtendedDiscoveryOverride = -1;
+    if(FeatureOverrides::GetInstance()->IsDefined(std::string("CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY")))
+    {
+        FeatureOverrides::GetInstance()->Value(std::string("CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY"), enableExtendedDiscoveryOverride);
+    }
+    
     DeviceLayer::PlatformMgr().AddEventHandler(OnPlatformEventWrapper, 0);
 
     CHIP_ERROR err = Dnssd::ServiceAdvertiser::Instance().Init(chip::DeviceLayer::UDPEndPointManager());
@@ -368,32 +384,35 @@ void DnssdServer::StartServer(Dnssd::CommissioningMode mode)
             ChipLogError(Discovery, "Failed to advertise commissionable node: %" CHIP_ERROR_FORMAT, err.Format());
         }
     }
-#if CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
-    else if (GetExtendedDiscoveryTimeoutSecs() != CHIP_DEVICE_CONFIG_DISCOVERY_DISABLED)
+//#if CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY      // uncomment this, after cleaning up the FeatureOverride
+    else if(enableExtendedDiscoveryOverride == -1 ? (CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY == 1): (enableExtendedDiscoveryOverride == 1))  // use FeatureOverride value if defined, else use macro
     {
-        bool alwaysAdvertiseExtended = (GetExtendedDiscoveryTimeoutSecs() == CHIP_DEVICE_CONFIG_DISCOVERY_NO_TIMEOUT);
-        // We do extended discovery advertising in three cases:
-        // 1) We don't have a timeout for extended discovery.
-        // 2) We are transitioning out of commissioning mode (basic or enhanced)
-        //    and should therefore start extended discovery.
-        // 3) We are resetting advertising while we are in the middle of an
-        //    existing extended discovery advertising period.
-        if (alwaysAdvertiseExtended || mCurrentCommissioningMode != Dnssd::CommissioningMode::kDisabled ||
-            mExtendedDiscoveryExpiration != kTimeoutCleared)
+        if (GetExtendedDiscoveryTimeoutSecs() != CHIP_DEVICE_CONFIG_DISCOVERY_DISABLED)
         {
-            err = AdvertiseCommissionableNode(mode);
-            if (err != CHIP_NO_ERROR)
+            bool alwaysAdvertiseExtended = (GetExtendedDiscoveryTimeoutSecs() == CHIP_DEVICE_CONFIG_DISCOVERY_NO_TIMEOUT);
+            // We do extended discovery advertising in three cases:
+            // 1) We don't have a timeout for extended discovery.
+            // 2) We are transitioning out of commissioning mode (basic or enhanced)
+            //    and should therefore start extended discovery.
+            // 3) We are resetting advertising while we are in the middle of an
+            //    existing extended discovery advertising period.
+            if (alwaysAdvertiseExtended || mCurrentCommissioningMode != Dnssd::CommissioningMode::kDisabled ||
+             mExtendedDiscoveryExpiration != kTimeoutCleared)
             {
-                ChipLogError(Discovery, "Failed to advertise extended commissionable node: %" CHIP_ERROR_FORMAT, err.Format());
-            }
-            if (mExtendedDiscoveryExpiration == kTimeoutCleared)
-            {
-                // set timeout
-                ScheduleExtendedDiscoveryExpiration();
+                err = AdvertiseCommissionableNode(mode);
+                if (err != CHIP_NO_ERROR)
+                {
+                    ChipLogError(Discovery, "Failed to advertise extended commissionable node: %" CHIP_ERROR_FORMAT, err.Format());
+                }
+                if (mExtendedDiscoveryExpiration == kTimeoutCleared)
+                {
+                    // set timeout
+                    ScheduleExtendedDiscoveryExpiration();
+                }
             }
         }
     }
-#endif // CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
+//#endif // CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY
 
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY
     err = AdvertiseCommissioner();
