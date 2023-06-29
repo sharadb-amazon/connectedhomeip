@@ -5,7 +5,7 @@ Matter Casting consists of three parts:
 
 * **The mobile app**: For most content providers, this would be your consumer-facing mobile app.  By making your moile app a Matter "Casting Client", you enable the user to discover casting targets, cast content, and control casting sessions.
 * **The TV content app**: For most content providers, this would be your consumer-facing app on a Smart TV.  By enhancing your TV app to act as a Matter "Content app", you enable Matter Casting Clients to cast content. The [example Matter content-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-app/android/App/content-app) for Android builds on top of the Matter SDK to demonstrate how a TV Content app works.
-* **The TV platform app**: The TV platform app is generally implemented by the TV manufacturer and provides common capabilities around media playback on the TV like the Basic Video Player.
+* **The TV platform app**: The TV platform app is generally implemented by the TV manufacturer and provides common capabilities around media playback on the TV like the Basic Video Player. The [example Matter tv-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-app) for Android builds on top of the Matter SDK to demonstrate how a TV platform app works.
 
 This document describes how enable your Android and iOS apps to act as a Matter "Casting Client".  This documentation is also designed to work with the example [example Matter tv-casting-app](https://github.com/project-chip/connectedhomeip/tree/master/examples/tv-casting-app) samples so you can see the experience end to end.
 
