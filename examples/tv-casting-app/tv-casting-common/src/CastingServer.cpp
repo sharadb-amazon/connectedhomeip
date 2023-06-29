@@ -17,6 +17,7 @@
  */
 
 #include "CastingServer.h"
+#include <lib/support/FeatureOverrides.h>
 
 using namespace chip;
 using namespace chip::Controller;
@@ -38,6 +39,10 @@ CastingServer * CastingServer::GetInstance()
 
 CHIP_ERROR CastingServer::PreInit(AppParams * appParams)
 {
+    std::map<std::string, int> featureOverrides;
+    appParams->GetFeatureOverrides(featureOverrides);
+    FeatureOverrides::GetInstance()->Init(featureOverrides);
+
 #if CHIP_ENABLE_ROTATING_DEVICE_ID
     return SetRotatingDeviceIdUniqueId(appParams != nullptr ? appParams->GetRotatingDeviceIdUniqueId() : chip::NullOptional);
 #else

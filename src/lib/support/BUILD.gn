@@ -104,6 +104,8 @@ static_library("support") {
     "Defer.h",
     "ErrorStr.cpp",
     "ErrorStr.h",
+    "FeatureOverrides.cpp",
+    "FeatureOverrides.h",
     "FibonacciUtils.cpp",
     "FibonacciUtils.h",
     "FixedBufferAllocator.cpp",

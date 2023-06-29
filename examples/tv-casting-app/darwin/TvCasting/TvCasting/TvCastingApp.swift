@@ -46,6 +46,8 @@ struct TvCastingApp: App {
                         
                         appParameters.onboardingPayload = onboardingParameters
                         
+                        appParameters.featureOverrides = ["CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY" : 0] as? [AnyHashable : Any]
+                        
                         let err = castingServerBridge.initializeApp(appParameters, clientQueue: DispatchQueue.main, initAppStatusHandler: { (result: MatterError) -> () in
                             self.Log.info("initializeApp result \(result)")
                         })

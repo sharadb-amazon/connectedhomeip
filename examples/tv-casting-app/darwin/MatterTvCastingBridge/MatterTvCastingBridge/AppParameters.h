@@ -25,6 +25,8 @@
 
 @interface AppParameters : NSObject
 
+@property NSDictionary * featureOverrides;
+
 @property NSData * rotatingDeviceIdUniqueId;
 
 @property OnboardingPayload * onboardingPayload;

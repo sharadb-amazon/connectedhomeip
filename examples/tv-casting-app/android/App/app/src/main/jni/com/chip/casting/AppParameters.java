@@ -21,6 +21,7 @@ import android.util.Log;
 import chip.platform.ConfigurationManager;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Map;
 
 public class AppParameters {
   private static final String TAG = AppParameters.class.getSimpleName();
@@ -35,6 +36,7 @@ public class AppParameters {
   private int spake2pIterationCount;
   private int setupPasscode = TEST_SETUP_PASSCODE;
   private int discriminator = TEST_DISCRIMINATOR;
+  private Map<String, Integer> featureOverrides;
 
   public ConfigurationManager getConfigurationManager() {
     return configurationManager;
@@ -99,5 +101,13 @@ public class AppParameters {
 
   public void setDiscriminator(int discriminator) {
     this.discriminator = discriminator;
+  }
+
+  public Map<String, Integer> getFeatureOverrides() {
+    return featureOverrides;
+  }
+
+  public void setFeatureOverrides(Map<String, Integer> featureOverrides) {
+    this.featureOverrides = featureOverrides;
   }
 }

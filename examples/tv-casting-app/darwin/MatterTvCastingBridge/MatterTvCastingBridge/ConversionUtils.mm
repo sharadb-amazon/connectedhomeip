@@ -30,6 +30,15 @@
                 objCAppParameters.rotatingDeviceIdUniqueId.length);
         outAppParams.SetRotatingDeviceIdUniqueId(MakeOptional(rotatingDeviceIdUniqueId));
     }
+    
+    std::map<std::string, int> cppFeatureOverrides;
+    if(objCAppParameters.featureOverrides != nil) {
+        for(id key in objCAppParameters.featureOverrides) {
+            cppFeatureOverrides[[key UTF8String]] = [[objCAppParameters.featureOverrides objectForKey:key] intValue];
+        }
+        outAppParams.SetFeatureOverrides(cppFeatureOverrides);
+    }
+    
     return CHIP_NO_ERROR;
 }
 

@@ -299,7 +299,7 @@
             ChipLogError(AppServer, "AppParameters conversion failed: %s", ErrorStr(err));
             return [[MatterError alloc] initWithCode:err.AsInteger() message:[NSString stringWithUTF8String:err.AsString()]];
         }
-
+                
         // set fields in commissionableDataProvider
         if (_appParameters.onboardingPayload != nil) {
             setupPasscode = _appParameters.onboardingPayload.setupPasscode > 0 ? _appParameters.onboardingPayload.setupPasscode

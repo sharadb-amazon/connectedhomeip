@@ -34,3 +34,13 @@ chip::Optional<chip::ByteSpan> AppParams::GetRotatingDeviceIdUniqueId()
     return mRotatingDeviceIdUniqueId;
 }
 #endif // CHIP_ENABLE_ROTATING_DEVICE_ID
+
+void AppParams::SetFeatureOverrides(std::map<std::string, int> featureOverrides)
+{
+    mFeatureOverrides = featureOverrides;
+}
+
+void AppParams::GetFeatureOverrides(std::map<std::string, int> &featureOverrides)
+{
+    featureOverrides = mFeatureOverrides;
+}

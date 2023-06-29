@@ -7,10 +7,13 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import com.chip.casting.AppParameters;
 import com.chip.casting.DiscoveredNodeData;
+import com.chip.casting.FeatureOverrideKeys;
 import com.chip.casting.TvCastingApp;
 import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.util.GlobalCastingConstants;
 import com.chip.casting.util.PreferencesConfigurationManager;
+
+import java.util.HashMap;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
@@ -90,6 +93,9 @@ public class MainActivity extends AppCompatActivity
     appParameters.setRotatingDeviceIdUniqueId(rotatingDeviceIdUniqueId);
     appParameters.setSetupPasscode(GlobalCastingConstants.SetupPasscode);
     appParameters.setDiscriminator(GlobalCastingConstants.Discriminator);
+    appParameters.setFeatureOverrides(new HashMap<String, Integer>(){{
+      put(FeatureOverrideKeys.CHIP_DEVICE_CONFIG_ENABLE_EXTENDED_DISCOVERY.toString(), 0);
+    }});
     return tvCastingApp.initApp(this.getApplicationContext(), appParameters);
   }
 

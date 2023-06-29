@@ -54,7 +54,92 @@ CHIP_ERROR convertJAppParametersToCppAppParams(jobject appParameters, AppParams 
             new chip::JniByteArray(env, static_cast<jbyteArray>(jRotatingDeviceIdUniqueId));
         outAppParams.SetRotatingDeviceIdUniqueId(MakeOptional(jniRotatingDeviceIdUniqueIdByteArray->byteSpan()));
     }
+    
+    jmethodID getFeatureOverridesMethod = env->GetMethodID(jAppParametersClass, "getFeatureOverrides", "()Ljava/util/Map;");
+    if (getFeatureOverridesMethod == nullptr)
+    {
+        ChipLogError(AppServer, "Failed to access AppParameters 'getFeatureOverrides' method");
+        env->ExceptionClear();
+        return CHIP_ERROR_INCORRECT_STATE;
+    }
 
+    jobject jFeatureOverridesMap = (jobject) env->CallObjectMethod(appParameters, getFeatureOverridesMethod);
+    if (env->ExceptionCheck())
+    {
+        ChipLogError(AppServer, "Java exception in AppParameters::getFeatureOverridesMap");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return CHIP_ERROR_INCORRECT_STATE;
+    }
+    std::map<std::string, int> cppFeatureOverrides;
+    ReturnErrorOnFailure(convertJFeatureOverridesToFeatureOverrides(jFeatureOverridesMap, cppFeatureOverrides));
+    outAppParams.SetFeatureOverrides(cppFeatureOverrides);
+
+    return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR convertJFeatureOverridesToFeatureOverrides(jobject jFeatureOverridesMap, std::map<std::string, int>& cppFeatureOverridesMap) 
+{
+    if(jFeatureOverridesMap == nullptr)
+    {
+      return CHIP_NO_ERROR;
+    }
+
+    JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+      
+    jclass mapClass = env->FindClass("java/util/Map");
+    VerifyOrReturnError(mapClass != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID entrySet = env->GetMethodID(mapClass, "entrySet", "()Ljava/util/Set;");
+    VerifyOrReturnError(entrySet != nullptr, CHIP_ERROR_INCORRECT_STATE);
+
+    jobject set = env->CallObjectMethod(jFeatureOverridesMap, entrySet);
+    VerifyOrReturnError(set != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    // Obtain an iterator over the Set
+    jclass setClass = env->FindClass("java/util/Set");
+    VerifyOrReturnError(setClass != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID iterator = env->GetMethodID(setClass, "iterator", "()Ljava/util/Iterator;");
+    VerifyOrReturnError(iterator != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jobject iter = env->CallObjectMethod(set, iterator);
+    VerifyOrReturnError(iter != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    // Get the Iterator method IDs
+    jclass iteratorClass = env->FindClass("java/util/Iterator");
+    VerifyOrReturnError(iteratorClass != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID hasNext = env->GetMethodID(iteratorClass, "hasNext", "()Z");
+    VerifyOrReturnError(hasNext != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID next = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+    VerifyOrReturnError(next != nullptr, CHIP_ERROR_INCORRECT_STATE);
+  
+    // Get the Entry class method IDs
+    jclass entryClass = env->FindClass("java/util/Map$Entry");
+    VerifyOrReturnError(entryClass != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID getKey = env->GetMethodID(entryClass, "getKey", "()Ljava/lang/Object;");
+    VerifyOrReturnError(getKey != nullptr, CHIP_ERROR_INCORRECT_STATE);
+    jmethodID getValue = env->GetMethodID(entryClass, "getValue", "()Ljava/lang/Object;");
+    VerifyOrReturnError(getValue != nullptr, CHIP_ERROR_INCORRECT_STATE);
+
+    // Iterate over the entry Set
+    while (env->CallBooleanMethod(iter, hasNext)) {
+        jobject entry = env->CallObjectMethod(iter, next);
+        jstring key = (jstring) env->CallObjectMethod(entry, getKey);
+        jobject value = (jobject) env->CallObjectMethod(entry, getValue);
+        const char* keyStr = env->GetStringUTFChars(key, NULL);
+        if (!keyStr) {  // Out of memory
+          return CHIP_ERROR_INCORRECT_STATE;
+        }
+    
+        jclass integerClass = env->FindClass("java/lang/Integer");
+        VerifyOrReturnError(integerClass != nullptr, CHIP_ERROR_INCORRECT_STATE);
+        jmethodID intValueMid = env->GetMethodID(integerClass, "intValue", "()I");
+        VerifyOrReturnError(intValueMid != nullptr, CHIP_ERROR_INCORRECT_STATE);
+        int intValue = env->CallIntMethod(value, intValueMid);
+
+        cppFeatureOverridesMap.insert(std::make_pair(std::string(keyStr), intValue));
+
+        env->DeleteLocalRef(entry);
+        env->ReleaseStringUTFChars(key, keyStr);
+        env->DeleteLocalRef(key);
+        env->DeleteLocalRef(value);
+    }
     return CHIP_NO_ERROR;
 }
 

@@ -24,6 +24,8 @@
 
 CHIP_ERROR convertJAppParametersToCppAppParams(jobject appParameters, AppParams & outAppParams);
 
+CHIP_ERROR convertJFeatureOverridesToFeatureOverrides(jobject jFeatureOverridesMap, std::map<std::string, int>& cppFeatureOverridesMap);
+
 CHIP_ERROR convertJContentAppToTargetEndpointInfo(jobject contentApp, TargetEndpointInfo & outTargetEndpointInfo);
 
 CHIP_ERROR convertTargetEndpointInfoToJContentApp(TargetEndpointInfo * targetEndpointInfo, jobject & outContentApp);
