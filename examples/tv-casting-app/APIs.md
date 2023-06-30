@@ -23,7 +23,7 @@ The steps to start a casting session are:
 Next, you're ready to:
 
 1. [Issue commands](#issuing-commands) to the `Endpoint`.
-1. [Read](#read-operations) playback state.
+1. [Read](#read-operations) endpoint attributes like playback state.
 1. [Subscribe](#subscriptions) to playback events.
 
 ## Build and Setup
