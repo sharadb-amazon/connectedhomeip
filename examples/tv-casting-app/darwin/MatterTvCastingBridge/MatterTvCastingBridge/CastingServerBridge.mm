@@ -436,6 +436,7 @@
                                  if (self->_cancelDiscoveryCommissionersWork) {
                                      dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
                                      self->_cancelDiscoveryCommissionersWork = nil;
+                                     CastingServer::GetInstance()->StopDiscoverCommissioners();
                                  }
                                  if (discoveredCommissionerHandler != nil) {
                                      TargetVideoPlayerInfo * cachedTargetVideoPlayerInfos
@@ -839,6 +840,7 @@
                                    && dispatch_block_testcancel(self->_cancelDiscoveryCommissionersWork) == 0) {
                                    dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
                                    self->_cancelDiscoveryCommissionersWork = nil;
+                                   CastingServer::GetInstance()->StopDiscoverCommissioners();
                                }
 
                                // capture pointer to previouslyConnectedVideoPlayer, to be deleted
