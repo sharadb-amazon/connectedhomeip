@@ -473,8 +473,8 @@
                                                CastingServer::GetInstance()->StopDiscoverCommissioners();
                                                self->_cancelDiscoveryCommissionersWork = nil;
                                            });
-                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC), clientQueue,
-                                         self->_cancelDiscoveryCommissionersWork);
+                                     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, timeoutInSeconds * NSEC_PER_SEC),
+                                         self->_chipWorkQueue, self->_cancelDiscoveryCommissionersWork);
                                  }
 
                                  dispatch_async(clientQueue, ^{
@@ -843,6 +843,12 @@
     [self
         dispatchOnMatterSDKQueue:@"stopMatterServer(...)"
                            block:^{
+                               if (self->_cancelDiscoveryCommissionersWork
+                                   && dispatch_block_testcancel(self->_cancelDiscoveryCommissionersWork) == 0) {
+                                   dispatch_block_cancel(self->_cancelDiscoveryCommissionersWork);
+                                   self->_cancelDiscoveryCommissionersWork = nil;
+                               }
+
                                // capture pointer to previouslyConnectedVideoPlayer, to be deleted
                                TargetVideoPlayerInfo * videoPlayerForDeletion
                                    = self->_previouslyConnectedVideoPlayer == nil ? nil : self->_previouslyConnectedVideoPlayer;
