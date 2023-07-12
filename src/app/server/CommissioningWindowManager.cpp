@@ -165,7 +165,8 @@ void CommissioningWindowManager::HandleFailedAttempt(CHIP_ERROR err)
 
         if (mAppDelegate != nullptr)
         {
-            mAppDelegate->OnCommissioningSessionStopped();
+            ChipLogProgress(AppServer, "Calling mAppDelegate->OnCommissioningSessionStopped");
+            mAppDelegate->OnCommissioningSessionStopped(err);
         }
     }
 }
@@ -175,6 +176,13 @@ void CommissioningWindowManager::OnSessionEstablishmentStarted()
     // As per specifications, section 5.5: Commissioning Flows
     constexpr System::Clock::Timeout kPASESessionEstablishmentTimeout = System::Clock::Seconds16(60);
     DeviceLayer::SystemLayer().StartTimer(kPASESessionEstablishmentTimeout, HandleSessionEstablishmentTimeout, this);
+
+    ChipLogProgress(AppServer, "Commissioning session establishment step started");
+    if (mAppDelegate != nullptr)
+    {
+        ChipLogProgress(AppServer, "Calling mAppDelegate->OnCommissioningSessionEstablishmentStarted");
+        mAppDelegate->OnCommissioningSessionEstablishmentStarted();
+    }
 }
 
 void CommissioningWindowManager::OnSessionEstablished(const SessionHandle & session)
@@ -184,7 +192,12 @@ void CommissioningWindowManager::OnSessionEstablished(const SessionHandle & sess
     ChipLogProgress(AppServer, "Commissioning completed session establishment step");
     if (mAppDelegate != nullptr)
     {
+        ChipLogProgress(AppServer, "Calling mAppDelegate->OnCommissioningSessionStarted");
         mAppDelegate->OnCommissioningSessionStarted();
+    }
+    else
+    {
+        ChipLogProgress(AppServer, "No mAppDelegate found to call");
     }
 
     DeviceLayer::PlatformMgr().AddEventHandler(OnPlatformEventWrapper, reinterpret_cast<intptr_t>(this));
