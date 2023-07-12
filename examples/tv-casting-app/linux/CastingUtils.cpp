@@ -18,6 +18,8 @@
 
 #include "CastingUtils.h"
 
+#include "CommissioningCallbacks.h"
+
 using namespace chip;
 using namespace chip::System;
 using namespace chip::DeviceLayer;
@@ -62,6 +64,9 @@ void PrepareForCommissioning(const Dnssd::DiscoveredNodeData * selectedCommissio
 {
     CastingServer::GetInstance()->Init();
 
+    CommissioningCallbacks commissioningCallbacks;
+    commissioningCallbacks.commissioningComplete = HandleCommissioningCompleteCallback;
+
     CastingServer::GetInstance()->OpenBasicCommissioningWindow(
         [selectedCommissioner](CHIP_ERROR err) {
 #if CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
@@ -79,7 +84,7 @@ void PrepareForCommissioning(const Dnssd::DiscoveredNodeData * selectedCommissio
             }
 #endif // CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
         },
-        HandleCommissioningCompleteCallback, OnConnectionSuccess, OnConnectionFailure, OnNewOrUpdatedEndpoint);
+        commissioningCallbacks, OnConnectionSuccess, OnConnectionFailure, OnNewOrUpdatedEndpoint);
 
     // Display onboarding payload
     chip::DeviceLayer::ConfigurationMgr().LogDeviceConfig();

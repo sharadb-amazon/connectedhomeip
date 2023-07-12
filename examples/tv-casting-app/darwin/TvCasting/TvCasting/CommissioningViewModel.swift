@@ -42,22 +42,43 @@ class CommissioningViewModel: ObservableObject {
                     if(error.code == 0)
                     {
                         castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
-                            commissioningWindowOpenedCallback: { (result: MatterError) -> () in
-                                DispatchQueue.main.async {
-                                    self.commisisoningWindowOpened = (result.code == 0)
-                                    // Send User directed commissioning request if a commissioner with a known IP addr was selected
-                                    if(selectedCommissioner != nil && selectedCommissioner!.numIPs > 0)
-                                    {
-                                        self.sendUserDirectedCommissioningRequest(selectedCommissioner: selectedCommissioner)
+                            commissioningCallbackHandlers: CommissioningCallbackHandlers(
+                                commissioningWindowRequestedHandler: { (result: MatterError) -> () in
+                                    DispatchQueue.main.async {
+                                        self.Log.info("Commissioning Window Requested status: \(result)")
+                                        self.commisisoningWindowOpened = (result.code == 0)
                                     }
+                                },
+                                commissioningWindowOpenedCallback: { (result: MatterError) -> () in
+                                    self.Log.info("Commissioning Window Opened status: \(result)")
+                                    DispatchQueue.main.async {
+                                        self.commisisoningWindowOpened = (result.code == 0)
+                                        // Send User directed commissioning request if a commissioner with a known IP addr was selected
+                                        if(selectedCommissioner != nil && selectedCommissioner!.numIPs > 0)
+                                        {
+                                            self.sendUserDirectedCommissioningRequest(selectedCommissioner: selectedCommissioner)
+                                        }
+                                    }
+                                },
+                                commissioningCompleteCallback: { (result: MatterError) -> () in
+                                    self.Log.info("Commissioning status: \(result)")
+                                    DispatchQueue.main.async {
+                                        self.commisisoningComplete = (result.code == 0)
+                                    }
+                                },
+                                sessionEstablishmentStartedCallback: {
+                                    self.Log.info("PASE session establishment started")
+                                },
+                                sessionEstablishedCallback: {
+                                    self.Log.info("PASE session established")
+                                },
+                                sessionEstablishmentErrorCallback: { (err: MatterError) -> () in
+                                    self.Log.info("PASE session establishment error : \(err)")
+                                },
+                                sessionEstablishmentStoppedCallback: {
+                                    self.Log.info("PASE session establishment stopped")
                                 }
-                            },
-                            commissioningCompleteCallback: { (result: MatterError) -> () in
-                                self.Log.info("Commissioning status: \(result)")
-                                DispatchQueue.main.async {
-                                    self.commisisoningComplete = (result.code == 0)
-                                }
-                            },
+                            ),
                             onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
                                 DispatchQueue.main.async {
                                     self.connectionSuccess = true
@@ -83,7 +104,7 @@ class CommissioningViewModel: ObservableObject {
         }
     }
     
-    private func sendUserDirectedCommissioningRequest(selectedCommissioner: DiscoveredNodeData?) {        
+    private func sendUserDirectedCommissioningRequest(selectedCommissioner: DiscoveredNodeData?) {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.sendUserDirectedCommissioningRequest(selectedCommissioner!, clientQueue: DispatchQueue.main, udcRequestSentHandler: { (result: MatterError) -> () in
