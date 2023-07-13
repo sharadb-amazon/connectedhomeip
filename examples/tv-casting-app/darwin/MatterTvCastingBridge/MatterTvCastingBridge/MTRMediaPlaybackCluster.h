@@ -1,6 +1,6 @@
 /**
  *
- *    Copyright (c) 2020-2022 Project CHIP Authors
+ *    Copyright (c) 2020-2023 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,27 +15,24 @@
  *    limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-
-//! Project version number for MatterTvCastingBridge.
-FOUNDATION_EXPORT double MatterTvCastingBridgeVersionNumber;
-
-//! Project version string for MatterTvCastingBridge.
-FOUNDATION_EXPORT const unsigned char MatterTvCastingBridgeVersionString[];
-
-#import "CastingServerBridge.h"
-
 #import "MTRAttribute.h"
-#import "MTRCastingApp.h"
-#import "MTRCastingPlayer.h"
-#import "MTRCastingPlayerDiscovery.h"
 #import "MTRCluster.h"
-#import "MTRCommissioningData.h"
-#import "MTRContentLauncherCluster.h"
 #import "MTRCurrentState.h"
-#import "MTRDataSource.h"
 #import "MTREndpoint.h"
-#import "MTREndpointClusterType.h"
-#import "MTRLaunchResponse.h"
-#import "MTRMediaPlaybackCluster.h"
-#import "MTRObserver.h"
+
+#ifndef MTRMediaPlaybackCluster_h
+#define MTRMediaPlaybackCluster_h
+
+@interface MTRMediaPlaybackCluster : NSObject <MTRCluster>
+@property (nonatomic, weak, readonly) MTREndpoint * _Nullable endpoint;
+
+@property (nonatomic, strong, readonly) MTRAttribute<MTRCurrentState *> * _Nonnull currentState; // Nonnull for required attr
+@property (nonatomic, strong, readonly) MTRAttribute<MTRCurrentState *> * _Nullable optionalAttribute; // Nullable for optional attr
+
+// TODO: can support commands
+
+// TODO: commands
+
+@end
+
+#endif /* MTRMediaPlaybackCluster_h */

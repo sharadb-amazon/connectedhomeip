@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C5D78DA2A4398AC00CE16B7 /* MTRAttributeSubscriptionExampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D78D92A4398AC00CE16B7 /* MTRAttributeSubscriptionExampleViewModel.swift */; };
+		3C5D78DC2A43B2DD00CE16B7 /* MTRAttributeReadExampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D78DB2A43B2DD00CE16B7 /* MTRAttributeReadExampleViewModel.swift */; };
 		3C81C75328F8C79E001CB9D1 /* StartFromCacheView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C81C75228F8C79E001CB9D1 /* StartFromCacheView.swift */; };
 		3C81C75528F8C7B6001CB9D1 /* StartFromCacheViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C81C75428F8C7B6001CB9D1 /* StartFromCacheViewModel.swift */; };
 		3C81C75728F8E418001CB9D1 /* ConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C81C75628F8E418001CB9D1 /* ConnectionView.swift */; };
@@ -27,6 +29,9 @@
 		3CCB8748286A5D0F00771BAD /* CommissioningViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C7507B82853EFF000D7DB3A /* CommissioningViewModel.swift */; };
 		3CCB8749286A5D0F00771BAD /* ContentLauncherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19434285BA780004768D5 /* ContentLauncherView.swift */; };
 		3CCB874A286A5D0F00771BAD /* ContentLauncherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CA19436285BA877004768D5 /* ContentLauncherViewModel.swift */; };
+		3CFC02532A42355E0015EAA0 /* MTRDiscoveryExampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFC02522A42355E0015EAA0 /* MTRDiscoveryExampleViewModel.swift */; };
+		3CFC02592A4370AD0015EAA0 /* MTRConnectionExampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFC02582A4370AD0015EAA0 /* MTRConnectionExampleViewModel.swift */; };
+		3CFC025B2A4378B40015EAA0 /* MTRCommandInvocationExampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFC025A2A4378B40015EAA0 /* MTRCommandInvocationExampleViewModel.swift */; };
 		EAF14299296D561900E17793 /* CertTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF14298296D561900E17793 /* CertTestView.swift */; };
 		EAF1429B296D57DF00E17793 /* CertTestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAF1429A296D57DF00E17793 /* CertTestViewModel.swift */; };
 /* End PBXBuildFile section */
@@ -46,6 +51,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		3C5D78D92A4398AC00CE16B7 /* MTRAttributeSubscriptionExampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRAttributeSubscriptionExampleViewModel.swift; sourceTree = "<group>"; };
+		3C5D78DB2A43B2DD00CE16B7 /* MTRAttributeReadExampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRAttributeReadExampleViewModel.swift; sourceTree = "<group>"; };
 		3C75075E284C1DF800D7DB3A /* TvCasting.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TvCasting.entitlements; sourceTree = "<group>"; };
 		3C7507AC285299DF00D7DB3A /* CommissionerDiscoveryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommissionerDiscoveryView.swift; sourceTree = "<group>"; };
 		3C7507AE28529A5F00D7DB3A /* CommissioningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommissioningView.swift; sourceTree = "<group>"; };
@@ -68,6 +75,9 @@
 		3CC0E9002841DD3500EC6A18 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		3CC0E90C2841DECC00EC6A18 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		3CCB872A28690A5D00771BAD /* MatterTvCastingBridge.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MatterTvCastingBridge.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CFC02522A42355E0015EAA0 /* MTRDiscoveryExampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRDiscoveryExampleViewModel.swift; sourceTree = "<group>"; };
+		3CFC02582A4370AD0015EAA0 /* MTRConnectionExampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRConnectionExampleViewModel.swift; sourceTree = "<group>"; };
+		3CFC025A2A4378B40015EAA0 /* MTRCommandInvocationExampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRCommandInvocationExampleViewModel.swift; sourceTree = "<group>"; };
 		EAF14298296D561900E17793 /* CertTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertTestView.swift; sourceTree = "<group>"; };
 		EAF1429A296D57DF00E17793 /* CertTestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CertTestViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -115,9 +125,14 @@
 			children = (
 				3CC0E8FD2841DD3500EC6A18 /* Assets.xcassets */,
 				3C75075E284C1DF800D7DB3A /* TvCasting.entitlements */,
+				3CFC02522A42355E0015EAA0 /* MTRDiscoveryExampleViewModel.swift */,
+				3CFC02582A4370AD0015EAA0 /* MTRConnectionExampleViewModel.swift */,
+				3CFC025A2A4378B40015EAA0 /* MTRCommandInvocationExampleViewModel.swift */,
+				3C5D78D92A4398AC00CE16B7 /* MTRAttributeSubscriptionExampleViewModel.swift */,
+				3C5D78DB2A43B2DD00CE16B7 /* MTRAttributeReadExampleViewModel.swift */,
+				3CC0E8F92841DD3400EC6A18 /* TvCastingApp.swift */,
 				EAF14298296D561900E17793 /* CertTestView.swift */,
 				EAF1429A296D57DF00E17793 /* CertTestViewModel.swift */,
-				3CC0E8F92841DD3400EC6A18 /* TvCastingApp.swift */,
 				3CC0E8FB2841DD3400EC6A18 /* ContentView.swift */,
 				3C81C75228F8C79E001CB9D1 /* StartFromCacheView.swift */,
 				3C81C75428F8C7B6001CB9D1 /* StartFromCacheViewModel.swift */,
@@ -237,16 +252,21 @@
 				3CA1CA7A28E281080023ED44 /* ClusterSelectorView.swift in Sources */,
 				EAF14299296D561900E17793 /* CertTestView.swift in Sources */,
 				3CCB8747286A5D0F00771BAD /* CommissioningView.swift in Sources */,
+				3CFC02592A4370AD0015EAA0 /* MTRConnectionExampleViewModel.swift in Sources */,
+				3CFC02532A42355E0015EAA0 /* MTRDiscoveryExampleViewModel.swift in Sources */,
 				3CCB8748286A5D0F00771BAD /* CommissioningViewModel.swift in Sources */,
 				3CAC955B29BA948700BEA5C3 /* ExampleDAC.swift in Sources */,
 				3CA1CA7E28E284950023ED44 /* MediaPlaybackViewModel.swift in Sources */,
 				3CCB8749286A5D0F00771BAD /* ContentLauncherView.swift in Sources */,
 				3CCB874A286A5D0F00771BAD /* ContentLauncherViewModel.swift in Sources */,
 				EAF1429B296D57DF00E17793 /* CertTestViewModel.swift in Sources */,
+				3C5D78DC2A43B2DD00CE16B7 /* MTRAttributeReadExampleViewModel.swift in Sources */,
 				3C81C75728F8E418001CB9D1 /* ConnectionView.swift in Sources */,
 				3CC0E8FC2841DD3400EC6A18 /* ContentView.swift in Sources */,
+				3CFC025B2A4378B40015EAA0 /* MTRCommandInvocationExampleViewModel.swift in Sources */,
 				3CA1CA7C28E282150023ED44 /* MediaPlaybackView.swift in Sources */,
 				3CC0E8FA2841DD3400EC6A18 /* TvCastingApp.swift in Sources */,
+				3C5D78DA2A4398AC00CE16B7 /* MTRAttributeSubscriptionExampleViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

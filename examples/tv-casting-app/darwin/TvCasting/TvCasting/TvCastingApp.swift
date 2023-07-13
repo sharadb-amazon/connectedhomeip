@@ -25,6 +25,27 @@ struct TvCastingApp: App {
     @State
     var firstAppActivation: Bool = true
 
+    init()
+    {
+        class AppParametersDataSource : NSObject, MTRDataSource
+        {
+            func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
+                return "EXAMPLE_APP_ID".data(using: .utf8)!
+            }
+            
+            func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
+                return MTRCommissioningData(passcode: 20202021, discriminator: 3874, spake2pIterationCount: 1000, spake2pVerifier: nil, spake2pSalt: nil)
+            }
+            
+            func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data {
+                // sign the message and return that
+                return Data()
+            }
+        }
+        MTRCastingApp.initialize(with: AppParametersDataSource())
+        MTRCastingApp.start()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
