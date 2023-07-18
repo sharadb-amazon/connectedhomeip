@@ -27,10 +27,18 @@ class TvCastingAppJNI
 {
 public:
     MatterCallbackHandlerJNI & getCommissioningCompleteHandler() { return mCommissioningCompleteHandler; }
+
+    SessionEstablishmentStartedHandlerJNI & getSessionEstablishmentStartedHandler() { return mSessionEstablishmentStartedHandler; }
+
+    SessionEstablishedHandlerJNI & getSessionEstablishedHandler() { return mSessionEstablishedHandler; }
+
+    FailureHandlerJNI & getSessionEstablishmentStoppedHandler() { return mSessionEstablishmentStoppedHandler; }
+
     OnConnectionSuccessHandlerJNI & getOnConnectionSuccessHandler(bool preCommissioned)
     {
         return preCommissioned ? mPreCommissionedOnConnectionSuccessHandler : mCommissioningOnConnectionSuccessHandler;
     }
+
     FailureHandlerJNI & getOnConnectionFailureHandler(bool preCommissioned)
     {
         return preCommissioned ? mPreCommissionedOnConnectionFailureHandler : mCommissioningOnConnectionFailureHandler;
@@ -100,6 +108,9 @@ private:
     static TvCastingAppJNI sInstance;
 
     MatterCallbackHandlerJNI mCommissioningCompleteHandler;
+    SessionEstablishmentStartedHandlerJNI mSessionEstablishmentStartedHandler;
+    SessionEstablishedHandlerJNI mSessionEstablishedHandler;
+    FailureHandlerJNI mSessionEstablishmentStoppedHandler;
     OnConnectionSuccessHandlerJNI mCommissioningOnConnectionSuccessHandler;
     FailureHandlerJNI mCommissioningOnConnectionFailureHandler;
     OnNewOrUpdatedEndpointHandlerJNI mCommissioningOnNewOrUpdatedEndpointHandler;
