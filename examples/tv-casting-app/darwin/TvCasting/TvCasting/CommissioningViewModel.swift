@@ -52,12 +52,29 @@ class CommissioningViewModel: ObservableObject {
                                     }
                                 }
                             },
-                            commissioningCompleteCallback: { (result: MatterError) -> () in
-                                self.Log.info("Commissioning status: \(result)")
-                                DispatchQueue.main.async {
-                                    self.commisisoningComplete = (result.code == 0)
+                            commissioningCallbackHandlers: CommissioningCallbackHandlers(
+                                commissioningWindowRequestedHandler: { (result: MatterError) -> () in
+                                    DispatchQueue.main.async {
+                                        self.Log.info("Commissioning Window opening status: \(result)")
+                                        self.commisisoningWindowOpened = (result.code == 0)
+                                    }
+                                },
+                                commissioningCompleteCallback: { (result: MatterError) -> () in
+                                    self.Log.info("Commissioning status: \(result)")
+                                    DispatchQueue.main.async {
+                                        self.commisisoningComplete = (result.code == 0)
+                                    }
+                                },
+                                sessionEstablishmentStartedCallback: {
+                                    self.Log.info("PASE session establishment started")
+                                },
+                                sessionEstablishedCallback: {
+                                    self.Log.info("PASE session established")
+                                },
+                                sessionEstablishmentStoppedCallback: { (err: MatterError) -> () in
+                                    self.Log.info("PASE session establishment stopped with : \(err)")
                                 }
-                            },
+                            ),
                             onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
                                 DispatchQueue.main.async {
                                     self.connectionSuccess = true
@@ -83,7 +100,7 @@ class CommissioningViewModel: ObservableObject {
         }
     }
     
-    private func sendUserDirectedCommissioningRequest(selectedCommissioner: DiscoveredNodeData?) {        
+    private func sendUserDirectedCommissioningRequest(selectedCommissioner: DiscoveredNodeData?) {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.sendUserDirectedCommissioningRequest(selectedCommissioner!, clientQueue: DispatchQueue.main, udcRequestSentHandler: { (result: MatterError) -> () in

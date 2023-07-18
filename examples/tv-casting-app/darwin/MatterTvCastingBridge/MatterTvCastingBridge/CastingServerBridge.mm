@@ -601,7 +601,7 @@
 
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
     commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
-        commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
+        commissioningCallbackHandlers:(CommissioningCallbackHandlers * _Nullable)commissioningCallbackHandlers
           onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
           onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
        onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
@@ -609,6 +609,68 @@
     [self
         dispatchOnMatterSDKQueue:@"openBasicCommissioningWindow(...)"
                            block:^{
+                               CommissioningCallbacks commissioningCallbacks;
+                               if (commissioningCallbackHandlers != nil) {
+                                   if (commissioningCallbackHandlers.commissioningCompleteCallback != nil) {
+                                       commissioningCallbacks.commissioningComplete = [clientQueue, commissioningCallbackHandlers](
+                                                                                          CHIP_ERROR err) {
+                                           [[CastingServerBridge getSharedInstance]
+                                               dispatchOnClientQueue:clientQueue
+                                                         description:
+                                                             @"openBasicCommissioningWindow(...) commissioningCompleteCallback"
+                                                               block:^{
+                                                                   commissioningCallbackHandlers.commissioningCompleteCallback(
+                                                                       [[MatterError alloc]
+                                                                           initWithCode:err.AsInteger()
+                                                                                message:[NSString
+                                                                                            stringWithUTF8String:err.AsString()]]);
+                                                               }];
+                                       };
+                                   }
+
+                                   if (commissioningCallbackHandlers.sessionEstablishmentStartedCallback != nil) {
+                                       commissioningCallbacks.sessionEstablishmentStarted
+                                           = [clientQueue, commissioningCallbackHandlers]() {
+                                                 [[CastingServerBridge getSharedInstance]
+                                                     dispatchOnClientQueue:clientQueue
+                                                               description:@"openBasicCommissioningWindow(...) "
+                                                                           @"sessionEstablishmentStartedCallback"
+                                                                     block:^{
+                                                                         commissioningCallbackHandlers
+                                                                             .sessionEstablishmentStartedCallback();
+                                                                     }];
+                                             };
+                                   }
+
+                                   if (commissioningCallbackHandlers.sessionEstablishedCallback != nil) {
+                                       commissioningCallbacks.sessionEstablished = [clientQueue, commissioningCallbackHandlers]() {
+                                           [[CastingServerBridge getSharedInstance]
+                                               dispatchOnClientQueue:clientQueue
+                                                         description:@"openBasicCommissioningWindow(...) sessionEstablishedCallback"
+                                                               block:^{
+                                                                   commissioningCallbackHandlers.sessionEstablishedCallback();
+                                                               }];
+                                       };
+                                   }
+
+                                   if (commissioningCallbackHandlers.sessionEstablishmentStoppedCallback != nil) {
+                                       commissioningCallbacks.sessionEstablishmentStopped = [clientQueue,
+                                                                                                commissioningCallbackHandlers](
+                                                                                                CHIP_ERROR err) {
+                                           [[CastingServerBridge getSharedInstance]
+                                               dispatchOnClientQueue:clientQueue
+                                                         description:@"openBasicCommissioningWindow(...) "
+                                                                     @"sessionEstablishmentStoppedCallback"
+                                                               block:^{
+                                                                   commissioningCallbackHandlers
+                                                                       .sessionEstablishmentStoppedCallback([[MatterError alloc]
+                                                                           initWithCode:err.AsInteger()
+                                                                                message:[NSString
+                                                                                            stringWithUTF8String:err.AsString()]]);
+                                                               }];
+                                       };
+                                   }
+                               }
                                CHIP_ERROR err = CastingServer::GetInstance()->OpenBasicCommissioningWindow(
                                    [clientQueue, commissioningWindowOpenedCallback](CHIP_ERROR err) {
                                        [[CastingServerBridge getSharedInstance]
@@ -621,16 +683,7 @@
                                                                         message:[NSString stringWithUTF8String:err.AsString()]]);
                                                            }];
                                    },
-                                   [clientQueue, commissioningCompleteCallback](CHIP_ERROR err) {
-                                       [[CastingServerBridge getSharedInstance]
-                                           dispatchOnClientQueue:clientQueue
-                                                     description:@"openBasicCommissioningWindow(...) commissioningCompleteCallback"
-                                                           block:^{
-                                                               commissioningCompleteCallback([[MatterError alloc]
-                                                                   initWithCode:err.AsInteger()
-                                                                        message:[NSString stringWithUTF8String:err.AsString()]]);
-                                                           }];
-                                   },
+                                   commissioningCallbacks,
                                    [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
                                        VideoPlayer * videoPlayer =
                                            [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
@@ -661,6 +714,16 @@
                                                                onNewOrUpdatedEndpointCallback(contentApp);
                                                            }];
                                    });
+
+                               if (commissioningCallbackHandlers != nil
+                                   && commissioningCallbackHandlers.commissioningWindowRequestedHandler != nil) {
+                                   dispatch_async(clientQueue, ^{
+                                       ChipLogProgress(AppServer, "[async] Dispatching commissioningWindowRequestedHandler");
+                                       commissioningCallbackHandlers.commissioningWindowRequestedHandler(
+                                           [[MatterError alloc] initWithCode:err.AsInteger()
+                                                                     message:[NSString stringWithUTF8String:err.AsString()]]);
+                                   });
+                               }
                            }];
 }
 
