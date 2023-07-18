@@ -58,17 +58,29 @@ class CommissioningViewModel: ObservableObject {
         if let castingServerBridge = CastingServerBridge.getSharedInstance()
         {
             castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
-                commissioningWindowRequestedHandler: { (result: Bool) -> () in
-                    DispatchQueue.main.async {
-                        self.commisisoningWindowOpened = result
+                commissioningCallbackHandlers: CommissioningCallbackHandlers(
+                    commissioningWindowRequestedHandler: { (result: Bool) -> () in
+                        DispatchQueue.main.async {
+                            self.Log.info("Commissioning Window opening status: \(result)")
+                            self.commisisoningWindowOpened = result
+                        }
+                    },
+                    commissioningCompleteCallback: { (result: Bool) -> () in
+                        self.Log.info("Commissioning status: \(result)")
+                        DispatchQueue.main.async {
+                            self.commisisoningComplete = result
+                        }
+                    },
+                    sessionEstablishmentStartedCallback: {
+                        self.Log.info("PASE session establishment started")
+                    },
+                    sessionEstablishedCallback: {
+                        self.Log.info("PASE session established")
+                    },
+                    sessionEstablishmentStoppedCallback: { (err: MatterError) -> () in
+                        self.Log.info("PASE session establishment stopped with : \(err)")
                     }
-                },
-                commissioningCompleteCallback: { (result: Bool) -> () in
-                    self.Log.info("Commissioning status: \(result)")
-                    DispatchQueue.main.async {
-                        self.commisisoningComplete = result
-                    }
-                },
+                ),
                 onConnectionSuccessCallback: { (videoPlayer: VideoPlayer) -> () in
                     DispatchQueue.main.async {
                         self.connectionSuccess = true
