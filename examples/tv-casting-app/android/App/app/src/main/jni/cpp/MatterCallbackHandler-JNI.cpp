@@ -172,6 +172,34 @@ jobject ConvertToIntegerJObject(uint32_t responseData)
 }
 
 // COMMISSIONING AND CONNECTION
+jobject SessionEstablishmentStartedHandlerJNI::ConvertToJObject(void * voidObject)
+{
+    ChipLogProgress(AppServer, "SessionEstablishmentStartedHandlerJNI::ConvertToJObject called");
+    /*jobject videoPlayer = nullptr;
+    CHIP_ERROR err      = convertTargetVideoPlayerInfoToJVideoPlayer(targetVideoPlayerInfo, videoPlayer);
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer, "SessionEstablishmentStartedHandlerJNI::ConvertToJObject failed with %" CHIP_ERROR_FORMAT,
+    err.Format());
+    }
+    return videoPlayer;*/
+    return nullptr;
+}
+
+jobject SessionEstablishedHandlerJNI::ConvertToJObject(void * voidObject)
+{
+    ChipLogProgress(AppServer, "SessionEstablishedHandlerJNI::ConvertToJObject called");
+    /*jobject videoPlayer = nullptr;
+    CHIP_ERROR err      = convertTargetVideoPlayerInfoToJVideoPlayer(targetVideoPlayerInfo, videoPlayer);
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer, "SessionEstablishmentStartedHandlerJNI::ConvertToJObject failed with %" CHIP_ERROR_FORMAT,
+    err.Format());
+    }
+    return videoPlayer;*/
+    return nullptr;
+}
+
 jobject OnConnectionSuccessHandlerJNI::ConvertToJObject(TargetVideoPlayerInfo * targetVideoPlayerInfo)
 {
     ChipLogProgress(AppServer, "OnConnectionSuccessHandlerJNI::ConvertToJObject called");

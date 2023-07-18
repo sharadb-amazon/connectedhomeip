@@ -102,6 +102,18 @@ template <typename T>
 SuccessHandlerJNI<T>::~SuccessHandlerJNI(){};
 
 // COMMISSIONING AND CONNECTION
+class SessionEstablishmentStartedHandlerJNI : public SuccessHandlerJNI<void *>
+{
+public:
+    jobject ConvertToJObject(void * responseData);
+};
+
+class SessionEstablishedHandlerJNI : public SuccessHandlerJNI<void *>
+{
+public:
+    jobject ConvertToJObject(void * responseData);
+};
+
 class OnConnectionSuccessHandlerJNI : public SuccessHandlerJNI<TargetVideoPlayerInfo *>
 {
 public:
