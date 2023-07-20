@@ -42,21 +42,22 @@ class CommissioningViewModel: ObservableObject {
                     if(error.code == 0)
                     {
                         castingServerBridge.openBasicCommissioningWindow(DispatchQueue.main,
-                            commissioningWindowOpenedCallback: { (result: MatterError) -> () in
-                                DispatchQueue.main.async {
-                                    self.commisisoningWindowOpened = (result.code == 0)
-                                    // Send User directed commissioning request if a commissioner with a known IP addr was selected
-                                    if(selectedCommissioner != nil && selectedCommissioner!.numIPs > 0)
-                                    {
-                                        self.sendUserDirectedCommissioningRequest(selectedCommissioner: selectedCommissioner)
-                                    }
-                                }
-                            },
                             commissioningCallbackHandlers: CommissioningCallbackHandlers(
                                 commissioningWindowRequestedHandler: { (result: MatterError) -> () in
                                     DispatchQueue.main.async {
-                                        self.Log.info("Commissioning Window opening status: \(result)")
+                                        self.Log.info("Commissioning Window Requested status: \(result)")
                                         self.commisisoningWindowOpened = (result.code == 0)
+                                    }
+                                },
+                                commissioningWindowOpenedCallback: { (result: MatterError) -> () in
+                                    self.Log.info("Commissioning Window Opened status: \(result)")
+                                    DispatchQueue.main.async {
+                                        self.commisisoningWindowOpened = (result.code == 0)
+                                        // Send User directed commissioning request if a commissioner with a known IP addr was selected
+                                        if(selectedCommissioner != nil && selectedCommissioner!.numIPs > 0)
+                                        {
+                                            self.sendUserDirectedCommissioningRequest(selectedCommissioner: selectedCommissioner)
+                                        }
                                     }
                                 },
                                 commissioningCompleteCallback: { (result: MatterError) -> () in

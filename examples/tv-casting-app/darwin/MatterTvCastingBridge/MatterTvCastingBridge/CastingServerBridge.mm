@@ -600,17 +600,33 @@
 }
 
 - (void)openBasicCommissioningWindow:(dispatch_queue_t _Nonnull)clientQueue
-    commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
-        commissioningCallbackHandlers:(CommissioningCallbackHandlers * _Nullable)commissioningCallbackHandlers
-          onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
-          onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
-       onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
+       commissioningCallbackHandlers:(CommissioningCallbackHandlers * _Nullable)commissioningCallbackHandlers
+         onConnectionSuccessCallback:(void (^_Nonnull)(VideoPlayer * _Nonnull))onConnectionSuccessCallback
+         onConnectionFailureCallback:(void (^_Nonnull)(MatterError * _Nonnull))onConnectionFailureCallback
+      onNewOrUpdatedEndpointCallback:(void (^_Nonnull)(ContentApp * _Nonnull))onNewOrUpdatedEndpointCallback
 {
     [self
         dispatchOnMatterSDKQueue:@"openBasicCommissioningWindow(...)"
                            block:^{
                                CommissioningCallbacks commissioningCallbacks;
                                if (commissioningCallbackHandlers != nil) {
+                                   if (commissioningCallbackHandlers.commissioningWindowOpenedCallback != nil) {
+                                       commissioningCallbacks.commissioningWindowOpenedCallback
+                                           = [clientQueue, commissioningCallbackHandlers](CHIP_ERROR err) {
+                                                 [[CastingServerBridge getSharedInstance]
+                                                     dispatchOnClientQueue:clientQueue
+                                                               description:@"openBasicCommissioningWindow(...) "
+                                                                           @"commissioningWindowOpenedCallback"
+                                                                     block:^{
+                                                                         commissioningCallbackHandlers
+                                                                             .commissioningWindowOpenedCallback([[MatterError alloc]
+                                                                                 initWithCode:err.AsInteger()
+                                                                                      message:[NSString stringWithUTF8String:
+                                                                                                            err.AsString()]]);
+                                                                     }];
+                                             };
+                                   }
+
                                    if (commissioningCallbackHandlers.commissioningCompleteCallback != nil) {
                                        commissioningCallbacks.commissioningComplete = [clientQueue, commissioningCallbackHandlers](
                                                                                           CHIP_ERROR err) {
@@ -672,17 +688,6 @@
                                    }
                                }
                                CHIP_ERROR err = CastingServer::GetInstance()->OpenBasicCommissioningWindow(
-                                   [clientQueue, commissioningWindowOpenedCallback](CHIP_ERROR err) {
-                                       [[CastingServerBridge getSharedInstance]
-                                           dispatchOnClientQueue:clientQueue
-                                                     description:
-                                                         @"openBasicCommissioningWindow(...) commissioningWindowRequestedCallback"
-                                                           block:^{
-                                                               commissioningWindowOpenedCallback([[MatterError alloc]
-                                                                   initWithCode:err.AsInteger()
-                                                                        message:[NSString stringWithUTF8String:err.AsString()]]);
-                                                           }];
-                                   },
                                    commissioningCallbacks,
                                    [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
                                        VideoPlayer * videoPlayer =

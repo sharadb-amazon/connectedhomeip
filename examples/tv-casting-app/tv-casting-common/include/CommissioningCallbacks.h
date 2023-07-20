@@ -20,8 +20,9 @@
 
 struct CommissioningCallbacks
 {
-    std::function<void()> sessionEstablishmentStarted           = {};
-    std::function<void()> sessionEstablished                    = {};
-    std::function<void(CHIP_ERROR)> sessionEstablishmentStopped = {};
-    std::function<void(CHIP_ERROR)> commissioningComplete       = {};
+    std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback = {};
+    std::function<void()> sessionEstablishmentStarted                 = {};
+    std::function<void()> sessionEstablished                          = {};
+    std::function<void(CHIP_ERROR)> sessionEstablishmentStopped       = {};
+    std::function<void(CHIP_ERROR)> commissioningComplete             = {};
 };

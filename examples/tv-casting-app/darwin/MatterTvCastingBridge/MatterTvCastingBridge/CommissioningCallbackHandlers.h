@@ -25,12 +25,15 @@
 
 - (CommissioningCallbackHandlers * _Nonnull)
     initWithCommissioningWindowRequestedHandler:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowRequestedHandler
+              commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
                   commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             sessionEstablishmentStartedCallback:(void (^_Nullable)(void))sessionEstablishmentStartedCallback
                      sessionEstablishedCallback:(void (^_Nullable)(void))sessionEstablishedCallback
             sessionEstablishmentStoppedCallback:(void (^_Nullable)(MatterError * _Nonnull))sessionEstablishmentStoppedCallback;
 
 @property void (^_Nullable commissioningWindowRequestedHandler)(MatterError * _Nonnull);
+
+@property void (^_Nullable commissioningWindowOpenedCallback)(MatterError * _Nonnull);
 
 @property void (^_Nullable commissioningCompleteCallback)(MatterError * _Nonnull);
 

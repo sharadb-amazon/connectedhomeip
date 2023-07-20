@@ -181,7 +181,6 @@ public class TvCastingApp {
 
   public native boolean openBasicCommissioningWindow(
       int duration,
-      Object commissioningWindowOpenedHandler,
       CommissioningCallbacks commissioningCallbacks,
       SuccessCallback<VideoPlayer> onConnectionSuccess,
       FailureCallback onConnectionFailure,

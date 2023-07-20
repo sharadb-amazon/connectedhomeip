@@ -121,6 +121,36 @@ public class ConnectionFragment extends Fragment {
       FailureCallback onConnectionFailure,
       SuccessCallback<ContentApp> onNewOrUpdatedEndpoints) {
     Log.d(TAG, "Running commissioning");
+
+    Object commissioningWindowOpened =
+        new MatterCallbackHandler() {
+          @Override
+          public void handle(MatterError error) {
+            Log.d(TAG, "handle() called on CommissioningWindowOpened event with " + error);
+            if (error.isNoError()) {
+              if (selectedCommissioner != null && selectedCommissioner.getNumIPs() > 0) {
+                String ipAddress = selectedCommissioner.getIpAddresses().get(0).getHostAddress();
+                Log.d(
+                    TAG,
+                    "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
+                        + ipAddress
+                        + " port: "
+                        + selectedCommissioner.getPort());
+
+                sendUdcSuccess = tvCastingApp.sendCommissioningRequest(selectedCommissioner);
+                updateUiOnConnectionSuccess();
+              }
+            } else {
+              getActivity()
+                  .runOnUiThread(
+                      () -> {
+                        commissioningWindowStatusView.setText(
+                            "Failed to open commissioning window");
+                      });
+            }
+          }
+        };
+
     Object commissioningComplete =
         new MatterCallbackHandler() {
           @Override
@@ -154,6 +184,7 @@ public class ConnectionFragment extends Fragment {
         };
 
     CommissioningCallbacks commissioningCallbacks = new CommissioningCallbacks();
+    commissioningCallbacks.setCommissioningWindowOpened(commissioningWindowOpened);
     commissioningCallbacks.setCommissioningComplete(commissioningComplete);
     commissioningCallbacks.setSessionEstablishmentStarted(sessionEstablishmentStartedCallback);
     commissioningCallbacks.setSessionEstablished(sessionEstablishedCallback);
@@ -162,34 +193,6 @@ public class ConnectionFragment extends Fragment {
     this.openCommissioningWindowSuccess =
         tvCastingApp.openBasicCommissioningWindow(
             GlobalCastingConstants.CommissioningWindowDurationSecs,
-            new MatterCallbackHandler() {
-              @Override
-              public void handle(MatterError error) {
-                Log.d(TAG, "handle() called on CommissioningWindowOpened event with " + error);
-                if (error.isNoError()) {
-                  if (selectedCommissioner != null && selectedCommissioner.getNumIPs() > 0) {
-                    String ipAddress =
-                        selectedCommissioner.getIpAddresses().get(0).getHostAddress();
-                    Log.d(
-                        TAG,
-                        "ConnectionFragment calling tvCastingApp.sendUserDirectedCommissioningRequest with IP: "
-                            + ipAddress
-                            + " port: "
-                            + selectedCommissioner.getPort());
-
-                    sendUdcSuccess = tvCastingApp.sendCommissioningRequest(selectedCommissioner);
-                    updateUiOnConnectionSuccess();
-                  }
-                } else {
-                  getActivity()
-                      .runOnUiThread(
-                          () -> {
-                            commissioningWindowStatusView.setText(
-                                "Failed to open commissioning window");
-                          });
-                }
-              }
-            },
             commissioningCallbacks,
             onConnectionSuccess,
             onConnectionFailure,

@@ -147,14 +147,12 @@ CHIP_ERROR CastingServer::StopDiscoverCommissioners()
     return mCommissionableNodeController.StopDiscoverCommissioners();
 }
 
-CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_ERROR)> commissioningWindowOpenedCallback,
-                                                       CommissioningCallbacks commissioningCallbacks,
+CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(CommissioningCallbacks commissioningCallbacks,
                                                        std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                                        std::function<void(CHIP_ERROR)> onConnectionFailure,
                                                        std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint)
 {
     VerifyOrReturnError(mInited, CHIP_ERROR_INCORRECT_STATE);
-    mCommissioningWindowOpenedCallback = commissioningWindowOpenedCallback;
     mCommissioningCallbacks            = commissioningCallbacks;
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
@@ -171,7 +169,10 @@ CHIP_ERROR CastingServer::OpenBasicCommissioningWindow(std::function<void(CHIP_E
     {
         CHIP_ERROR err =
             Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
-        mCommissioningWindowOpenedCallback(err);
+        if (mCommissioningCallbacks.commissioningWindowOpenedCallback)
+        {
+            mCommissioningCallbacks.commissioningWindowOpenedCallback(err);
+        }
         return err;
     }
 }
@@ -181,7 +182,10 @@ void CastingServer::OpenBasicCommissioningWindowTask(System::Layer * aSystemLaye
     ChipLogProgress(AppServer, "CastingServer::OpenBasicCommissioningWindowTask called");
     CHIP_ERROR err =
         Server::GetInstance().GetCommissioningWindowManager().OpenBasicCommissioningWindow(kCommissioningWindowTimeout);
-    CastingServer::GetInstance()->mCommissioningWindowOpenedCallback(err);
+    if (CastingServer::GetInstance()->mCommissioningCallbacks.commissioningWindowOpenedCallback)
+    {
+        CastingServer::GetInstance()->mCommissioningCallbacks.commissioningWindowOpenedCallback(err);
+    }
 }
 
 void CastingServer::OnCommissioningSessionStarted()

@@ -22,6 +22,7 @@ public class CommissioningCallbacks {
   private SuccessCallback<Void> sessionEstablished;
   private FailureCallback sessionEstablishmentStopped;
   private Object commissioningComplete;
+  private Object commissioningWindowOpened;
 
   public SuccessCallback<Void> getSessionEstablishmentStarted() {
     return sessionEstablishmentStarted;
@@ -33,6 +34,14 @@ public class CommissioningCallbacks {
 
   public SuccessCallback<Void> getSessionEstablished() {
     return sessionEstablished;
+  }
+
+  public Object getCommissioningWindowOpened() {
+    return commissioningWindowOpened;
+  }
+
+  public void setCommissioningWindowOpened(Object commissioningWindowOpened) {
+    this.commissioningWindowOpened = commissioningWindowOpened;
   }
 
   public void setSessionEstablished(SuccessCallback<Void> sessionEstablished) {

@@ -114,8 +114,8 @@ JNI_METHOD(void, setDACProvider)(JNIEnv *, jobject, jobject provider)
 }
 
 JNI_METHOD(jboolean, openBasicCommissioningWindow)
-(JNIEnv * env, jobject, jint duration, jobject jCommissioningWindowOpenedHandler, jobject jCommissioningCallbacks,
- jobject jOnConnectionSuccessHandler, jobject jOnConnectionFailureHandler, jobject jOnNewOrUpdatedEndpointHandler)
+(JNIEnv * env, jobject, jint duration, jobject jCommissioningCallbacks, jobject jOnConnectionSuccessHandler,
+ jobject jOnConnectionFailureHandler, jobject jOnNewOrUpdatedEndpointHandler)
 {
     chip::DeviceLayer::StackLock lock;
 
@@ -123,12 +123,21 @@ JNI_METHOD(jboolean, openBasicCommissioningWindow)
 
     CHIP_ERROR err = CHIP_NO_ERROR;
 
-    err = TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().SetUp(env, jCommissioningWindowOpenedHandler);
-    VerifyOrReturnValue(err == CHIP_NO_ERROR, false);
-
     CommissioningCallbacks commissioningCallbacks;
     jclass jCommissioningCallbacksClass;
     chip::JniReferences::GetInstance().GetClassRef(env, "com/chip/casting/CommissioningCallbacks", jCommissioningCallbacksClass);
+
+    jfieldID jCommissioningWindowOpenedField =
+        env->GetFieldID(jCommissioningCallbacksClass, "commissioningWindowOpened", "Ljava/lang/Object;");
+    jobject jCommissioningWindowOpened = env->GetObjectField(jCommissioningCallbacks, jCommissioningWindowOpenedField);
+    if (jCommissioningWindowOpened != nullptr)
+    {
+        err = TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().SetUp(env, jCommissioningWindowOpened);
+        VerifyOrReturnValue(err == CHIP_NO_ERROR, false);
+        commissioningCallbacks.commissioningWindowOpenedCallback = [](CHIP_ERROR err) {
+            TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().Handle(err);
+        };
+    }
 
     jfieldID jCommissioningCompleteField =
         env->GetFieldID(jCommissioningCallbacksClass, "commissioningComplete", "Ljava/lang/Object;");
@@ -189,7 +198,7 @@ JNI_METHOD(jboolean, openBasicCommissioningWindow)
                  ChipLogError(AppServer, "OnNewOrUpdatedEndpointHandler.SetUp failed %" CHIP_ERROR_FORMAT, err.Format()));
 
     err = CastingServer::GetInstance()->OpenBasicCommissioningWindow(
-        [](CHIP_ERROR err) { TvCastingAppJNIMgr().getCommissioningWindowOpenedHandler().Handle(err); }, commissioningCallbacks,
+        commissioningCallbacks,
         [](TargetVideoPlayerInfo * videoPlayer) { TvCastingAppJNIMgr().getOnConnectionSuccessHandler(false).Handle(videoPlayer); },
         [](CHIP_ERROR err) { TvCastingAppJNIMgr().getOnConnectionFailureHandler(false).Handle(err); },
         [](TargetEndpointInfo * endpoint) { TvCastingAppJNIMgr().getOnNewOrUpdatedEndpointHandler(false).Handle(endpoint); });

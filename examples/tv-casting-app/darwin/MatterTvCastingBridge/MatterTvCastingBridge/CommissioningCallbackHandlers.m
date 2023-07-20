@@ -21,6 +21,7 @@
 
 - (CommissioningCallbackHandlers * _Nonnull)
     initWithCommissioningWindowRequestedHandler:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowRequestedHandler
+              commissioningWindowOpenedCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningWindowOpenedCallback
                   commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             sessionEstablishmentStartedCallback:(void (^_Nullable)(void))sessionEstablishmentStartedCallback
                      sessionEstablishedCallback:(void (^_Nullable)(void))sessionEstablishedCallback
@@ -29,6 +30,7 @@
     self = [super init];
     if (self) {
         _commissioningWindowRequestedHandler = commissioningWindowRequestedHandler;
+        _commissioningWindowOpenedCallback = commissioningWindowOpenedCallback;
         _commissioningCompleteCallback = commissioningCompleteCallback;
         _sessionEstablishmentStartedCallback = sessionEstablishmentStartedCallback;
         _sessionEstablishedCallback = sessionEstablishedCallback;
