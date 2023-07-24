@@ -669,6 +669,24 @@
                                        };
                                    }
 
+                                   if (commissioningCallbackHandlers.sessionEstablishmentErrorCallback != nil) {
+                                       commissioningCallbacks.sessionEstablishmentError = [clientQueue,
+                                                                                              commissioningCallbackHandlers](
+                                                                                              CHIP_ERROR err) {
+                                           [[CastingServerBridge getSharedInstance]
+                                               dispatchOnClientQueue:clientQueue
+                                                         description:@"openBasicCommissioningWindow(...) "
+                                                                     @"sessionEstablishmentErrorCallback"
+                                                               block:^{
+                                                                   commissioningCallbackHandlers.sessionEstablishmentErrorCallback(
+                                                                       [[MatterError alloc]
+                                                                           initWithCode:err.AsInteger()
+                                                                                message:[NSString
+                                                                                            stringWithUTF8String:err.AsString()]]);
+                                                               }];
+                                       };
+                                   }
+
                                    if (commissioningCallbackHandlers.sessionEstablishmentStoppedCallback != nil) {
                                        commissioningCallbacks.sessionEstablishmentStopped = [clientQueue,
                                                                                                 commissioningCallbackHandlers](

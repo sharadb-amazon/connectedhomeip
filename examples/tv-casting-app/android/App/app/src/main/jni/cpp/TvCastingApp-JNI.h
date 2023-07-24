@@ -33,6 +33,8 @@ public:
 
     SessionEstablishedHandlerJNI & getSessionEstablishedHandler() { return mSessionEstablishedHandler; }
 
+    FailureHandlerJNI & getSessionEstablishmentErrorHandler() { return mSessionEstablishmentErrorHandler; }
+
     FailureHandlerJNI & getSessionEstablishmentStoppedHandler() { return mSessionEstablishmentStoppedHandler; }
 
     OnConnectionSuccessHandlerJNI & getOnConnectionSuccessHandler(bool preCommissioned)
@@ -109,6 +111,7 @@ private:
     MatterCallbackHandlerJNI mCommissioningCompleteHandler;
     SessionEstablishmentStartedHandlerJNI mSessionEstablishmentStartedHandler;
     SessionEstablishedHandlerJNI mSessionEstablishedHandler;
+    FailureHandlerJNI mSessionEstablishmentErrorHandler;
     FailureHandlerJNI mSessionEstablishmentStoppedHandler;
     OnConnectionSuccessHandlerJNI mCommissioningOnConnectionSuccessHandler;
     FailureHandlerJNI mCommissioningOnConnectionFailureHandler;

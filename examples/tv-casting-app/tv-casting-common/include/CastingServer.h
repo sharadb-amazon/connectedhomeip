@@ -433,6 +433,7 @@ private:
 
     void OnCommissioningSessionEstablishmentStarted() override;
     void OnCommissioningSessionStarted() override;
+    void OnCommissioningSessionEstablishmentError(CHIP_ERROR err) override;
     void OnCommissioningSessionStopped(CHIP_ERROR err) override;
     void OnCommissioningWindowOpened() override {}
     void OnCommissioningWindowClosed() override {}

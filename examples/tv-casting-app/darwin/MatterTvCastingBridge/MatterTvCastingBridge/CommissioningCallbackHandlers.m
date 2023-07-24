@@ -25,6 +25,7 @@
                   commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             sessionEstablishmentStartedCallback:(void (^_Nullable)(void))sessionEstablishmentStartedCallback
                      sessionEstablishedCallback:(void (^_Nullable)(void))sessionEstablishedCallback
+              sessionEstablishmentErrorCallback:(void (^_Nullable)(MatterError * _Nonnull))sessionEstablishmentErrorCallback
             sessionEstablishmentStoppedCallback:(void (^_Nullable)(MatterError * _Nonnull))sessionEstablishmentStoppedCallback
 {
     self = [super init];
@@ -34,6 +35,7 @@
         _commissioningCompleteCallback = commissioningCompleteCallback;
         _sessionEstablishmentStartedCallback = sessionEstablishmentStartedCallback;
         _sessionEstablishedCallback = sessionEstablishedCallback;
+        _sessionEstablishmentErrorCallback = sessionEstablishmentErrorCallback;
         _sessionEstablishmentStoppedCallback = sessionEstablishmentStoppedCallback;
     }
     return self;

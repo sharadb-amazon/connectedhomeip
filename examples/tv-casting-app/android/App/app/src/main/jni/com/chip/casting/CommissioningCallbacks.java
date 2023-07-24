@@ -20,6 +20,7 @@ package com.chip.casting;
 public class CommissioningCallbacks {
   private SuccessCallback<Void> sessionEstablishmentStarted;
   private SuccessCallback<Void> sessionEstablished;
+  private FailureCallback sessionEstablishmentError;
   private FailureCallback sessionEstablishmentStopped;
   private Object commissioningComplete;
   private Object commissioningWindowOpened;
@@ -46,6 +47,14 @@ public class CommissioningCallbacks {
 
   public void setSessionEstablished(SuccessCallback<Void> sessionEstablished) {
     this.sessionEstablished = sessionEstablished;
+  }
+
+  public FailureCallback getSessionEstablishmentError() {
+    return sessionEstablishmentError;
+  }
+
+  public void setSessionEstablishmentError(FailureCallback sessionEstablishmentStopped) {
+    this.sessionEstablishmentError = sessionEstablishmentError;
   }
 
   public FailureCallback getSessionEstablishmentStopped() {

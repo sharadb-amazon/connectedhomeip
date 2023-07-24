@@ -198,6 +198,15 @@ void CastingServer::OnCommissioningSessionStarted()
     }
 }
 
+void CastingServer::OnCommissioningSessionEstablishmentError(CHIP_ERROR err)
+{
+    ChipLogProgress(AppServer, "CastingServer::OnCommissioningSessionEstablishmentError");
+    if (mCommissioningCallbacks.sessionEstablishmentError)
+    {
+        mCommissioningCallbacks.sessionEstablishmentError(err);
+    }
+}
+
 void CastingServer::OnCommissioningSessionStopped(CHIP_ERROR err)
 {
     ChipLogProgress(AppServer, "CastingServer::OnCommissioningSessionStopped");

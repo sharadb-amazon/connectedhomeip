@@ -175,6 +175,14 @@ public class ConnectionFragment extends Fragment {
           }
         };
 
+    FailureCallback sessionEstablishmentErrorCallback =
+        new FailureCallback() {
+          @Override
+          public void handle(MatterError error) {
+            Log.d(TAG, "handle() called on SessionEstablishmentError event with " + error);
+          }
+        };
+
     FailureCallback sessionEstablishmentStoppedCallback =
         new FailureCallback() {
           @Override
@@ -188,6 +196,7 @@ public class ConnectionFragment extends Fragment {
     commissioningCallbacks.setCommissioningComplete(commissioningComplete);
     commissioningCallbacks.setSessionEstablishmentStarted(sessionEstablishmentStartedCallback);
     commissioningCallbacks.setSessionEstablished(sessionEstablishedCallback);
+    commissioningCallbacks.setSessionEstablishmentError(sessionEstablishmentErrorCallback);
     commissioningCallbacks.setSessionEstablishmentStopped(sessionEstablishmentStoppedCallback);
 
     this.openCommissioningWindowSuccess =

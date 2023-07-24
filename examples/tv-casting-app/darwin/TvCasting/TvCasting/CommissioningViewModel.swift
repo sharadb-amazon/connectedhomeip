@@ -72,6 +72,9 @@ class CommissioningViewModel: ObservableObject {
                                 sessionEstablishedCallback: {
                                     self.Log.info("PASE session established")
                                 },
+                                sessionEstablishmentErrorCallback: { (err: MatterError) -> () in
+                                    self.Log.info("PASE session establishment error : \(err)")
+                                },
                                 sessionEstablishmentStoppedCallback: { (err: MatterError) -> () in
                                     self.Log.info("PASE session establishment stopped with : \(err)")
                                 }

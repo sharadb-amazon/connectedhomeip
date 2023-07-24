@@ -29,6 +29,7 @@
                   commissioningCompleteCallback:(void (^_Nonnull)(MatterError * _Nonnull))commissioningCompleteCallback
             sessionEstablishmentStartedCallback:(void (^_Nullable)(void))sessionEstablishmentStartedCallback
                      sessionEstablishedCallback:(void (^_Nullable)(void))sessionEstablishedCallback
+              sessionEstablishmentErrorCallback:(void (^_Nullable)(MatterError * _Nonnull))sessionEstablishmentErrorCallback
             sessionEstablishmentStoppedCallback:(void (^_Nullable)(MatterError * _Nonnull))sessionEstablishmentStoppedCallback;
 
 @property void (^_Nullable commissioningWindowRequestedHandler)(MatterError * _Nonnull);
@@ -40,6 +41,8 @@
 @property void (^_Nullable sessionEstablishmentStartedCallback)(void);
 
 @property void (^_Nullable sessionEstablishedCallback)(void);
+
+@property void (^_Nullable sessionEstablishmentErrorCallback)(MatterError * _Nonnull);
 
 @property void (^_Nullable sessionEstablishmentStoppedCallback)(MatterError * _Nonnull);
 

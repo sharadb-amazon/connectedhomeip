@@ -173,6 +173,18 @@ JNI_METHOD(jboolean, openBasicCommissioningWindow)
         commissioningCallbacks.sessionEstablished = []() { TvCastingAppJNIMgr().getSessionEstablishedHandler().Handle(nullptr); };
     }
 
+    jfieldID jSessionEstablishmentErrorField =
+        env->GetFieldID(jCommissioningCallbacksClass, "sessionEstablishmentError", "Lcom/chip/casting/FailureCallback;");
+    jobject jSessionEstablishmentError = env->GetObjectField(jCommissioningCallbacks, jSessionEstablishmentErrorField);
+    if (jSessionEstablishmentError != nullptr)
+    {
+        err = TvCastingAppJNIMgr().getSessionEstablishmentErrorHandler().SetUp(env, jSessionEstablishmentError);
+        VerifyOrReturnValue(err == CHIP_NO_ERROR, false);
+        commissioningCallbacks.sessionEstablishmentError = [](CHIP_ERROR err) {
+            TvCastingAppJNIMgr().getSessionEstablishmentErrorHandler().Handle(err);
+        };
+    }
+
     jfieldID jSessionEstablishmentStoppedField =
         env->GetFieldID(jCommissioningCallbacksClass, "sessionEstablishmentStopped", "Lcom/chip/casting/FailureCallback;");
     jobject jSessionEstablishmentStopped = env->GetObjectField(jCommissioningCallbacks, jSessionEstablishmentStoppedField);
