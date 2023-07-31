@@ -93,7 +93,7 @@ lifecycle:
 
     ```java
     private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {
-        private static final String APP_ID = "YOUR_GENERATED_ROTATING_DEVICE_ID";
+        private static final String ROTATING_DEVICE_ID_UNIQUE_ID = "EXAMPLE_ID";
         @Override
         public byte[] get() {
             return APP_ID.getBytes();
