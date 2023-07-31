@@ -48,9 +48,13 @@ The steps to start a casting session are:
 1. [Discover](#discover-casting-players) `CastingPlayer` devices using Matter
    Commissioner discovery.
 1. [Connect](#connect-to-a-casting-player) to the `CastingPlayer` to discover
-   available endpoints.
-   By connecting, the 'CastingClient' is first sending a User Directed Commissioning (UDC) request to the 'CastingPlayer' device in order to request Matter commissioning by it.
-   For commissioning, the 'CastingPlayer' will obtain the appropriate user consent to allow a connection from this 'CastingClient' and obtain the setup code needed to commission the 'CastingClient'. The setup code will typically come from a corresponding TV content app or be input by the user.
+   available endpoints. By connecting, the 'CastingClient' is first sending a
+   User Directed Commissioning (UDC) request to the 'CastingPlayer' device in
+   order to request Matter commissioning by it. For commissioning, the
+   'CastingPlayer' will obtain the appropriate user consent to allow a
+   connection from this 'CastingClient' and obtain the setup code needed to
+   commission the 'CastingClient'. The setup code will typically come from a
+   corresponding TV content app or be input by the user.
 1. [Select](#select-an-endpoint-on-the-casting-player) an available `Endpoint`
    hosted by the `CastingPlayer`.
 
@@ -112,8 +116,8 @@ lifecycle:
     ```
 
 2.  **Commissioning Data** - This object contains the passcode, discriminator,
-    etc which identify the app and are provided to the CastingPlayer during the commissioning process. Refer to the Matter
-    specification's
+    etc which identify the app and are provided to the CastingPlayer during the
+    commissioning process. Refer to the Matter specification's
     [Onboarding Payload](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload))
     section for details on commissioning data.
 
@@ -199,7 +203,7 @@ On iOS, add a `func didReceiveRequestToSignCertificateRequest` to the
 `AppParametersDataSource` class defined above, that can sign messages for the
 Casting Client.
 `objectivec func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data { // sign the message and return the value return Data() }`
-  
+
 Once you have created the `DataProvider` objects above, you are ready to
 initialize the Casting App as described below. Note: When you initialize the
 Casting client, make sure your code initializes it only once, before it starts a
@@ -378,13 +382,14 @@ user pick the right CastingPlayer. A Casting Client can attempt to connect to
 the selectedCastingPlayer using
 [Matter User Directed Commissioning (UDC)](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/UserDirectedCommissioning.adoc).
 The Matter TV Casting library locally caches information required to reconnect
-to a CastingPlayer, once it has been commissioned by it. After that, it is able to
-skip the full UDC process by establishing CASE with the CastingPlayer directly.
-Once connected, the CastingPlayer object will contain the list of available
-Endpoints on that CastingPlayer.
+to a CastingPlayer, once it has been commissioned by it. After that, it is able
+to skip the full UDC process by establishing CASE with the CastingPlayer
+directly. Once connected, the CastingPlayer object will contain the list of
+available Endpoints on that CastingPlayer.
 
-On Android, the Casting Client can connect to a `CastingPlayer` by successfully calling
-`connect` on it. Remember to handle any exceptions that may arise in the process.
+On Android, the Casting Client can connect to a `CastingPlayer` by successfully
+calling `connect` on it. Remember to handle any exceptions that may arise in the
+process.
 
 ```java
 // Maximum time in seconds we'll wait for the connection to the CastingPlayer to go through
@@ -552,18 +557,18 @@ if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
             currentStateAttribute.get().read();
         try {
             Log.i(TAG, "Read Current State value: " + currentStateValue.get(1, TimeUnit.SECONDS));
-        } 
+        }
         catch (ExecutionException | InterruptedException | TimeoutException e) {
             Log.e(TAG, "Exception when reading CurrentState " + e);
         }
-    } 
+    }
     else {
         Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
-} 
+}
 else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
-} 
+}
 ```
 
 On iOS, an attribute can be read with implementation like the one below.
@@ -605,8 +610,9 @@ _{Complete Attribute subscription examples:
 |
 [iOS](darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
 
-A Casting Client may subscribe to a set of attributes on the `contentAppEndpoint` of
-the CastingPlayer to get data reports when the attributes change.
+A Casting Client may subscribe to a set of attributes on the
+`contentAppEndpoint` of the CastingPlayer to get data reports when the
+attributes change.
 
 On Android, an attribute can be subscribed to in the following way.
 
@@ -632,11 +638,11 @@ if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
                 }
             },
             MIN_INTERVAL_SEC, MAX_INTERVAL_SEC);    // say, 0 to 1 sec
-    } 
+    }
     else {
       Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
-} 
+}
 else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
 }
@@ -655,11 +661,11 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
         class CurrentStateObserver : NSObject, MTRObserver
         {
             weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
-            
+
             init(parent: MTRAttributeSubscriptionExampleViewModel!) {
                 self.parent = parent
             }
-            
+
             func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
                 self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
             }
