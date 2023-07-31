@@ -112,7 +112,7 @@ lifecycle:
     ```
 
 2.  **Commissioning Data** - This object contains the passcode, discriminator,
-    etc needed to verify an incoming commissioning request. Refer to the Matter
+    etc which identify the app and are provided to the CastingPlayer during the commissioning process. Refer to the Matter
     specification's
     [Onboarding Payload](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload))
     section for details on commissioning data.
