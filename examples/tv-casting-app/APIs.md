@@ -396,7 +396,7 @@ The Matter TV Casting library locally caches information required to reconnect
 to a CastingPlayer, once it has been commissioned by it. After that, it is able to
 skip the full UDC process by establishing CASE with the CastingPlayer directly.
 Once connected, the CastingPlayer object will contain the list of available
-Endpoints on it.
+Endpoints on that CastingPlayer.
 
 On Android, the Casting Client can connect to a `CastingPlayer` by successfully calling
 `connect` on it. Remember to handle any exceptions that may arise in the process.
