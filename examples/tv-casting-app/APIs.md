@@ -280,23 +280,21 @@ which listen to notifications as Casting Players are added, removed, or updated.
 
 ```objectivec
 @objc
-func addDiscoveredCastingPlayers(notification: Notification)
+func didAddDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-        let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
-        print("No MTRCastingPlayer found in notification")
-        return
-    }
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+          print("No MTRCastingPlayer found in notification")
+          return
+        }
     displayedCastingPlayers.append(contentsOf: castingPlayers)
 }
 
 @objc
-func removeDiscoveredCastingPlayers(notification: Notification)
+func didRemoveDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -304,11 +302,10 @@ func removeDiscoveredCastingPlayers(notification: Notification)
 }
 
 @objc
-func updateDiscoveredCastingPlayers(notification: Notification)
+func didUpdateDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -355,24 +352,12 @@ On iOS, register the listeners by calling `addObserver` on the
 
 ```objectivec
 func startDiscovery() {
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.addDiscoveredCastingPlayers),
-    name: NSNotification.Name.didAddCastingPlayers,
-    object: nil)
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.removeDiscoveredCastingPlayers),
-    name: NSNotification.Name.didRemoveCastingPlayers,
-    object: nil)
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.updateDiscoveredCastingPlayers),
-    name: NSNotification.Name.didUpdateCastingPlayers,
-    object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didAddDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didRemoveDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didUpdateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
 
     MTRCastingPlayerDiscovery.sharedInstance().start()
-    self.discoveryRequestStatus = true
+    ...
 }
 ```
 
@@ -413,6 +398,11 @@ public static void demoConnection(CastingPlayer castingPlayer) {
     connectionFuture.exceptionally(exc -> {
         Log.e(TAG, "Exception in connecting to castingPlayer" + exc.getMessage());
         return null;
+    });
+
+    // do something, once connected
+    connectionFuture.thenRun(() -> {
+        Log.d(TAG, "Connected to castingPlayer");
     });
 }
 ```
@@ -555,25 +545,25 @@ if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
     // get the Cluster to use
     MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
-    if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
-    {
-        CompletableFuture<MediaPlayback.CurrentState> currentStateValue = currentStateAttribute.get().read();
+    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute =
+        mediaPlayback.getCurrentState();
+    if (currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable()) {
+        CompletableFuture<MediaPlayback.CurrentState> currentStateValue =
+            currentStateAttribute.get().read();
         try {
             Log.i(TAG, "Read Current State value: " + currentStateValue.get(1, TimeUnit.SECONDS));
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+        } 
+        catch (ExecutionException | InterruptedException | TimeoutException e) {
             Log.e(TAG, "Exception when reading CurrentState " + e);
         }
-    }
-    else
-    {
+    } 
+    else {
         Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
-}
-else
-{
+} 
+else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
-}
+} 
 ```
 
 On iOS, an attribute can be read with implementation like the one below.
@@ -584,15 +574,22 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
     let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
     let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
 
-    currentStateAttribute.read { currentStateValue, err in
-        if(err == nil)
-        {
-            self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+    if(currentStateAttribute.isAvailable())
+    {
+        currentStateAttribute.read { currentStateValue, err in
+            if(err == nil)
+            {
+                self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+            }
+            else
+            {
+                self.status = "Error when reading CurrentState value \(String(describing: err))"
+            }
         }
-        else
-        {
-            self.status = "Error when reading CurrentState value \(String(describing: err))"
-        }
+    }
+    else
+    {
+        self.status = "Attribute unavailable on the selected endpoint"
     }
 }
 else
@@ -617,30 +614,30 @@ On Android, an attribute can be subscribed to in the following way.
 // check if the Endpoint supports the Cluster to use
 if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
     // get the Cluster to use
-     MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
+    MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
-    if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
-    {
-        currentStateAttribute.get().addObserver(new Attribute.Listener() {
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Error when listening to CurrentState " + error);
-            }
+    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute =
+        mediaPlayback.getCurrentState();
+    if (currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable()) {
+        currentStateAttribute.get().addObserver(
+            new Attribute.Listener() {
+                @Override
+                public void onError(Error error) {
+                    Log.e(TAG, "Error when listening to CurrentState " + error);
+                }
 
-            @Override
-            public void onChange(Object currentStateValue) {
-                Log.i(TAG, "CurrentState changed to value " + currentStateValue);
-            }
-        }, 0, 1);
+                @Override
+                public void onChange(Object currentStateValue, Object prevCurrentStateValue) {
+                    Log.i(TAG, "CurrentState changed to value " + currentStateValue + " from " + prevCurrentStateValue);
+                }
+            },
+            MIN_INTERVAL_SEC, MAX_INTERVAL_SEC);    // say, 0 to 1 sec
+    } 
+    else {
+      Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
-    else
-    {
-        Log.e(TAG, "Attribute unavailable on the selected endpoint");
-    }
-}
-else
-{
+} 
+else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
 }
 ```
@@ -653,21 +650,27 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
     let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
     let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
 
-    class CurrentStateObserver : NSObject, MTRObserver
+    if(currentStateAttribute.isAvailable())
     {
-        weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
-
-        init(parent: MTRAttributeSubscriptionExampleViewModel!) {
-            self.parent = parent
+        class CurrentStateObserver : NSObject, MTRObserver
+        {
+            weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
+            
+            init(parent: MTRAttributeSubscriptionExampleViewModel!) {
+                self.parent = parent
+            }
+            
+            func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
+                self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+            }
         }
-
-        func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
-            self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+        currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: MIN_INTERVAL_SEC, maxInterval: MAX_INTERVAL_SEC) { err in
+            self.status = "Could not establish subscription"
         }
     }
-
-    currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: 0, maxInterval: 1) { err in
-        self.status = "Could not establish subscription"
+    else
+    {
+        self.status = "Attribute unavailable on the selected endpoint"
     }
 }
 else
