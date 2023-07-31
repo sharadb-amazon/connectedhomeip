@@ -398,8 +398,8 @@ skip the full UDC process by establishing CASE with the CastingPlayer directly.
 Once connected, the CastingPlayer object would contain the list of available
 Endpoints on it.
 
-On Android, the Casting Client can connect to a `CastingPlayer` by calling
-`connect` on it, and handling any exceptions that may arise in the process.
+On Android, the Casting Client can connect to a `CastingPlayer` by successfully calling
+`connect` on it. Remember to handle any exceptions that may arise in the process.
 
 ```java
 // Maximum time in seconds we'll wait for the connection to the CastingPlayer to go through
