@@ -608,7 +608,7 @@ _{Complete Attribute subscription examples:
 |
 [iOS](darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
 
-A Casting Client may subscribe to an attribute from the `contentAppEndpoint` on
+A Casting Client may subscribe to a set of attributes on the `contentAppEndpoint` of
 the CastingPlayer to get data reports when the attributes change.
 
 On Android, an attribute can be subscribed to in the following way.
