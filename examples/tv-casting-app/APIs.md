@@ -49,6 +49,8 @@ The steps to start a casting session are:
    Commissioner discovery.
 1. [Connect](#connect-to-a-casting-player) to the `CastingPlayer` to discover
    available endpoints.
+   By connecting, the 'CastingClient' is first sending a User Directed Commissioning (UDC) request to the 'CastingPlayer' device in order to request Matter commissioning by it.
+   For commissioning, the 'CastingPlayer' will obtain the appropriate user consent to allow a connection from this 'CastingClient' and obtain the setup code needed to commission the 'CastingClient'. The setup code will typically come from a corresponding TV content app or be input by the user.
 1. [Select](#select-an-endpoint-on-the-casting-player) an available `Endpoint`
    hosted by the `CastingPlayer`.
 
