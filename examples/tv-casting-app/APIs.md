@@ -544,7 +544,7 @@ _{Complete Attribute Read examples:
 | [iOS](darwin/TvCasting/TvCasting/MTRAttributeReadExampleViewModel.swift)}_
 
 The CastingClient may read an Attribute from the `contentAppEndpoint` on the
-CastingPlayer. It would ensure that the desired cluster / attribute are
+CastingPlayer. It should ensure that the desired cluster / attribute are
 available for reading on the endpoint before trying to read it.
 
 On Android, an attribute can be read with implementation like the one below.
