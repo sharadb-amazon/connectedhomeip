@@ -393,7 +393,7 @@ user pick the right CastingPlayer. A Casting Client can attempt to connect to
 the selectedCastingPlayer using
 [Matter User Directed Commissioning (UDC)](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/UserDirectedCommissioning.adoc).
 The Matter TV Casting library locally caches information required to reconnect
-to a CastingPlayer, once it has commissioned with it. After that, it is able to
+to a CastingPlayer, once it has been commissioned by it. After that, it is able to
 skip the full UDC process by establishing CASE with the CastingPlayer directly.
 Once connected, the CastingPlayer object would contain the list of available
 Endpoints on it.
