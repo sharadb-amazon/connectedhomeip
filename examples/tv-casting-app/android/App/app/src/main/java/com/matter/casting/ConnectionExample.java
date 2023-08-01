@@ -20,5 +20,11 @@ public class ConnectionExample {
           Log.e(TAG, "Exception in connecting to castingPlayer" + exc.getMessage());
           return null;
         });
+
+    // do something, once connected
+    connectionFuture.thenRun(
+        () -> {
+          Log.d(TAG, "Connected to castingPlayer");
+        });
   }
 }

@@ -18,6 +18,6 @@ public interface Attribute<T> {
   interface Listener {
     void onError(Error error);
 
-    void onChange(Object value);
+    void onChange(Object newValue, Object prevValue);
   }
 }

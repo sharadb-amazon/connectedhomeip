@@ -27,16 +27,16 @@ class MTRDiscoveryExampleViewModel: ObservableObject {
     @Published var discoveryRequestStatus: Bool?;
     
     func startDiscovery() {
-        NotificationCenter.default.addObserver(self, selector: #selector(self.addDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.removeDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.updateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didAddDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didRemoveDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.didUpdateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
 
         MTRCastingPlayerDiscovery.sharedInstance().start()
         self.discoveryRequestStatus = true
     }
     
     @objc
-    func addDiscoveredCastingPlayers(notification: Notification)
+    func didAddDiscoveredCastingPlayers(notification: Notification)
     {
         guard let userInfo = notification.userInfo,
               let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
@@ -47,7 +47,7 @@ class MTRDiscoveryExampleViewModel: ObservableObject {
     }
     
     @objc
-    func removeDiscoveredCastingPlayers(notification: Notification)
+    func didRemoveDiscoveredCastingPlayers(notification: Notification)
     {
         guard let userInfo = notification.userInfo,
               let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
@@ -58,7 +58,7 @@ class MTRDiscoveryExampleViewModel: ObservableObject {
     }
     
     @objc
-    func updateDiscoveredCastingPlayers(notification: Notification)
+    func didUpdateDiscoveredCastingPlayers(notification: Notification)
     {
         guard let userInfo = notification.userInfo,
               let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {

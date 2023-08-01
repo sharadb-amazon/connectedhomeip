@@ -19,9 +19,12 @@
 #import "MTRCluster.h"
 #import "MTREndpointClusterType.h"
 
+#import <Foundation/Foundation.h>
+
 #ifndef MTREndpoint_h
 #define MTREndpoint_h
 
+@protocol MTRCluster;
 @class MTRCastingPlayer;
 
 @interface MTREndpoint : NSObject

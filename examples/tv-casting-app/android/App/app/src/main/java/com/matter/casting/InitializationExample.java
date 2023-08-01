@@ -26,11 +26,12 @@ public class InitializationExample {
    */
   private static final DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider =
       new DataProvider<byte[]>() {
-        private static final String APP_ID = "EXAMPLE_APP_ID";
+        private static final String ROTATING_DEVICE_ID_UNIQUE_ID =
+            "EXAMPLE_ID"; // dummy value for demonstration only
 
         @Override
         public byte[] get() {
-          return APP_ID.getBytes();
+          return ROTATING_DEVICE_ID_UNIQUE_ID.getBytes();
         }
       };
 
@@ -41,7 +42,7 @@ public class InitializationExample {
   private static final DataProvider<CommissioningData> commissioningDataProvider =
       () -> {
         CommissioningData commissioningData = new CommissioningData();
-        commissioningData.setSetupPasscode(20202021);
+        commissioningData.setSetupPasscode(20202021); // dummy values for demonstration only
         commissioningData.setDiscriminator(3874);
         return commissioningData;
       };
@@ -52,6 +53,7 @@ public class InitializationExample {
    */
   private static final DataProvider<DeviceAttestationCredentials> dacProvider =
       new DataProvider<DeviceAttestationCredentials>() {
+        // dummy values for demonstration only
         private static final String kDevelopmentDAC_Cert_FFF1_8001 =
             "MIIB5zCCAY6gAwIBAgIIac3xDenlTtEwCgYIKoZIzj0EAwIwPTElMCMGA1UEAwwcTWF0dGVyIERldiBQQUkgMHhGRkYxIG5vIFBJRDEUMBIGCisGAQQBgqJ8AgEMBEZGRjEwIBcNMjIwMjA1MDAwMDAwWhgPOTk5OTEyMzEyMzU5NTlaMFMxJTAjBgNVBAMMHE1hdHRlciBEZXYgREFDIDB4RkZGMS8weDgwMDExFDASBgorBgEEAYKifAIBDARGRkYxMRQwEgYKKwYBBAGConwCAgwEODAwMTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABEY6xpNCkQoOVYj8b/Vrtj5i7M7LFI99TrA+5VJgFBV2fRalxmP3k+SRIyYLgpenzX58/HsxaznZjpDSk3dzjoKjYDBeMAwGA1UdEwEB/wQCMAAwDgYDVR0PAQH/BAQDAgeAMB0GA1UdDgQWBBSI3eezADgpMs/3NMBGJIEPRBaKbzAfBgNVHSMEGDAWgBRjVA5H9kscONE4hKRi0WwZXY/7PDAKBggqhkjOPQQDAgNHADBEAiABJ6J7S0RhDuL83E0reIVWNmC8D3bxchntagjfsrPBzQIga1ngr0Xz6yqFuRnTVzFSjGAoxBUjlUXhCOTlTnCXE1M=";
 

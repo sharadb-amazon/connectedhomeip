@@ -36,15 +36,22 @@ class MTRAttributeReadExampleViewModel: ObservableObject {
                 let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
                 let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
                 
-                currentStateAttribute.read { currentStateValue, err in
-                    if(err == nil)
-                    {
-                        self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+                if(currentStateAttribute.isAvailable())
+                {
+                    currentStateAttribute.read { currentStateValue, err in
+                        if(err == nil)
+                        {
+                            self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+                        }
+                        else
+                        {
+                            self.status = "Error when reading CurrentState value \(String(describing: err))"
+                        }
                     }
-                    else
-                    {
-                        self.status = "Error when reading CurrentState value \(String(describing: err))"
-                    }
+                }
+                else
+                {
+                    self.status = "Attribute unavailable on the selected endpoint"
                 }
             }
             else

@@ -17,6 +17,8 @@
 
 #import "MTREndpoint.h"
 
+#import <Foundation/Foundation.h>
+
 #ifndef MTRCastingPlayer_h
 #define MTRCastingPlayer_h
 

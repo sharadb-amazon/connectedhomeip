@@ -48,25 +48,28 @@ public class AttributeSubscriptionExample {
         // get the Cluster to use
         MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-        Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute =
+        Attribute<MediaPlayback.CurrentState> currentStateAttribute =
             mediaPlayback.getCurrentState();
-        if (currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable()) {
-          currentStateAttribute
-              .get()
-              .addObserver(
-                  new Attribute.Listener() {
-                    @Override
-                    public void onError(Error error) {
-                      Log.e(TAG, "Error when listening to CurrentState " + error);
-                    }
+        if (currentStateAttribute.isAvailable()) {
+          currentStateAttribute.addObserver(
+              new Attribute.Listener() {
+                @Override
+                public void onError(Error error) {
+                  Log.e(TAG, "Error when listening to CurrentState " + error);
+                }
 
-                    @Override
-                    public void onChange(Object currentStateValue) {
-                      Log.i(TAG, "CurrentState changed to value " + currentStateValue);
-                    }
-                  },
-                  0,
-                  1);
+                @Override
+                public void onChange(Object currentStateValue, Object prevCurrentStateValue) {
+                  Log.i(
+                      TAG,
+                      "CurrentState changed to value "
+                          + currentStateValue
+                          + " from "
+                          + prevCurrentStateValue);
+                }
+              },
+              0,
+              1);
         } else {
           Log.e(TAG, "Attribute unavailable on the selected endpoint");
         }

@@ -24,6 +24,8 @@ class MTRAttributeSubscriptionExampleViewModel: ObservableObject {
                      category: "MTRAttributeSubscriptionExampleViewModel")
     
     let sampleContentAppVid: String = "12345"
+    let MIN_INTERVAL: Int32 = 0
+    let MAX_INTERVAL: Int32 = 1
     
     @Published var status: String?;
     
@@ -36,21 +38,27 @@ class MTRAttributeSubscriptionExampleViewModel: ObservableObject {
                 let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
                 let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
                 
-                class CurrentStateObserver : NSObject, MTRObserver
+                if(currentStateAttribute.isAvailable())
                 {
-                    weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
-                    
-                    init(parent: MTRAttributeSubscriptionExampleViewModel!) {
-                        self.parent = parent
+                    class CurrentStateObserver : NSObject, MTRObserver
+                    {
+                        weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
+                        
+                        init(parent: MTRAttributeSubscriptionExampleViewModel!) {
+                            self.parent = parent
+                        }
+                        
+                        func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
+                            self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+                        }
                     }
-                    
-                    func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
-                        self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+                    currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: MIN_INTERVAL, maxInterval: MAX_INTERVAL) { err in
+                        self.status = "Could not establish subscription"
                     }
                 }
-                
-                currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: 0, maxInterval: 1) { err in
-                    self.status = "Could not establish subscription"
+                else
+                {
+                    self.status = "Attribute unavailable on the selected endpoint"
                 }
             }
             else

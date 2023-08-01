@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#import <Foundation/Foundation.h>
+
 #ifndef MTRObserver_h
 #define MTRObserver_h
 

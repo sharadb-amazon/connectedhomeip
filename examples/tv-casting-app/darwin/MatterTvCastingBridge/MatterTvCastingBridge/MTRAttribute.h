@@ -17,6 +17,8 @@
 
 #import "MTRObserver.h"
 
+#import <Foundation/Foundation.h>
+
 #ifndef MTRAttribute_h
 #define MTRAttribute_h
 
@@ -32,6 +34,8 @@
     completionBlock:(void (^_Nonnull)(NSError * _Nullable))completionBlock;
 
 - (void)removeObserver:(id<MTRObserver> _Nonnull)observer;
+
+- (bool)isAvailable;
 
 @end
 

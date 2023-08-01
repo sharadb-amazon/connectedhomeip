@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#import <Foundation/Foundation.h>
+
 #ifndef MTRCommissioningData_h
 #define MTRCommissioningData_h
 

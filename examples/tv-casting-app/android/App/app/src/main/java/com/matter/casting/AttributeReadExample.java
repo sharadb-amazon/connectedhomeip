@@ -51,11 +51,11 @@ public class AttributeReadExample {
         // get the Cluster to use
         MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-        Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute =
+        Attribute<MediaPlayback.CurrentState> currentStateAttribute =
             mediaPlayback.getCurrentState();
-        if (currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable()) {
+        if (currentStateAttribute.isAvailable()) {
           CompletableFuture<MediaPlayback.CurrentState> currentStateValue =
-              currentStateAttribute.get().read();
+              currentStateAttribute.read();
           try {
             Log.i(TAG, "Read Current State value: " + currentStateValue.get(1, TimeUnit.SECONDS));
 
