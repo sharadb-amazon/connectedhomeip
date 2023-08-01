@@ -48,7 +48,13 @@ The steps to start a casting session are:
 1. [Discover](#discover-casting-players) `CastingPlayer` devices using Matter
    Commissioner discovery.
 1. [Connect](#connect-to-a-casting-player) to the `CastingPlayer` to discover
-   available endpoints.
+   available endpoints. By connecting, the 'CastingClient' will send a User
+   Directed Commissioning (UDC) request to the 'CastingPlayer' device in order
+   to make a Matter commissioning request. The 'CastingPlayer' will then obtain
+   the appropriate user consent to allow a connection from this 'CastingClient'
+   and obtain the setup code needed to commission the 'CastingClient'. The setup
+   code will typically come from a corresponding TV content app or be input by
+   the user.
 1. [Select](#select-an-endpoint-on-the-casting-player) an available `Endpoint`
    hosted by the `CastingPlayer`.
 
@@ -87,7 +93,7 @@ lifecycle:
 
     ```java
     private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {
-        private static final String APP_ID = "YOUR_GENERATED_ROTATING_DEVICE_ID";
+        private static final String ROTATING_DEVICE_ID_UNIQUE_ID = "EXAMPLE_ID";    // dummy value for demonstration only
         @Override
         public byte[] get() {
             return APP_ID.getBytes();
@@ -103,15 +109,15 @@ lifecycle:
     class AppParametersDataSource : NSObject, MTRDataSource
     {
         func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
-            return "YOUR_GENERATED_ROTATING_DEVICE_ID".data(using: .utf8)!
+            return "YOUR_GENERATED_ROTATING_DEVICE_ID".data(using: .utf8)!      // dummy value for demonstration only
         }
         ...
     }
     ```
 
 2.  **Commissioning Data** - This object contains the passcode, discriminator,
-    etc needed to verify an incoming commissioning request. Refer to the Matter
-    specification's
+    etc which identify the app and are provided to the CastingPlayer during the
+    commissioning process. Refer to the Matter specification's
     [Onboarding Payload](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/qr_code/OnboardingPayload.adoc#ref_OnboardingPayload))
     section for details on commissioning data.
 
@@ -121,7 +127,7 @@ lifecycle:
     ```java
     private final static DataProvider<CommissioningData> commissioningDataProvider = () -> {
         CommissioningData commissioningData = new CommissioningData();
-        commissioningData.setSetupPasscode(20202021);
+        commissioningData.setSetupPasscode(20202021);   // dummy values for demonstration only
         commissioningData.setDiscriminator(3874);
         return commissioningData;
     };
@@ -134,7 +140,7 @@ lifecycle:
     ```objectivec
     func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
         return MTRCommissioningData(
-            passcode: 20202021,
+            passcode: 20202021,         // dummy values for demonstration only
             discriminator: 3874,
             spake2pIterationCount: 1000,
             spake2pVerifier: nil,
@@ -154,7 +160,7 @@ lifecycle:
 
     ```java
     private final static DataProvider<DeviceAttestationCredentials> dacProvider = new DataProvider<DeviceAttestationCredentials>() {
-        private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";
+        private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";     // dummy values for demonstration only
         private static final String kDevelopmentDAC_PrivateKey_FFF1_8001 = "qrYAror...<snipped>...StE+/8=";
         private static final String KPAI_FFF1_8000_Cert_Array = "MIIByzC...<snipped>...pwP4kQ==";
 
@@ -197,7 +203,7 @@ On iOS, add a `func didReceiveRequestToSignCertificateRequest` to the
 `AppParametersDataSource` class defined above, that can sign messages for the
 Casting Client.
 `objectivec func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) async -> Data { // sign the message and return the value return Data() }`
-  
+
 Once you have created the `DataProvider` objects above, you are ready to
 initialize the Casting App as described below. Note: When you initialize the
 Casting client, make sure your code initializes it only once, before it starts a
@@ -278,23 +284,21 @@ which listen to notifications as Casting Players are added, removed, or updated.
 
 ```objectivec
 @objc
-func addDiscoveredCastingPlayers(notification: Notification)
+func didAddDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-        let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
-        print("No MTRCastingPlayer found in notification")
-        return
-    }
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
+          print("No MTRCastingPlayer found in notification")
+          return
+        }
     displayedCastingPlayers.append(contentsOf: castingPlayers)
 }
 
 @objc
-func removeDiscoveredCastingPlayers(notification: Notification)
+func didRemoveDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -302,11 +306,10 @@ func removeDiscoveredCastingPlayers(notification: Notification)
 }
 
 @objc
-func updateDiscoveredCastingPlayers(notification: Notification)
+func didUpdateDiscoveredCastingPlayers(notification: Notification)
 {
     guard let userInfo = notification.userInfo,
-    let castingPlayers = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer]
-    else {
+          let castingPlayers     = userInfo[castingPlayersUserInfo] as? [MTRCastingPlayer] else {
         print("No MTRCastingPlayer found in notification")
         return
     }
@@ -353,24 +356,12 @@ On iOS, register the listeners by calling `addObserver` on the
 
 ```objectivec
 func startDiscovery() {
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.addDiscoveredCastingPlayers),
-    name: NSNotification.Name.didAddCastingPlayers,
-    object: nil)
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.removeDiscoveredCastingPlayers),
-    name: NSNotification.Name.didRemoveCastingPlayers,
-    object: nil)
-    NotificationCenter.default.addObserver(
-    self,
-    selector: #selector(self.updateDiscoveredCastingPlayers),
-    name: NSNotification.Name.didUpdateCastingPlayers,
-    object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didAddDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didRemoveDiscoveredCastingPlayers), name: NSNotification.Name.didRemoveCastingPlayers, object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(self.didUpdateDiscoveredCastingPlayers), name: NSNotification.Name.didUpdateCastingPlayers, object: nil)
 
     MTRCastingPlayerDiscovery.sharedInstance().start()
-    self.discoveryRequestStatus = true
+    ...
 }
 ```
 
@@ -391,13 +382,14 @@ user pick the right CastingPlayer. A Casting Client can attempt to connect to
 the selectedCastingPlayer using
 [Matter User Directed Commissioning (UDC)](https://github.com/CHIP-Specifications/connectedhomeip-spec/blob/master/src/rendezvous/UserDirectedCommissioning.adoc).
 The Matter TV Casting library locally caches information required to reconnect
-to a CastingPlayer, once it has commissioned with it. After that, it is able to
-skip the full UDC process by establishing CASE with the CastingPlayer directly.
-Once connected, the CastingPlayer object would contain the list of available
-Endpoints on it.
+to a CastingPlayer, once it has been commissioned by it. After that, it is able
+to skip the full UDC process by establishing CASE with the CastingPlayer
+directly. Once connected, the CastingPlayer object will contain the list of
+available Endpoints on that CastingPlayer.
 
-On Android, the Casting Client can connect to a `CastingPlayer` by calling
-`connect` on it, and handling any exceptions that may arise in the process.
+On Android, the Casting Client can connect to a `CastingPlayer` by successfully
+calling `connect` on it. Remember to handle any exceptions that may arise in the
+process.
 
 ```java
 // Maximum time in seconds we'll wait for the connection to the CastingPlayer to go through
@@ -411,6 +403,11 @@ public static void demoConnection(CastingPlayer castingPlayer) {
     connectionFuture.exceptionally(exc -> {
         Log.e(TAG, "Exception in connecting to castingPlayer" + exc.getMessage());
         return null;
+    });
+
+    // do something, once connected
+    connectionFuture.thenRun(() -> {
+        Log.d(TAG, "Connected to castingPlayer");
     });
 }
 ```
@@ -483,9 +480,10 @@ _{Complete Command invocation examples:
 [Android](android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java)
 | [iOS](darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
 
-To issue a command, the Casting Client can `contentAppEndpoint` on the
-CastingPlayer it connected to and handle the command response. It would first
-ensure the endpoint supports the required cluster/command.
+The Casting Client can get a reference to a `contentAppEndpoint` on a
+CastingPlayer, check if it supports the required cluster/command, and send
+commands to it. It can then handle any command response / error the
+CastingPlayer sends back.
 
 On Android, this can be implemented as follows:
 
@@ -542,7 +540,7 @@ _{Complete Attribute Read examples:
 | [iOS](darwin/TvCasting/TvCasting/MTRAttributeReadExampleViewModel.swift)}_
 
 The CastingClient may read an Attribute from the `contentAppEndpoint` on the
-CastingPlayer. It would ensure that the desired cluster / attribute are
+CastingPlayer. It should ensure that the desired cluster / attribute are
 available for reading on the endpoint before trying to read it.
 
 On Android, an attribute can be read with implementation like the one below.
@@ -553,23 +551,23 @@ if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
     // get the Cluster to use
     MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
-    if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
-    {
-        CompletableFuture<MediaPlayback.CurrentState> currentStateValue = currentStateAttribute.get().read();
+    Attribute<MediaPlayback.CurrentState> currentStateAttribute =
+        mediaPlayback.getCurrentState();
+    if (currentStateAttribute.isAvailable()) {
+        CompletableFuture<MediaPlayback.CurrentState> currentStateValue =
+            currentStateAttribute.read();
         try {
             Log.i(TAG, "Read Current State value: " + currentStateValue.get(1, TimeUnit.SECONDS));
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
+        }
+        catch (ExecutionException | InterruptedException | TimeoutException e) {
             Log.e(TAG, "Exception when reading CurrentState " + e);
         }
     }
-    else
-    {
+    else {
         Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
 }
-else
-{
+else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
 }
 ```
@@ -582,15 +580,22 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
     let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
     let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
 
-    currentStateAttribute.read { currentStateValue, err in
-        if(err == nil)
-        {
-            self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+    if(currentStateAttribute.isAvailable())
+    {
+        currentStateAttribute.read { currentStateValue, err in
+            if(err == nil)
+            {
+                self.status = "Read CurrentState value \(String(describing: currentStateValue))"
+            }
+            else
+            {
+                self.status = "Error when reading CurrentState value \(String(describing: err))"
+            }
         }
-        else
-        {
-            self.status = "Error when reading CurrentState value \(String(describing: err))"
-        }
+    }
+    else
+    {
+        self.status = "Attribute unavailable on the selected endpoint"
     }
 }
 else
@@ -606,8 +611,9 @@ _{Complete Attribute subscription examples:
 |
 [iOS](darwin/TvCasting/TvCasting/MTRAttributeSubscriptionExampleViewModel.swift)}_
 
-A Casting Client may subscribe to an attribute from the `contentAppEndpoint` on
-the CastingPlayer to get event notifications related to that attribute.
+A Casting Client may subscribe to a set of attributes on the
+`contentAppEndpoint` of the CastingPlayer to get data reports when the
+attributes change.
 
 On Android, an attribute can be subscribed to in the following way.
 
@@ -615,30 +621,30 @@ On Android, an attribute can be subscribed to in the following way.
 // check if the Endpoint supports the Cluster to use
 if (contentAppEndpoint.get().hasCluster(MediaPlayback.class)) {
     // get the Cluster to use
-     MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
+    MediaPlayback mediaPlayback = contentAppEndpoint.get().getCluster(MediaPlayback.class);
 
-    Optional<Attribute<MediaPlayback.CurrentState>> currentStateAttribute = mediaPlayback.getCurrentState();
-    if(currentStateAttribute.isPresent() && currentStateAttribute.get().isAvailable())
-    {
-        currentStateAttribute.get().addObserver(new Attribute.Listener() {
-            @Override
-            public void onError(Error error) {
-                Log.e(TAG, "Error when listening to CurrentState " + error);
-            }
+    Attribute<MediaPlayback.CurrentState> currentStateAttribute =
+        mediaPlayback.getCurrentState();
+    if (currentStateAttribute.isAvailable()) {
+        currentStateAttribute.addObserver(
+            new Attribute.Listener() {
+                @Override
+                public void onError(Error error) {
+                    Log.e(TAG, "Error when listening to CurrentState " + error);
+                }
 
-            @Override
-            public void onChange(Object currentStateValue) {
-                Log.i(TAG, "CurrentState changed to value " + currentStateValue);
-            }
-        }, 0, 1);
+                @Override
+                public void onChange(Object currentStateValue, Object prevCurrentStateValue) {
+                    Log.i(TAG, "CurrentState changed to value " + currentStateValue + " from " + prevCurrentStateValue);
+                }
+            },
+            MIN_INTERVAL_SEC, MAX_INTERVAL_SEC);    // say, 0 to 1 sec
     }
-    else
-    {
-        Log.e(TAG, "Attribute unavailable on the selected endpoint");
+    else {
+      Log.e(TAG, "Attribute unavailable on the selected endpoint");
     }
 }
-else
-{
+else {
     Log.e(TAG, "Required cluster not found on the selected endpoint");
 }
 ```
@@ -651,21 +657,27 @@ if(endpoint.hasCluster(MTREndpointClusterTypeContentLauncher))
     let cluster: MTRMediaPlaybackCluster = endpoint.cluster(for: MTREndpointClusterTypeMediaPlayback) as! MTRMediaPlaybackCluster
     let currentStateAttribute: MTRAttribute<MTRCurrentState> = cluster.currentState
 
-    class CurrentStateObserver : NSObject, MTRObserver
+    if(currentStateAttribute.isAvailable())
     {
-        weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
+        class CurrentStateObserver : NSObject, MTRObserver
+        {
+            weak var parent: MTRAttributeSubscriptionExampleViewModel! = nil
 
-        init(parent: MTRAttributeSubscriptionExampleViewModel!) {
-            self.parent = parent
+            init(parent: MTRAttributeSubscriptionExampleViewModel!) {
+                self.parent = parent
+            }
+
+            func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
+                self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+            }
         }
-
-        func attribute(_ sender: NSObject, valueDidChange value: NSValue?, oldValue: NSValue?) {
-            self.parent.status = "Value changed from \(String(describing: oldValue)) to \(String(describing: value))"
+        currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: MIN_INTERVAL_SEC, maxInterval: MAX_INTERVAL_SEC) { err in
+            self.status = "Could not establish subscription"
         }
     }
-
-    currentStateAttribute.add(CurrentStateObserver(parent: self), withMinInterval: 0, maxInterval: 1) { err in
-        self.status = "Could not establish subscription"
+    else
+    {
+        self.status = "Attribute unavailable on the selected endpoint"
     }
 }
 else
