@@ -480,9 +480,10 @@ _{Complete Command invocation examples:
 [Android](android/App/app/src/main/java/com/matter/casting/CommandInvocationExample.java)
 | [iOS](darwin/TvCasting/TvCasting/MTRCommandInvocationExampleViewModel.swift)}_
 
-To issue a command, the Casting Client can `contentAppEndpoint` on the
-CastingPlayer it connected to and handle the command response. It would first
-ensure the endpoint supports the required cluster/command.
+The Casting Client can get a reference to a `contentAppEndpoint` on a
+CastingPlayer, check if it supports the required cluster/command, and send
+commands to it. It can then handle any command response / error the
+CastingPlayer sends back.
 
 On Android, this can be implemented as follows:
 
