@@ -93,7 +93,7 @@ lifecycle:
 
     ```java
     private final static DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider = new DataProvider<byte[]>() {
-        private static final String ROTATING_DEVICE_ID_UNIQUE_ID = "EXAMPLE_ID";
+        private static final String ROTATING_DEVICE_ID_UNIQUE_ID = "EXAMPLE_ID";    // dummy value for demonstration only
         @Override
         public byte[] get() {
             return APP_ID.getBytes();
@@ -109,7 +109,7 @@ lifecycle:
     class AppParametersDataSource : NSObject, MTRDataSource
     {
         func castingAppDidReceiveRequestForRotatingDeviceIdUniqueId(_ sender: Any) -> Data {
-            return "YOUR_GENERATED_ROTATING_DEVICE_ID".data(using: .utf8)!
+            return "YOUR_GENERATED_ROTATING_DEVICE_ID".data(using: .utf8)!      // dummy value for demonstration only
         }
         ...
     }
@@ -127,7 +127,7 @@ lifecycle:
     ```java
     private final static DataProvider<CommissioningData> commissioningDataProvider = () -> {
         CommissioningData commissioningData = new CommissioningData();
-        commissioningData.setSetupPasscode(20202021);
+        commissioningData.setSetupPasscode(20202021);   // dummy values for demonstration only
         commissioningData.setDiscriminator(3874);
         return commissioningData;
     };
@@ -140,7 +140,7 @@ lifecycle:
     ```objectivec
     func castingAppDidReceiveRequestForCommissioningData(_ sender: Any) -> MTRCommissioningData {
         return MTRCommissioningData(
-            passcode: 20202021,
+            passcode: 20202021,         // dummy values for demonstration only
             discriminator: 3874,
             spake2pIterationCount: 1000,
             spake2pVerifier: nil,
@@ -160,7 +160,7 @@ lifecycle:
 
     ```java
     private final static DataProvider<DeviceAttestationCredentials> dacProvider = new DataProvider<DeviceAttestationCredentials>() {
-        private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";
+        private static final String kDevelopmentDAC_Cert_FFF1_8001 = "MIIB5z...<snipped>...CXE1M=";     // dummy values for demonstration only
         private static final String kDevelopmentDAC_PrivateKey_FFF1_8001 = "qrYAror...<snipped>...StE+/8=";
         private static final String KPAI_FFF1_8000_Cert_Array = "MIIByzC...<snipped>...pwP4kQ==";
 
