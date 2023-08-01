@@ -191,13 +191,15 @@ public class ConnectionFragment extends Fragment {
           }
         };
 
-    CommissioningCallbacks commissioningCallbacks = new CommissioningCallbacks();
-    commissioningCallbacks.setCommissioningWindowOpened(commissioningWindowOpened);
-    commissioningCallbacks.setCommissioningComplete(commissioningComplete);
-    commissioningCallbacks.setSessionEstablishmentStarted(sessionEstablishmentStartedCallback);
-    commissioningCallbacks.setSessionEstablished(sessionEstablishedCallback);
-    commissioningCallbacks.setSessionEstablishmentError(sessionEstablishmentErrorCallback);
-    commissioningCallbacks.setSessionEstablishmentStopped(sessionEstablishmentStoppedCallback);
+    CommissioningCallbacks commissioningCallbacks =
+        new CommissioningCallbacks.Builder()
+            .commissioningWindowOpened(commissioningWindowOpened)
+            .commissioningComplete(commissioningComplete)
+            .sessionEstablishmentStarted(sessionEstablishmentStartedCallback)
+            .sessionEstablished(sessionEstablishedCallback)
+            .sessionEstablishmentError(sessionEstablishmentErrorCallback)
+            .sessionEstablishmentStopped(sessionEstablishmentStoppedCallback)
+            .build();
 
     this.openCommissioningWindowSuccess =
         tvCastingApp.openBasicCommissioningWindow(
