@@ -83,6 +83,16 @@ android_library("java") {
     "App/app/src/main/jni/com/chip/casting/VideoPlayer.java",
   ]
 
+  # Add simplified casting API files here
+  sources += [
+    "App/app/src/main/jni/com/matter/casting/core/CastingApp.java",
+    "App/app/src/main/jni/com/matter/casting/support/AppParameters.java",
+    "App/app/src/main/jni/com/matter/casting/support/CommissioningData.java",
+    "App/app/src/main/jni/com/matter/casting/support/DataProvider.java",
+    "App/app/src/main/jni/com/matter/casting/support/DeviceAttestationCredentials.java",
+    "App/app/src/main/jni/com/matter/casting/support/MatterError.java",
+  ]
+
   javac_flags = [ "-Xlint:deprecation" ]
 
   # TODO: add classpath support (we likely need to add something like
