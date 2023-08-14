@@ -11,6 +11,8 @@ import com.chip.casting.TvCastingApp;
 import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.util.GlobalCastingConstants;
 import com.chip.casting.util.PreferencesConfigurationManager;
+import com.matter.casting.core.CastingApp;
+
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
@@ -27,7 +29,8 @@ public class MainActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    boolean ret = initJni();
+    CastingApp.getInstance().initialize(null);
+    /*boolean ret = initJni();
     if (!ret) {
       Log.e(TAG, "Failed to initialize Matter TV casting library");
       return;
@@ -37,7 +40,7 @@ public class MainActivity extends AppCompatActivity
     getSupportFragmentManager()
         .beginTransaction()
         .add(R.id.main_fragment_container, fragment, fragment.getClass().getSimpleName())
-        .commit();
+        .commit();*/
   }
 
   @Override
