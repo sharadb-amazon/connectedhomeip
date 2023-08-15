@@ -20,17 +20,31 @@ package com.matter.casting.core;
 import com.matter.casting.support.MatterError;
 import com.matter.casting.support.AppParameters;
 
-public class CastingApp {
-    public static MatterError initialize(AppParameters appParameters) {
-        return null;
+public final class CastingApp {
+    private static CastingApp sInstance;
+
+    private CastingApp() {}
+
+    public static CastingApp getInstance() {
+      if (sInstance == null) {
+        sInstance = new CastingApp();
+      }
+      return sInstance;
     }
+
+    public MatterError initialize(AppParameters appParameters)
+    {
+
+    }
+
+    private native MatterError initialize(AppParameters appParameters);
 
     // called after initialize
-    public static MatterError start() {
-        return null;
-    }
+    public native MatterError start();
 
-    public static MatterError stop() {
-        return null;
+    public native MatterError stop();
+
+    static {
+        System.loadLibrary("TvCastingApp");
     }
 }

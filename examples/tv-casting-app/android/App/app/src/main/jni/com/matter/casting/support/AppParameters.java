@@ -17,9 +17,17 @@
 
 package com.matter.casting.support;
 
+import android.content.Context;
+
 import androidx.annotation.NonNull;
 
+import chip.platform.ConfigurationManager;
+
 public class AppParameters {
+    @NonNull private final Context applicationContext;
+
+    @NonNull private final DataProvider<ConfigurationManager> configurationManager;
+
     @NonNull private final DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider;
 
     @NonNull private final DataProvider<CommissioningData> commissioningDataProvider;
@@ -27,12 +35,24 @@ public class AppParameters {
     @NonNull private final DataProvider<DeviceAttestationCredentials> dacProvider;
 
     public AppParameters(
-            @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
+            @NonNull Context applicationContext, @NonNull DataProvider<ConfigurationManager> configurationManager, @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
             @NonNull DataProvider<CommissioningData> commissioningDataProvider,
             @NonNull DataProvider<DeviceAttestationCredentials> dacProvider) {
+        this.applicationContext = applicationContext;
+        this.configurationManager = configurationManager;
         this.rotatingDeviceIdUniqueIdProvider = rotatingDeviceIdUniqueIdProvider;
         this.commissioningDataProvider = commissioningDataProvider;
         this.dacProvider = dacProvider;
+    }
+
+    @NonNull
+    public Context getApplicationContext() {
+        return applicationContext;
+    }
+
+    @NonNull
+    public DataProvider<ConfigurationManager> getConfigurationManager() {
+        return configurationManager;
     }
 
     @NonNull

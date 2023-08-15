@@ -34,6 +34,12 @@ shared_library("jni") {
     "App/app/src/main/jni/cpp/TvCastingApp-JNI.cpp",
   ]
 
+  # add simplified casting API files here
+  sources += [
+    "App/app/src/main/jni/cpp/core/CastingApp-JNI.cpp",
+    "App/app/src/main/jni/cpp/core/CastingApp-JNI.h",
+  ]
+
   deps = [
     "${chip_root}/examples/tv-casting-app/tv-casting-common",
     "${chip_root}/src/app/server/java:jni",
@@ -63,6 +69,7 @@ android_library("java") {
     "${chip_root}/build/chip/java:shared_cpplib",
   ]
 
+  # add simplified casting API files here
   sources = [
     "App/app/src/main/jni/com/chip/casting/AppParameters.java",
     "App/app/src/main/jni/com/chip/casting/CommissioningCallbacks.java",

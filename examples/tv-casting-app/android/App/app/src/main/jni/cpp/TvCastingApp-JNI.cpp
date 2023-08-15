@@ -42,7 +42,7 @@ using namespace chip;
 
 TvCastingAppJNI TvCastingAppJNI::sInstance;
 
-jint JNI_OnLoad(JavaVM * jvm, void * reserved)
+/*jint JNI_OnLoad(JavaVM * jvm, void * reserved)
 {
     return AndroidAppServerJNI_OnLoad(jvm, reserved);
 }
@@ -50,7 +50,7 @@ jint JNI_OnLoad(JavaVM * jvm, void * reserved)
 void JNI_OnUnload(JavaVM * jvm, void * reserved)
 {
     return AndroidAppServerJNI_OnUnload(jvm, reserved);
-}
+}*/
 
 JNI_METHOD(jboolean, preInitJni)(JNIEnv *, jobject, jobject jAppParameters)
 {
