@@ -52,7 +52,7 @@ JNI_METHOD(jobject, initialize)(JNIEnv *, jobject, jobject jAppParameters)
     chip::DeviceLayer::StackLock lock;
     ChipLogProgress(AppServer, "JNI_METHOD initialize called");
      matter::casting::support::AppParameters appParameters;
-     matter::casting::app::CastingApp::GetInstance()->Initialize(appParameters);
+     matter::casting::core::CastingApp::GetInstance()->Initialize(appParameters);
     return nullptr;
 }
 }; // namespace jni
