@@ -47,7 +47,7 @@ void JNI_OnUnload(JavaVM * jvm, void * reserved)
     return AndroidAppServerJNI_OnUnload(jvm, reserved);
 }
 
-JNI_METHOD(jobject, initialize)(JNIEnv *, jobject, jobject jAppParameters)
+JNI_METHOD(jobject, _initialize)(JNIEnv *, jobject, jobject jAppParameters)
 {
     chip::DeviceLayer::StackLock lock;
     ChipLogProgress(AppServer, "JNI_METHOD initialize called");

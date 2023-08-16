@@ -34,10 +34,10 @@ public final class CastingApp {
 
     public MatterError initialize(AppParameters appParameters)
     {
-
+    return null;
     }
 
-    private native MatterError initialize(AppParameters appParameters);
+    private native MatterError _initialize(AppParameters appParameters);
 
     // called after initialize
     public native MatterError start();
