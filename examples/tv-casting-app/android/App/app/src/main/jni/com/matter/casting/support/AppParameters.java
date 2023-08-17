@@ -18,55 +18,58 @@
 package com.matter.casting.support;
 
 import android.content.Context;
-
 import androidx.annotation.NonNull;
+
+import com.chip.casting.DACProvider;
 
 import chip.platform.ConfigurationManager;
 
 public class AppParameters {
-    @NonNull private final Context applicationContext;
+  @NonNull private final Context applicationContext;
 
-    @NonNull private final DataProvider<ConfigurationManager> configurationManagerProvider;
+  @NonNull private final DataProvider<ConfigurationManager> configurationManagerProvider;
 
-    @NonNull private final DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider;
+  @NonNull private final DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider;
 
-    @NonNull private final DataProvider<CommissionableData> commissionableDataProvider;
+  @NonNull private final DataProvider<CommissionableData> commissionableDataProvider;
 
-    @NonNull private final DataProvider<DeviceAttestationCredentials> dacProvider;
+  @NonNull private final DACProvider dacProvider;
 
-    public AppParameters(
-            @NonNull Context applicationContext, @NonNull DataProvider<ConfigurationManager> configurationManagerProvider, @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
-            @NonNull DataProvider<CommissionableData> commissionableDataProvider,
-            @NonNull DataProvider<DeviceAttestationCredentials> dacProvider) {
-        this.applicationContext = applicationContext;
-        this.configurationManagerProvider = configurationManagerProvider;
-        this.rotatingDeviceIdUniqueIdProvider = rotatingDeviceIdUniqueIdProvider;
-        this.commissionableDataProvider = commissionableDataProvider;
-        this.dacProvider = dacProvider;
-    }
+  public AppParameters(
+      @NonNull Context applicationContext,
+      @NonNull DataProvider<ConfigurationManager> configurationManagerProvider,
+      @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
+      @NonNull DataProvider<CommissionableData> commissionableDataProvider,
+      @NonNull DACProvider dacProvider) {
+    this.applicationContext = applicationContext;
+    this.configurationManagerProvider = configurationManagerProvider;
+    this.rotatingDeviceIdUniqueIdProvider = rotatingDeviceIdUniqueIdProvider;
+    this.commissionableDataProvider = commissionableDataProvider;
+    this.dacProvider = dacProvider;
+  }
 
-    @NonNull
-    public Context getApplicationContext() {
-        return applicationContext;
-    }
+  @NonNull
+  public Context getApplicationContext() {
+    return applicationContext;
+  }
 
-    @NonNull
-    public DataProvider<ConfigurationManager> getConfigurationManagerProvider() {
-        return configurationManagerProvider;
-    }
+  @NonNull
+  public DataProvider<ConfigurationManager> getConfigurationManagerProvider() {
+    return configurationManagerProvider;
+  }
 
-    @NonNull
-    public DataProvider<byte[]> getRotatingDeviceIdUniqueIdProvider() {
-        return rotatingDeviceIdUniqueIdProvider;
-    }
+  @NonNull
+  public DataProvider<byte[]> getRotatingDeviceIdUniqueIdProvider() {
+    return rotatingDeviceIdUniqueIdProvider;
+  }
 
-    @NonNull
-    public DataProvider<CommissionableData> getCommissionableDataProvider() {
-        return commissionableDataProvider;
-    }
+  @NonNull
+  public DataProvider<CommissionableData> getCommissionableDataProvider() {
+    return commissionableDataProvider;
+  }
 
-    @NonNull
-    public DataProvider<DeviceAttestationCredentials> getDacProvider() {
-        return dacProvider;
-    }
+  @NonNull
+  public DACProvider getDacProvider() {
+    return dacProvider;
+  }
 }

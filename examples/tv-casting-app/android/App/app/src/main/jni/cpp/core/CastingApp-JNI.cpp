@@ -18,9 +18,7 @@
 
 #include "CastingApp-JNI.h"
 
-#include "core/CastingApp.h"     // from tv-casting-common
-
-#include <app/server/java/AndroidAppServerWrapper.h>
+#include "core/CastingApp.h" // from tv-casting-common
 
 #include <jni.h>
 #include <lib/support/JniReferences.h>
@@ -37,22 +35,12 @@ namespace jni {
 
 CastingAppJNI CastingAppJNI::sInstance;
 
-jint JNI_OnLoad(JavaVM * jvm, void * reserved)
-{
-    return AndroidAppServerJNI_OnLoad(jvm, reserved);
-}
-
-void JNI_OnUnload(JavaVM * jvm, void * reserved)
-{
-    return AndroidAppServerJNI_OnUnload(jvm, reserved);
-}
-
 JNI_METHOD(jobject, _initialize)(JNIEnv *, jobject, jobject jAppParameters)
 {
     chip::DeviceLayer::StackLock lock;
     ChipLogProgress(AppServer, "JNI_METHOD initialize called");
-     matter::casting::support::AppParameters appParameters;
-     matter::casting::core::CastingApp::GetInstance()->Initialize(appParameters);
+    matter::casting::support::AppParameters appParameters;
+    matter::casting::core::CastingApp::GetInstance()->Initialize(appParameters);
     return nullptr;
 }
 }; // namespace jni

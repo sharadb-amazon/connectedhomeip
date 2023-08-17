@@ -13,10 +13,19 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
+ *
  */
 
-package com.matter.casting.support;
+#include "LoadUnload-JNI.h"
 
-public interface DataProvider<T> {
-  T get();
+#include <app/server/java/AndroidAppServerWrapper.h>
+
+jint JNI_OnLoad(JavaVM * jvm, void * reserved)
+{
+    return AndroidAppServerJNI_OnLoad(jvm, reserved);
+}
+
+void JNI_OnUnload(JavaVM * jvm, void * reserved)
+{
+    return AndroidAppServerJNI_OnUnload(jvm, reserved);
 }

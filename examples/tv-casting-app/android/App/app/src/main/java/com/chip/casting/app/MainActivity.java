@@ -5,6 +5,7 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import chip.platform.ConfigurationManager;
 import com.chip.casting.AppParameters;
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
@@ -12,6 +13,8 @@ import com.chip.casting.util.DACProviderStub;
 import com.chip.casting.util.GlobalCastingConstants;
 import com.chip.casting.util.PreferencesConfigurationManager;
 import com.matter.casting.core.CastingApp;
+import com.matter.casting.support.CommissionableData;
+import com.matter.casting.support.DataProvider;
 
 import java.util.Random;
 
@@ -29,7 +32,36 @@ public class MainActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    CastingApp.getInstance().initialize(null);
+    CommissionableData commissionableData = new CommissionableData();
+    commissionableData.setSetupPasscode(20202021);
+    commissionableData.setDiscriminator(3871);
+    com.matter.casting.support.AppParameters appParameters =
+        new com.matter.casting.support.AppParameters(
+            this.getApplicationContext(),
+            new DataProvider<ConfigurationManager>() {
+              @Override
+              public ConfigurationManager get() {
+                return new PreferencesConfigurationManager(
+                    getApplicationContext(), "chip.platform.ConfigurationManager");
+              }
+            },
+            new DataProvider<byte[]>() {
+              private final String ID = "UNIQUE_ID";
+
+              @Override
+              public byte[] get() {
+                return ID.getBytes();
+              }
+            },
+            new DataProvider<CommissionableData>() {
+              @Override
+              public CommissionableData get() {
+                return commissionableData;
+              }
+            },
+            new DACProviderStub());
+
+    CastingApp.getInstance().initialize(appParameters);
     /*boolean ret = initJni();
     if (!ret) {
       Log.e(TAG, "Failed to initialize Matter TV casting library");

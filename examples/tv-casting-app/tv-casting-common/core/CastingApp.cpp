@@ -49,9 +49,6 @@ CHIP_ERROR CastingApp::Initialize(const AppParameters & appParameters)
     VerifyOrReturnError(appParameters.GetDeviceAttestationCredentialsProvider() != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
     VerifyOrReturnError(appParameters.GetServerInitParamsProvider() != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
 
-    ReturnErrorOnFailure(chip::Platform::MemoryInit());
-    ReturnErrorOnFailure(chip::DeviceLayer::PlatformMgr().InitChipStack());
-
     mAppParameters = &appParameters;
 
     chip::DeviceLayer::SetCommissionableDataProvider(appParameters.GetCommissionableDataProvider());
@@ -74,6 +71,9 @@ CHIP_ERROR CastingApp::Initialize(const AppParameters & appParameters)
 CHIP_ERROR CastingApp::Start()
 {
     VerifyOrReturnError(mState == NOT_RUNNING, CHIP_ERROR_INCORRECT_STATE);
+
+    ReturnErrorOnFailure(chip::Platform::MemoryInit());
+    ReturnErrorOnFailure(chip::DeviceLayer::PlatformMgr().InitChipStack());
 
     // start Matter server
     chip::ServerInitParams * serverInitParams = mAppParameters->GetServerInitParamsProvider()->Get();
@@ -117,6 +117,8 @@ CHIP_ERROR CastingApp::Stop()
 
     // Shutdown the Matter server
     chip::Server::GetInstance().Shutdown();
+
+    chip::Platform::MemoryShutdown();
 
     mState = NOT_RUNNING; // CastingApp started successfully, set state to RUNNING
 
