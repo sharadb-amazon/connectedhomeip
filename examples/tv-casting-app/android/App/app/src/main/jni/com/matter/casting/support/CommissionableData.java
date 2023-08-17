@@ -19,7 +19,7 @@ package com.matter.casting.support;
 
 import androidx.annotation.Nullable;
 
-public class CommissioningData {
+public class CommissionableData {
     private int setupPasscode;
 
     private int discriminator;

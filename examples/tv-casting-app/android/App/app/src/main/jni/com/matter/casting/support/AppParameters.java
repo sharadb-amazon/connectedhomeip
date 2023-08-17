@@ -26,22 +26,22 @@ import chip.platform.ConfigurationManager;
 public class AppParameters {
     @NonNull private final Context applicationContext;
 
-    @NonNull private final DataProvider<ConfigurationManager> configurationManager;
+    @NonNull private final DataProvider<ConfigurationManager> configurationManagerProvider;
 
     @NonNull private final DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider;
 
-    @NonNull private final DataProvider<CommissioningData> commissioningDataProvider;
+    @NonNull private final DataProvider<CommissionableData> commissionableDataProvider;
 
     @NonNull private final DataProvider<DeviceAttestationCredentials> dacProvider;
 
     public AppParameters(
-            @NonNull Context applicationContext, @NonNull DataProvider<ConfigurationManager> configurationManager, @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
-            @NonNull DataProvider<CommissioningData> commissioningDataProvider,
+            @NonNull Context applicationContext, @NonNull DataProvider<ConfigurationManager> configurationManagerProvider, @NonNull DataProvider<byte[]> rotatingDeviceIdUniqueIdProvider,
+            @NonNull DataProvider<CommissionableData> commissionableDataProvider,
             @NonNull DataProvider<DeviceAttestationCredentials> dacProvider) {
         this.applicationContext = applicationContext;
-        this.configurationManager = configurationManager;
+        this.configurationManagerProvider = configurationManagerProvider;
         this.rotatingDeviceIdUniqueIdProvider = rotatingDeviceIdUniqueIdProvider;
-        this.commissioningDataProvider = commissioningDataProvider;
+        this.commissionableDataProvider = commissionableDataProvider;
         this.dacProvider = dacProvider;
     }
 
@@ -51,8 +51,8 @@ public class AppParameters {
     }
 
     @NonNull
-    public DataProvider<ConfigurationManager> getConfigurationManager() {
-        return configurationManager;
+    public DataProvider<ConfigurationManager> getConfigurationManagerProvider() {
+        return configurationManagerProvider;
     }
 
     @NonNull
@@ -61,8 +61,8 @@ public class AppParameters {
     }
 
     @NonNull
-    public DataProvider<CommissioningData> getCommissioningDataProvider() {
-        return commissioningDataProvider;
+    public DataProvider<CommissionableData> getCommissionableDataProvider() {
+        return commissionableDataProvider;
     }
 
     @NonNull

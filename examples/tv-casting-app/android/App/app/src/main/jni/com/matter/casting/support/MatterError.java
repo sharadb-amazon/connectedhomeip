@@ -23,8 +23,14 @@ public class MatterError {
     private long errorCode;
     private String errorMessage;
 
-    public static final com.chip.casting.MatterError NO_ERROR =
-            new com.chip.casting.MatterError(0, null);
+    public static final MatterError NO_ERROR =
+            new MatterError(0, null);
+
+    public static final MatterError CHIP_ERROR_INVALID_ARGUMENT =
+            new MatterError(0x2f, "CHIP_ERROR_INVALID_ARGUMENT");
+
+    public static final MatterError CHIP_ERROR_INCORRECT_STATE =
+            new MatterError(0x03, "CHIP_ERROR_INCORRECT_STATE");
 
     public MatterError(long errorCode, String errorMessage) {
         this.errorCode = errorCode;
