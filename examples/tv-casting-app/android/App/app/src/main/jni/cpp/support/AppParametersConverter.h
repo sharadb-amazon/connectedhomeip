@@ -16,6 +16,20 @@
  */
 #pragma once
 
-#include "AppParameters.h"
+#include "Converter.h"
+#include "core/Types.h"
 
-CHIP_ERROR convertJAppParametersToCppAppParams(jobject appParameters, matter::casting::support::AppParameters & outAppParameters);
+namespace matter {
+namespace casting {
+namespace support {
+
+class AppParametersConverter : public matter::casting::support::Converter<matter::casting::support::AppParameters>
+{
+public:
+    CHIP_ERROR toCppObject(jobject in, matter::casting::support::AppParameters &out);
+    CHIP_ERROR toJObject(matter::casting::support::AppParameters *in, jobject &out);
+};
+
+}; // namespace support
+}; // namespace casting
+}; // namespace matter

@@ -37,6 +37,15 @@ class AppParameters
 {
 public:
     AppParameters() {}
+    ~AppParameters()
+    {
+        delete mRotatingDeviceIdUniqueIdProvider;
+        delete mCommissionableDataProvider;
+        delete mDeviceAttestationCredentialsProvider;
+        delete mDeviceAttestationVerifier;
+        delete mServerInitParamsProvider;
+    }
+
     CHIP_ERROR Create(MutableByteSpanDataProvider * rotatingDeviceIdUniqueIdProvider,
                       chip::DeviceLayer::CommissionableDataProvider * commissionableDataProvider,
                       chip::Credentials::DeviceAttestationCredentialsProvider * deviceAttestationCredentialsProvider,

@@ -80,8 +80,7 @@ public final class CastingApp {
       return MatterError.CHIP_ERROR_INVALID_ARGUMENT;
     }
 
-    //return _initialize(appParameters);
-    return null;
+    return _initialize(appParameters);
   }
 
   private native MatterError _initialize(AppParameters appParameters);

@@ -16,7 +16,7 @@
  *
  */
 
-#include "LoadUnload-JNI.h"
+#include "LoadUnload.h"
 
 #include <app/server/java/AndroidAppServerWrapper.h>
 

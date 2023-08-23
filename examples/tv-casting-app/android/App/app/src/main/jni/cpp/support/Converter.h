@@ -14,14 +14,24 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#include "Converters.h"
+#pragma once
+
+#include <lib/core/CHIPError.h>
 
 #include <jni.h>
-#include <lib/support/JniReferences.h>
-#include <lib/support/JniTypeWrappers.h>
 
-CHIP_ERROR convertJAppParametersToCppAppParams(jobject appParameters, AppParams & outAppParams)
+namespace matter {
+namespace casting {
+namespace support {
+
+template <typename cppObject>
+class Converter
 {
-    ChipLogProgress(AppServer, "convertJAppParametersToCppAppParams called");
-    return CHIP_NO_ERROR;
-}
+public:
+    CHIP_ERROR toCppObject(jobject in, cppObject &out);
+    CHIP_ERROR toJObject(cppObject *in, jobject &out);
+};
+
+}; // namespace support
+}; // namespace casting
+}; // namespace matter

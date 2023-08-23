@@ -32,9 +32,7 @@ public class MainActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    CommissionableData commissionableData = new CommissionableData();
-    commissionableData.setSetupPasscode(20202021);
-    commissionableData.setDiscriminator(3871);
+    CommissionableData commissionableData = new CommissionableData(20202021, 3871);
     com.matter.casting.support.AppParameters appParameters =
         new com.matter.casting.support.AppParameters(
             this.getApplicationContext(),

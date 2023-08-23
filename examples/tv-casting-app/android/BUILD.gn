@@ -38,8 +38,17 @@ shared_library("jni") {
   sources += [
     "App/app/src/main/jni/cpp/core/CastingApp-JNI.cpp",
     "App/app/src/main/jni/cpp/core/CastingApp-JNI.h",
-    "App/app/src/main/jni/cpp/support/LoadUnload-JNI.cpp",
-    "App/app/src/main/jni/cpp/support/LoadUnload-JNI.h",
+    "App/app/src/main/jni/cpp/support/AppParametersConverter.cpp",
+    "App/app/src/main/jni/cpp/support/AppParametersConverter.h",
+    "App/app/src/main/jni/cpp/support/CommissionableDataProviderImpl-JNI.cpp",
+    "App/app/src/main/jni/cpp/support/CommissionableDataProviderImpl-JNI.h",
+    "App/app/src/main/jni/cpp/support/Converter.h",
+    "App/app/src/main/jni/cpp/support/DeviceAttestationCredentialsProvider-JNI.cpp",
+    "App/app/src/main/jni/cpp/support/DeviceAttestationCredentialsProvider-JNI.h",
+    "App/app/src/main/jni/cpp/support/LoadUnload.cpp",
+    "App/app/src/main/jni/cpp/support/LoadUnload.h",
+    "App/app/src/main/jni/cpp/support/RotatingDeviceIdUniqueIdProvider-JNI.cpp",
+    "App/app/src/main/jni/cpp/support/RotatingDeviceIdUniqueIdProvider-JNI.h",
   ]
 
   deps = [

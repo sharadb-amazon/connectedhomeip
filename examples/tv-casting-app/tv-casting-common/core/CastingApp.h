@@ -20,6 +20,8 @@
 
 #include "support/AppParameters.h"
 
+#include <lib/core/CHIPError.h>
+
 namespace matter {
 namespace casting {
 namespace core {

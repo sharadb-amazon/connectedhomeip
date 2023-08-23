@@ -20,7 +20,7 @@ package com.matter.casting.support;
 import androidx.annotation.Nullable;
 
 public class CommissionableData {
-  private int setupPasscode;
+  private long setupPasscode;
 
   private int discriminator;
 
@@ -30,20 +30,18 @@ public class CommissionableData {
 
   private int spake2pIterationCount;
 
-  public int getSetupPasscode() {
-    return setupPasscode;
+  public CommissionableData(long setupPasscode, int discriminator)
+  {
+    this.setupPasscode = setupPasscode;
+    this.discriminator = discriminator;
   }
 
-  public void setSetupPasscode(int setupPasscode) {
-    this.setupPasscode = setupPasscode;
+  public long getSetupPasscode() {
+    return setupPasscode;
   }
 
   public int getDiscriminator() {
     return discriminator;
-  }
-
-  public void setDiscriminator(int discriminator) {
-    this.discriminator = discriminator;
   }
 
   @Nullable

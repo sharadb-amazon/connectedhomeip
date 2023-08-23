@@ -22,7 +22,6 @@
 namespace matter {
 namespace casting {
 namespace core {
-namespace jni {
 
 class CastingAppJNI
 {
@@ -37,7 +36,6 @@ inline class CastingAppJNI & CastingAppJNIMgr()
 {
     return CastingAppJNI::sInstance;
 }
-}; // namespace jni
 }; // namespace core
 }; // namespace casting
 }; // namespace matter

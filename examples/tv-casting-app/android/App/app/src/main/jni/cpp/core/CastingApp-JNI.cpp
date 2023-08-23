@@ -31,7 +31,6 @@ using namespace chip;
 namespace matter {
 namespace casting {
 namespace core {
-namespace jni {
 
 CastingAppJNI CastingAppJNI::sInstance;
 
@@ -43,7 +42,6 @@ JNI_METHOD(jobject, _initialize)(JNIEnv *, jobject, jobject jAppParameters)
     matter::casting::core::CastingApp::GetInstance()->Initialize(appParameters);
     return nullptr;
 }
-}; // namespace jni
 }; // namespace core
 }; // namespace casting
 }; // namespace matter
