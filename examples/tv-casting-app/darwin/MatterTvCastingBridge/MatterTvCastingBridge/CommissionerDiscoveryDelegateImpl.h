@@ -21,6 +21,7 @@
 
 #import "ConversionUtils.hpp"
 #include <controller/DeviceDiscoveryDelegate.h>
+#include <system/SystemClock.h>
 
 class CommissionerDiscoveryDelegateImpl : public chip::Controller::DeviceDiscoveryDelegate {
 public:
@@ -44,6 +45,8 @@ public:
             if (mCachedTargetVideoPlayerInfos != nullptr) {
                 for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfos[i].IsInitialized(); i++) {
                     if (mCachedTargetVideoPlayerInfos[i].IsSameAs(&cppNodeData)) {
+                        mCachedTargetVideoPlayerInfos[i].SetLastDiscovered(
+                            chip::System::SystemClock().GetMonotonicMilliseconds64()); // add discovery timestamp
                         VideoPlayer * connectableVideoPlayer =
                             [ConversionUtils convertToObjCVideoPlayerFrom:&mCachedTargetVideoPlayerInfos[i]];
                         [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];

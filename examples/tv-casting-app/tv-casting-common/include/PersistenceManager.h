@@ -55,6 +55,10 @@ private:
         kVideoPlayerNumIPsTag,
         kVideoPlayerIPAddressTag,
         kIpAddressesContainerTag,
+        kVideoPlayerLastDiscoveredTag,
+        kVideoPlayerMACAddressTag,
+        kVideoPlayerInstanceNameTag,
+        kVideoPlayerPortTag,
 
         kContextTagMaxNum = UINT8_MAX
     };

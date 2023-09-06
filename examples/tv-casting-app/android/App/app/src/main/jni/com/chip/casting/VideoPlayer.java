@@ -29,15 +29,19 @@ public class VideoPlayer {
   private long nodeId;
   private byte fabricIndex;
   private String deviceName;
+  private String instanceName;
   private int vendorId;
   private int productId;
   private int deviceType;
   private List<ContentApp> contentApps;
+  private long lastDiscoveredMs;
+  private String MACAddress;
   private boolean isConnected = false;
 
   private int numIPs;
   private List<InetAddress> ipAddresses;
   private String hostName;
+  private int port;
 
   private boolean isInitialized = false;
 
@@ -52,6 +56,10 @@ public class VideoPlayer {
       int numIPs,
       List<InetAddress> ipAddresses,
       String hostName,
+      String instanceName,
+      int port,
+      long lastDiscoveredMs,
+      String MACAddress,
       boolean isConnected) {
     this.nodeId = nodeId;
     this.fabricIndex = fabricIndex;
@@ -64,6 +72,10 @@ public class VideoPlayer {
     this.numIPs = numIPs;
     this.ipAddresses = ipAddresses;
     this.hostName = hostName;
+    this.MACAddress = MACAddress;
+    this.lastDiscoveredMs = lastDiscoveredMs;
+    this.instanceName = instanceName;
+    this.port = port;
     this.isInitialized = true;
   }
 
@@ -116,8 +128,8 @@ public class VideoPlayer {
     return Objects.hash(super.hashCode(), nodeId, fabricIndex);
   }
 
-  @java.lang.Override
-  public java.lang.String toString() {
+  @Override
+  public String toString() {
     return "VideoPlayer{"
         + "nodeId="
         + nodeId
@@ -134,16 +146,23 @@ public class VideoPlayer {
         + deviceType
         + ", contentApps="
         + contentApps
+        + ", lastDiscoveredMs="
+        + lastDiscoveredMs
+        + ", MACAddress='"
+        + MACAddress
+        + '\''
         + ", isConnected="
         + isConnected
         + ", numIPs="
         + numIPs
         + ", ipAddresses="
         + ipAddresses
-        + ", isInitialized="
         + ", hostName='"
         + hostName
         + '\''
+        + ", port="
+        + port
+        + ", isInitialized="
         + isInitialized
         + '}';
   }
@@ -178,6 +197,30 @@ public class VideoPlayer {
 
   public int getDeviceType() {
     return deviceType;
+  }
+
+  public int getNumIPs() {
+    return numIPs;
+  }
+
+  public List<InetAddress> getIpAddresses() {
+    return ipAddresses;
+  }
+
+  public String getHostName() {
+    return hostName;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public long getLastDiscoveredMs() {
+    return lastDiscoveredMs;
+  }
+
+  public String getMACAddress() {
+    return MACAddress;
   }
 
   public boolean isInitialized() {

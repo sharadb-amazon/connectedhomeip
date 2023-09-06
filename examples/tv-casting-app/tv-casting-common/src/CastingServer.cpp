@@ -217,6 +217,7 @@ chip::Inet::IPAddress * CastingServer::getIpAddressForUDCRequest(chip::Inet::IPA
 
 CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::DiscoveredNodeData * selectedCommissioner)
 {
+    LogCachedVideoPlayers();
     mUdcInProgress = true;
     // Send User Directed commissioning request
     chip::Inet::IPAddress * ipAddressToUse =
@@ -226,6 +227,7 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::Discovered
     mTargetVideoPlayerVendorId   = selectedCommissioner->commissionData.vendorId;
     mTargetVideoPlayerProductId  = selectedCommissioner->commissionData.productId;
     mTargetVideoPlayerDeviceType = selectedCommissioner->commissionData.deviceType;
+    mTargetVideoPlayerPort       = selectedCommissioner->resolutionData.port;
     mTargetVideoPlayerNumIPs     = selectedCommissioner->resolutionData.numIPs;
     for (size_t i = 0; i < mTargetVideoPlayerNumIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
     {
@@ -235,25 +237,124 @@ CHIP_ERROR CastingServer::SendUserDirectedCommissioningRequest(Dnssd::Discovered
                                selectedCommissioner->commissionData.deviceName);
     chip::Platform::CopyString(mTargetVideoPlayerHostName, chip::Dnssd::kHostNameMaxLength + 1,
                                selectedCommissioner->resolutionData.hostName);
+    chip::Platform::CopyString(mTargetVideoPlayerInstanceName, chip::Dnssd::Commission::kInstanceNameMaxLength + 1,
+                               selectedCommissioner->commissionData.instanceName);
     return CHIP_NO_ERROR;
 }
 #endif // CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
 
+CHIP_ERROR ConvertToDiscoveredNodeData(TargetVideoPlayerInfo * player, Dnssd::DiscoveredNodeData & outNodeData)
+{
+    if (player == nullptr)
+        return CHIP_ERROR_INVALID_ARGUMENT;
+
+    outNodeData.commissionData.vendorId   = player->GetVendorId();
+    outNodeData.commissionData.productId  = static_cast<uint16_t>(player->GetProductId());
+    outNodeData.commissionData.deviceType = player->GetDeviceType();
+    outNodeData.resolutionData.numIPs     = player->GetNumIPs();
+
+    const chip::Inet::IPAddress * ipAddresses = player->GetIpAddresses();
+    if (ipAddresses != nullptr)
+    {
+        for (size_t i = 0; i < outNodeData.resolutionData.numIPs && i < chip::Dnssd::CommonResolutionData::kMaxIPAddresses; i++)
+        {
+            outNodeData.resolutionData.ipAddress[i] = ipAddresses[i];
+        }
+    }
+
+    chip::Platform::CopyString(outNodeData.commissionData.deviceName, chip::Dnssd::kMaxDeviceNameLen + 1, player->GetDeviceName());
+    chip::Platform::CopyString(outNodeData.resolutionData.hostName, chip::Dnssd::kHostNameMaxLength + 1, player->GetHostName());
+
+    return CHIP_NO_ERROR;
+}
+
 const Dnssd::DiscoveredNodeData *
 CastingServer::GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPlayerInfo *> & outAssociatedConnectableVideoPlayer)
 {
-    const Dnssd::DiscoveredNodeData * discoveredNodeData = mCommissionableNodeController.GetDiscoveredCommissioner(index);
-    if (discoveredNodeData != nullptr)
+    // get actively discovered commissioner at 'index', if any
+    const Dnssd::DiscoveredNodeData * activelyDiscoveredNodeData = mCommissionableNodeController.GetDiscoveredCommissioner(index);
+
+    // return actively discovered commissioner, if any (+ associate it to a corresponding cached video player)
+    if (activelyDiscoveredNodeData != nullptr)
     {
         for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfo[i].IsInitialized(); i++)
         {
-            if (mCachedTargetVideoPlayerInfo[i].IsSameAs(discoveredNodeData))
+            if (mCachedTargetVideoPlayerInfo[i].IsSameAs(activelyDiscoveredNodeData))
             {
                 outAssociatedConnectableVideoPlayer = MakeOptional(&mCachedTargetVideoPlayerInfo[i]);
+
+                mCachedTargetVideoPlayerInfo[i].SetLastDiscovered(System::SystemClock().GetMonotonicMilliseconds64());
+                CHIP_ERROR err = CastingServer::GetInstance()->mPersistenceManager.AddVideoPlayer(&mCachedTargetVideoPlayerInfo[i]);
+                if (err != CHIP_NO_ERROR)
+                {
+                    ChipLogError(AppServer, "AddVideoPlayer(ToCache) error: %" CHIP_ERROR_FORMAT, err.Format());
+                }
             }
         }
+
+        return activelyDiscoveredNodeData;
     }
-    return discoveredNodeData;
+    else // if no actively discovered commissioner at 'index', return a cached video player that supports STR/WoL
+    {
+        chip::Dnssd::DiscoveredNodeData * strNodeData = nullptr;
+        // count total number of actively discoverable commissioners
+        int discoveredCommissionerCount;
+        for (discoveredCommissionerCount = 0;
+             mCommissionableNodeController.GetDiscoveredCommissioner(discoveredCommissionerCount) != nullptr;
+             discoveredCommissionerCount++)
+            ;
+
+        // counter used to determine which video player to return from the list of cached video players
+        int targetSTRVideoPlayerCounter = index - discoveredCommissionerCount;
+        if (targetSTRVideoPlayerCounter < 0) // cannot be less than 0
+        {
+            ChipLogError(AppServer, "CastingServer::GetDiscoveredCommissioner encountered invalid targetSTRVideoPlayerCounter %d",
+                         targetSTRVideoPlayerCounter);
+            return nullptr;
+        }
+        strNodeData = &mStrNodeDataList[targetSTRVideoPlayerCounter];
+
+        // search/loop through all the cached video players
+        for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfo[i].IsInitialized(); i++)
+        {
+            // search/loop through all actively discovered commissioners so we can skip mCachedTargetVideoPlayerInfo[i] if it is the
+            // same as an actively discovered commissioner
+            const Dnssd::DiscoveredNodeData * discoveredNodeData = nullptr;
+            for (int j = 0; j < CHIP_DEVICE_CONFIG_MAX_DISCOVERED_NODES; j++)
+            {
+                discoveredNodeData = mCommissionableNodeController.GetDiscoveredCommissioner(j);
+                if (discoveredNodeData != nullptr && discoveredNodeData->resolutionData.IsValid())
+                {
+                    // consider a cached video player only if it was NOT in the list of actively discoverable commissioners
+                    if (!mCachedTargetVideoPlayerInfo[i].IsSameAs(discoveredNodeData))
+                    {
+                        // if this cached video player supports STR/WoL and was discoverable recently, convert it to a
+                        // DiscoveredNodeData object and break out of the loop
+                        if (mCachedTargetVideoPlayerInfo[i].GetMACAddress() != nullptr &&
+                            mCachedTargetVideoPlayerInfo[i].GetMACAddress()->size() > 0
+#ifdef CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_DAYS
+                            && mCachedTargetVideoPlayerInfo[i].GetLastDiscovered().count() >
+                                (System::SystemClock().GetMonotonicMilliseconds64().count() -
+                                 CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_DAYS * 24 * 60 * 60 * 1000)
+#endif
+                        )
+                        {
+                            // ensure we are returning the cached video player at the correct index
+                            if (targetSTRVideoPlayerCounter-- == 0)
+                            {
+                                if (ConvertToDiscoveredNodeData(&mCachedTargetVideoPlayerInfo[i], *strNodeData) == CHIP_NO_ERROR)
+                                {
+                                    return nullptr;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return strNodeData;
+    }
 }
 
 void CastingServer::ReadServerClustersForNode(NodeId nodeId)
@@ -336,6 +437,32 @@ void CastingServer::OnDescriptorReadSuccessResponse(void * context, const app::D
         ChipLogError(AppServer, "AddVideoPlayer(ToCache) error: %" CHIP_ERROR_FORMAT, err.Format());
     }
 
+    if (endpointInfo->HasCluster(chip::app::Clusters::WakeOnLan::Id))
+    {
+        // Read MAC address
+        ChipLogProgress(AppServer, "Endpoint supports WoL. Reading VideoPlayer's MACAddress");
+        CastingServer::GetInstance()->mMACAddressReader.SetTarget(CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo,
+                                                                  endpointInfo->GetEndpointId());
+        CastingServer::GetInstance()->mMACAddressReader.ReadAttribute(
+            &CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo,
+            [](void * context, const chip::app::Clusters::WakeOnLan::Attributes::MACAddress::TypeInfo::DecodableArgType response) {
+                ChipLogProgress(AppServer, "Read MACAddress successfully");
+                TargetVideoPlayerInfo * videoPlayerInfo = static_cast<TargetVideoPlayerInfo *>(context);
+                if (response.data() != nullptr && response.size() > 0)
+                {
+                    videoPlayerInfo->SetMACAddress(response);
+                    ChipLogProgress(AppServer, "Updating cache of VideoPlayers with MACAddress: %.*s",
+                                    static_cast<int>(response.size()), response.data());
+                    CHIP_ERROR err = CastingServer::GetInstance()->mPersistenceManager.AddVideoPlayer(videoPlayerInfo);
+                    if (err != CHIP_NO_ERROR)
+                    {
+                        ChipLogError(AppServer, "AddVideoPlayer(ToCache) error: %" CHIP_ERROR_FORMAT, err.Format());
+                    }
+                }
+            },
+            [](void * context, CHIP_ERROR error) { ChipLogError(AppServer, "Failed to read MACAddress"); });
+    }
+
     if (CastingServer::GetInstance()->mOnNewOrUpdatedEndpoint)
     {
         CastingServer::GetInstance()->mOnNewOrUpdatedEndpoint(endpointInfo);
@@ -365,7 +492,7 @@ TargetVideoPlayerInfo * CastingServer::ReadCachedTargetVideoPlayerInfos()
     CHIP_ERROR err = mPersistenceManager.ReadAllVideoPlayers(mCachedTargetVideoPlayerInfo);
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogError(AppServer, "ReadAllVideoPlayers error: %" CHIP_ERROR_FORMAT, err.Format());
+        ChipLogProgress(AppServer, "ReadAllVideoPlayers error: %" CHIP_ERROR_FORMAT, err.Format());
         return nullptr;
     }
     return mCachedTargetVideoPlayerInfo;
@@ -408,7 +535,47 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
         [](TargetVideoPlayerInfo * videoPlayer) {
             ChipLogProgress(AppServer, "CastingServer::OnConnectionSuccess lambda called");
             CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = *videoPlayer;
-            CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(videoPlayer);
+
+            // Read cached VideoPlayer endpoint (1) and check if it supports WoL
+            TargetEndpointInfo * endpoint = videoPlayer->GetEndpoint(1);
+            if (endpoint != nullptr && endpoint->HasCluster(chip::app::Clusters::WakeOnLan::Id))
+            {
+                ChipLogProgress(AppServer, "Endpoint supports WoL. Reading VideoPlayer's MACAddress");
+
+                // Read MAC address
+                CastingServer::GetInstance()->mMACAddressReader.SetTarget(*videoPlayer, endpoint->GetEndpointId());
+                CastingServer::GetInstance()->mMACAddressReader.ReadAttribute(
+                    videoPlayer,
+                    [](void * context,
+                       const chip::app::Clusters::WakeOnLan::Attributes::MACAddress::TypeInfo::DecodableArgType response) {
+                        ChipLogProgress(AppServer, "Read MACAddress successfully");
+                        TargetVideoPlayerInfo * videoPlayerInfo = static_cast<TargetVideoPlayerInfo *>(context);
+                        if (response.data() != nullptr && response.size() > 0)
+                        {
+                            videoPlayerInfo->SetMACAddress(response);
+                            ChipLogProgress(AppServer, "Updating cache of VideoPlayers with MACAddress: %.*s",
+                                            static_cast<int>(response.size()), response.data());
+                            CHIP_ERROR err = CastingServer::GetInstance()->mPersistenceManager.AddVideoPlayer(videoPlayerInfo);
+                            if (err != CHIP_NO_ERROR)
+                            {
+                                ChipLogError(AppServer, "AddVideoPlayer(ToCache) error: %" CHIP_ERROR_FORMAT, err.Format());
+                            }
+                        }
+
+                        CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(
+                            static_cast<TargetVideoPlayerInfo *>(context));
+                    },
+                    [](void * context, CHIP_ERROR error) {
+                        ChipLogError(AppServer, "Failed to read MACAddress");
+                        CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(
+                            static_cast<TargetVideoPlayerInfo *>(context));
+                    });
+            }
+            else
+            {
+                ChipLogProgress(AppServer, "TargetVideoPlayer does not support WoL");
+                CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(videoPlayer);
+            }
         },
         onConnectionFailure);
 }
@@ -506,7 +673,8 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
             CastingServer::GetInstance()->mTargetVideoPlayerVendorId, CastingServer::GetInstance()->mTargetVideoPlayerProductId,
             CastingServer::GetInstance()->mTargetVideoPlayerDeviceType, CastingServer::GetInstance()->mTargetVideoPlayerDeviceName,
             CastingServer::GetInstance()->mTargetVideoPlayerHostName, CastingServer::GetInstance()->mTargetVideoPlayerNumIPs,
-            CastingServer::GetInstance()->mTargetVideoPlayerIpAddress);
+            CastingServer::GetInstance()->mTargetVideoPlayerIpAddress, CastingServer::GetInstance()->mTargetVideoPlayerPort,
+            CastingServer::GetInstance()->mTargetVideoPlayerInstanceName, System::SystemClock().GetMonotonicMilliseconds64());
 
         if (err != CHIP_NO_ERROR)
         {

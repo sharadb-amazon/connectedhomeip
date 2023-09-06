@@ -65,6 +65,9 @@
 
 #define CHIP_DEVICE_CONFIG_DYNAMIC_ENDPOINT_COUNT 4
 
+// cached players that were seen before this window (in days) will not be surfaced as "discovered"
+#define CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_DAYS 60L
+
 // Include the CHIPProjectConfig from config/standalone
 // Add this at the end so that we can hit our #defines first
 #include <CHIPProjectConfig.h>

@@ -20,6 +20,8 @@
 
 #include <lib/core/TLV.h>
 #include <platform/KeyValueStoreManager.h>
+#include <system/SystemClock.h>
+#include <system/SystemLayer.h>
 
 using namespace chip;
 
@@ -95,12 +97,24 @@ CHIP_ERROR PersistenceManager::WriteAllVideoPlayers(TargetVideoPlayerInfo videoP
             ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(kVideoPlayerVendorIdTag), videoPlayer->GetVendorId()));
             ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(kVideoPlayerProductIdTag), videoPlayer->GetProductId()));
             ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(kVideoPlayerDeviceTypeIdTag), videoPlayer->GetDeviceType()));
+            ReturnErrorOnFailure(tlvWriter.Put(TLV::ContextTag(kVideoPlayerPortTag), videoPlayer->GetPort()));
             ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(kVideoPlayerDeviceNameTag),
                                                     (const uint8_t *) videoPlayer->GetDeviceName(),
                                                     static_cast<uint32_t>(strlen(videoPlayer->GetDeviceName()) + 1)));
             ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(kVideoPlayerHostNameTag),
                                                     (const uint8_t *) videoPlayer->GetHostName(),
                                                     static_cast<uint32_t>(strlen(videoPlayer->GetHostName()) + 1)));
+            ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(kVideoPlayerInstanceNameTag),
+                                                    (const uint8_t *) videoPlayer->GetInstanceName(),
+                                                    static_cast<uint32_t>(strlen(videoPlayer->GetInstanceName()) + 1)));
+            ReturnErrorOnFailure(
+                tlvWriter.Put(TLV::ContextTag(kVideoPlayerLastDiscoveredTag), videoPlayer->GetLastDiscovered().count()));
+            if (videoPlayer->GetMACAddress() != nullptr && videoPlayer->GetMACAddress()->size() > 0)
+            {
+                ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(kVideoPlayerMACAddressTag),
+                                                        (const uint8_t *) videoPlayer->GetMACAddress()->data(),
+                                                        static_cast<uint32_t>(videoPlayer->GetMACAddress()->size())));
+            }
 
             ReturnErrorOnFailure(
                 tlvWriter.Put(TLV::ContextTag(kVideoPlayerNumIPsTag), static_cast<uint64_t>(videoPlayer->GetNumIPs())));
@@ -212,6 +226,12 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
     char hostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
     size_t numIPs                                       = 0;
     Inet::IPAddress ipAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
+    uint64_t lastDiscoveredTicks                                                              = 0;
+    char MACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength] = {};
+    uint32_t MACAddressLength                                                                 = 0;
+    char instanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1]                    = {};
+    uint16_t port                                                                             = 0;
+
     CHIP_ERROR err;
     while ((err = reader.Next()) == CHIP_NO_ERROR)
     {
@@ -253,6 +273,12 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
             continue;
         }
 
+        if (videoPlayersContainerTagNum == kVideoPlayerPortTag)
+        {
+            ReturnErrorOnFailure(reader.Get(port));
+            continue;
+        }
+
         if (videoPlayersContainerTagNum == kVideoPlayerDeviceNameTag)
         {
             ReturnErrorOnFailure(reader.GetBytes(reinterpret_cast<uint8_t *>(deviceName), chip::Dnssd::kMaxDeviceNameLen + 1));
@@ -262,6 +288,27 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
         if (videoPlayersContainerTagNum == kVideoPlayerHostNameTag)
         {
             ReturnErrorOnFailure(reader.GetBytes(reinterpret_cast<uint8_t *>(hostName), chip::Dnssd::kHostNameMaxLength + 1));
+            continue;
+        }
+
+        if (videoPlayersContainerTagNum == kVideoPlayerInstanceNameTag)
+        {
+            ReturnErrorOnFailure(
+                reader.GetBytes(reinterpret_cast<uint8_t *>(instanceName), chip::Dnssd::Commission::kInstanceNameMaxLength + 1));
+            continue;
+        }
+
+        if (videoPlayersContainerTagNum == kVideoPlayerLastDiscoveredTag)
+        {
+            ReturnErrorOnFailure(reader.Get(lastDiscoveredTicks));
+            continue;
+        }
+
+        if (videoPlayersContainerTagNum == kVideoPlayerMACAddressTag)
+        {
+            MACAddressLength = reader.GetLength();
+            ReturnErrorOnFailure(reader.GetBytes(reinterpret_cast<uint8_t *>(MACAddressBuf),
+                                                 2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength));
             continue;
         }
 
@@ -312,7 +359,14 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
         if (videoPlayersContainerTagNum == kContentAppEndpointsContainerTag)
         {
             outVideoPlayers[videoPlayerIndex].Initialize(nodeId, fabricIndex, nullptr, nullptr, vendorId, productId, deviceType,
-                                                         deviceName, hostName, numIPs, ipAddress);
+                                                         deviceName, hostName, numIPs, ipAddress, port, instanceName,
+                                                         chip::System::Clock::Timestamp(lastDiscoveredTicks));
+            if (MACAddressLength > 0)
+            {
+                chip::CharSpan MACAddress(MACAddressBuf, MACAddressLength);
+                outVideoPlayers[videoPlayerIndex].SetMACAddress(MACAddress);
+            }
+
             // Entering Content App Endpoints container
             TLV::TLVType contentAppEndpointArrayContainerType = TLV::kTLVType_Array;
             ReturnErrorOnFailure(reader.EnterContainer(contentAppEndpointArrayContainerType));

@@ -84,7 +84,9 @@
 {
     VerifyOrReturnError(objCVideoPlayer.isInitialized, CHIP_ERROR_INVALID_ARGUMENT);
     ReturnErrorOnFailure(outTargetVideoPlayerInfo.Initialize(objCVideoPlayer.nodeId, objCVideoPlayer.fabricIndex, nullptr, nullptr,
-        objCVideoPlayer.vendorId, objCVideoPlayer.productId, objCVideoPlayer.deviceType, [objCVideoPlayer.deviceName UTF8String]));
+        objCVideoPlayer.vendorId, objCVideoPlayer.productId, objCVideoPlayer.deviceType, [objCVideoPlayer.deviceName UTF8String],
+        [objCVideoPlayer.hostName UTF8String], 0, nullptr, objCVideoPlayer.port, [objCVideoPlayer.instanceName UTF8String],
+        chip::System::Clock::Timestamp(objCVideoPlayer.lastDiscoveredMs)));
     for (ContentApp * contentApp in objCVideoPlayer.contentApps) {
         TargetEndpointInfo * endpoint = outTargetVideoPlayerInfo.GetOrAddEndpoint(contentApp.endpointId);
         VerifyOrReturnError(endpoint != nullptr, CHIP_ERROR_INCORRECT_STATE);
@@ -155,6 +157,13 @@
         objCVideoPlayer.isConnected = (cppTargetVideoPlayerInfo->GetOperationalDeviceProxy() != nil);
         objCVideoPlayer.deviceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetDeviceName()
                                                         encoding:NSUTF8StringEncoding];
+        objCVideoPlayer.port = cppTargetVideoPlayerInfo->GetPort();
+        objCVideoPlayer.lastDiscoveredMs = cppTargetVideoPlayerInfo->GetLastDiscovered().count();
+        objCVideoPlayer.instanceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetInstanceName()
+                                                          encoding:NSUTF8StringEncoding];
+        objCVideoPlayer.hostName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetHostName()
+                                                      encoding:NSUTF8StringEncoding];
+
         objCVideoPlayer.contentApps = [NSMutableArray new];
         TargetEndpointInfo * cppTargetEndpointInfos = cppTargetVideoPlayerInfo->GetEndpoints();
         for (size_t i = 0; i < kMaxNumberOfEndpoints && cppTargetEndpointInfos[i].IsInitialized(); i++) {

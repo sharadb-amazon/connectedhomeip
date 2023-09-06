@@ -31,12 +31,16 @@ import chip.platform.NsdManagerServiceResolver;
 import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class TvCastingApp {
   private static final String TAG = TvCastingApp.class.getSimpleName();
   private static final String DISCOVERY_TARGET_SERVICE_TYPE = "_matterd._udp.";
   private static final List<Long> DISCOVERY_TARGET_DEVICE_TYPE_FILTER =
       Arrays.asList(35L); // Video player = 35;
+
+  private static final long STR_CACHE_LAST_DISCOVERED_DAYS = 60;
 
   private static TvCastingApp sInstance;
   private Context applicationContext;
@@ -149,7 +153,43 @@ public class TvCastingApp {
       nsdManager.discoverServices(
           DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
       Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners started");
+
+      reportSleepingCommissioners(preCommissionedVideoPlayers, discoverySuccessCallback);
+      Executors.newScheduledThreadPool(1)
+          .schedule(
+              () -> {
+                Log.d(
+                    TAG,
+                    "Scheduling reportSleepingCommissioners with commissioner count "
+                        + (preCommissionedVideoPlayers != null
+                            ? preCommissionedVideoPlayers.size()
+                            : 0));
+                reportSleepingCommissioners(preCommissionedVideoPlayers, discoverySuccessCallback);
+              },
+              5000,
+              TimeUnit.MILLISECONDS);
+
       this.discoveryStarted = true;
+    }
+  }
+
+  private void reportSleepingCommissioners(
+      List<VideoPlayer> undiscoveredVideoPlayers,
+      SuccessCallback<DiscoveredNodeData> discoverySuccessCallback) {
+    Log.d(
+        TAG,
+        "reportSleepingCommissioners called with commissioner count "
+            + (undiscoveredVideoPlayers != null ? undiscoveredVideoPlayers.size() : 0));
+    if (undiscoveredVideoPlayers != null) {
+      for (VideoPlayer player : undiscoveredVideoPlayers) {
+        // report a player if we got its MAC address previously and it was recently discoverable
+        if (player.getMACAddress() != null
+            && player.getLastDiscoveredMs()
+                > System.currentTimeMillis()
+                    - STR_CACHE_LAST_DISCOVERED_DAYS * 24 * 60 * 60 * 1000) {
+          discoverySuccessCallback.handle(new DiscoveredNodeData(player));
+        }
+      }
     }
   }
 

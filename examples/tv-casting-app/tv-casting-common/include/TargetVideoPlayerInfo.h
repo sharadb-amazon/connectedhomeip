@@ -25,6 +25,10 @@
 
 #include <app-common/zap-generated/cluster-objects.h>
 
+#include <string.h>
+#include <system/SystemClock.h>
+#include <system/SystemLayer.h>
+
 constexpr size_t kMaxNumberOfEndpoints = 5;
 
 class TargetVideoPlayerInfo;
@@ -73,7 +77,7 @@ public:
     bool IsInitialized() { return mInitialized; }
     void Reset();
     uint16_t GetVendorId() const { return mVendorId; }
-    uint16_t GetProductId() const { return mProductId; }
+    int GetProductId() const { return mProductId; }
     chip::DeviceTypeId GetDeviceType() const { return mDeviceType; }
     chip::NodeId GetNodeId() const { return mNodeId; }
     chip::FabricIndex GetFabricIndex() const { return mFabricIndex; }
@@ -83,6 +87,17 @@ public:
     const chip::Inet::IPAddress * GetIpAddresses() const { return mIpAddress; }
     bool IsSameAs(const chip::Dnssd::DiscoveredNodeData * discoveredNodeData);
     bool IsSameAs(const char * hostName, const char * deviceName, size_t numIPs, const chip::Inet::IPAddress * ipAddresses);
+
+    chip::System::Clock::Timestamp GetLastDiscovered() { return mLastDiscovered; }
+    uint16_t GetPort() const { return mPort; }
+    const char * GetInstanceName() const { return mInstanceName; }
+    chip::CharSpan * GetMACAddress() { return &mMACAddress; }
+    void SetLastDiscovered(chip::System::Clock::Timestamp lastDiscovered) { mLastDiscovered = lastDiscovered; }
+    void SetMACAddress(chip::CharSpan MACAddress)
+    {
+        memcpy(mMACAddressBuf, MACAddress.data(), MACAddress.size());
+        mMACAddress = chip::CharSpan(mMACAddressBuf, MACAddress.size());
+    }
 
     chip::OperationalDeviceProxy * GetOperationalDeviceProxy()
     {
@@ -97,7 +112,9 @@ public:
                           std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                           std::function<void(CHIP_ERROR)> onConnectionFailure, uint16_t vendorId = 0, uint16_t productId = 0,
                           chip::DeviceTypeId deviceType = 0, const char * deviceName = {}, const char * hostName = {},
-                          size_t numIPs = 0, chip::Inet::IPAddress * ipAddressList = nullptr);
+                          size_t numIPs = 0, chip::Inet::IPAddress * ipAddressList = nullptr, uint16_t port = 0,
+                          const char * instanceName                     = {},
+                          chip::System::Clock::Timestamp lastDiscovered = chip::System::Clock::kZero);
     CHIP_ERROR FindOrEstablishCASESession(std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                           std::function<void(CHIP_ERROR)> onConnectionFailure);
     TargetEndpointInfo * GetOrAddEndpoint(chip::EndpointId endpointId);
@@ -173,6 +190,11 @@ private:
     char mDeviceName[chip::Dnssd::kMaxDeviceNameLen + 1] = {};
     char mHostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
     size_t mNumIPs                                       = 0; // number of valid IP addresses
+    char mInstanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1];
+    uint16_t mPort;
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
+    chip::CharSpan mMACAddress;
+    char mMACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength];
+    chip::System::Clock::Timestamp mLastDiscovered;
     bool mInitialized = false;
 };

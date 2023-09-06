@@ -36,7 +36,11 @@
                     deviceName:(NSString *)deviceName
                       vendorId:(uint16_t)vendorId
                      productId:(uint16_t)productId
-                    deviceType:(uint16_t)deviceType;
+                    deviceType:(uint16_t)deviceType
+                      hostName:(NSString *)hostName
+                  instanceName:(NSString *)instanceName
+                          port:(uint16_t)port
+              lastDiscoveredMs:(uint64_t)lastDiscoveredMs
 {
     if (self = [super init]) {
         _nodeId = nodeId;
@@ -47,6 +51,10 @@
         _vendorId = vendorId;
         _productId = productId;
         _deviceType = deviceType;
+        _hostName = hostName;
+        _instanceName = instanceName;
+        _port = port;
+        _lastDiscoveredMs = lastDiscoveredMs;
         _isInitialized = true;
     }
     return self;

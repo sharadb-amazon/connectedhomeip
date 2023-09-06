@@ -70,6 +70,7 @@ chip_data_model("tv-casting-common") {
     "include/TargetEndpointInfo.h",
     "include/TargetNavigator.h",
     "include/TargetVideoPlayerInfo.h",
+    "include/WakeOnLan.h",
     "src/AppParams.cpp",
     "src/ApplicationLauncher.cpp",
     "src/CastingServer.cpp",
