@@ -32,6 +32,7 @@
 #include "TargetEndpointInfo.h"
 #include "TargetNavigator.h"
 #include "TargetVideoPlayerInfo.h"
+#include "WakeOnLan.h"
 
 #include <app-common/zap-generated/cluster-objects.h>
 #include <app/server/AppDelegate.h>
@@ -102,6 +103,10 @@ public:
                                            std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
 
     void LogCachedVideoPlayers();
+    CHIP_ERROR AddVideoPlayer(TargetVideoPlayerInfo * targetVideoPlayerInfo);
+
+    CHIP_ERROR SendWakeOnLan(TargetVideoPlayerInfo & targetVideoPlayerInfo);
+
     CHIP_ERROR PurgeCache();
 
     /**
@@ -439,6 +444,9 @@ private:
     void OnCommissioningWindowOpened() override {}
     void OnCommissioningWindowClosed() override {}
 
+    static void VerifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context);
+    CHIP_ERROR ReadMACAddress(TargetEndpointInfo * endpoint);
+
     /**
      * @brief Retrieve the IP Address to use for the UDC request.
      * This function will look for an IPv4 address in the list of IPAddresses passed in if available and return
@@ -456,14 +464,17 @@ private:
     bool mInited                              = false;
     bool mUdcInProgress                       = false;
     bool mOpenBasicCommissioningWindowPending = false;
+    chip::Dnssd::DiscoveredNodeData mStrNodeDataList[kMaxCachedVideoPlayers];
     TargetVideoPlayerInfo mActiveTargetVideoPlayerInfo;
     TargetVideoPlayerInfo mCachedTargetVideoPlayerInfo[kMaxCachedVideoPlayers];
-    uint16_t mTargetVideoPlayerVendorId                                   = 0;
-    uint16_t mTargetVideoPlayerProductId                                  = 0;
-    uint16_t mTargetVideoPlayerDeviceType                                 = 0;
-    char mTargetVideoPlayerDeviceName[chip::Dnssd::kMaxDeviceNameLen + 1] = {};
-    char mTargetVideoPlayerHostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
-    size_t mTargetVideoPlayerNumIPs                                       = 0; // number of valid IP addresses
+    uint16_t mTargetVideoPlayerVendorId                                                      = 0;
+    uint16_t mTargetVideoPlayerProductId                                                     = 0;
+    uint16_t mTargetVideoPlayerPort                                                          = 0;
+    uint16_t mTargetVideoPlayerDeviceType                                                    = 0;
+    char mTargetVideoPlayerDeviceName[chip::Dnssd::kMaxDeviceNameLen + 1]                    = {};
+    char mTargetVideoPlayerHostName[chip::Dnssd::kHostNameMaxLength + 1]                     = {};
+    char mTargetVideoPlayerInstanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1] = {};
+    size_t mTargetVideoPlayerNumIPs                                                          = 0; // number of valid IP addresses
     chip::Inet::IPAddress mTargetVideoPlayerIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
 
     chip::Controller::CommissionableNodeController mCommissionableNodeController;
@@ -567,4 +578,9 @@ private:
     ChangeChannelCommand mChangeChannelCommand;
 
     LineupSubscriber mLineupSubscriber;
+
+    /**
+     * @brief WakeOnLan cluster
+     */
+    MACAddressReader mMACAddressReader;
 };
