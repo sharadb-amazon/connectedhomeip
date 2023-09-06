@@ -22,6 +22,12 @@
 #include "app/clusters/bindings/BindingManager.h"
 #include <platform/CHIPDeviceLayer.h>
 
+#include <app-common/zap-generated/cluster-objects.h>
+
+#include <string.h>
+#include <system/SystemClock.h>
+#include <system/SystemLayer.h>
+
 constexpr size_t kMaxNumberOfEndpoints = 5;
 
 class TargetVideoPlayerInfo;
@@ -68,6 +74,7 @@ public:
     bool operator==(const TargetVideoPlayerInfo & other) { return this->mNodeId == other.mNodeId; }
 
     bool IsInitialized() { return mInitialized; }
+    void Reset();
     uint16_t GetVendorId() const { return mVendorId; }
     uint16_t GetProductId() const { return mProductId; }
     uint16_t GetDeviceType() const { return mDeviceType; }
@@ -79,6 +86,34 @@ public:
     const chip::Inet::IPAddress * GetIpAddresses() const { return mIpAddress; }
     bool IsSameAs(const chip::Dnssd::DiscoveredNodeData * discoveredNodeData);
     bool IsSameAs(const char * hostName, const char * deviceName, size_t numIPs, const chip::Inet::IPAddress * ipAddresses);
+
+    uint16_t GetPort() const { return mPort; }
+    const char * GetInstanceName() const { return mInstanceName; }
+    chip::CharSpan * GetMACAddress() { return &mMACAddress; }
+    void SetIsAsleep(bool isAsleep) { mIsAsleep = isAsleep; }
+    bool IsAsleep() { return mIsAsleep; }
+    void SetMACAddress(chip::CharSpan MACAddress)
+    {
+        memcpy(mMACAddressBuf, MACAddress.data(), MACAddress.size());
+        mMACAddress = chip::CharSpan(mMACAddressBuf, MACAddress.size());
+    }
+    chip::System::Clock::Timestamp GetLastDiscovered() { return mLastDiscovered; }
+    void SetLastDiscovered(chip::System::Clock::Timestamp lastDiscovered) { mLastDiscovered = lastDiscovered; }
+    bool WasRecentlyDiscoverable()
+    {
+#ifdef CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS
+        // it was recently discoverable if its mLastDiscovered.count is within
+        // CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS of current time
+        chip::System::Clock::Timestamp currentUnixTimeMS = chip::System::Clock::kZero;
+        chip::System::SystemClock().GetClock_RealTimeMS(currentUnixTimeMS);
+        ChipLogProgress(AppServer, "WasRecentlyDiscoverable currentUnixTimeMS: %lu mLastDiscovered: %lu",
+                        static_cast<unsigned long>(currentUnixTimeMS.count()), static_cast<unsigned long>(mLastDiscovered.count()));
+        return mLastDiscovered.count() >
+            currentUnixTimeMS.count() - CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS * 60 * 60 * 1000;
+#else
+        return true;
+#endif // CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS
+    }
 
     chip::OperationalDeviceProxy * GetOperationalDeviceProxy()
     {
@@ -93,7 +128,8 @@ public:
                           std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                           std::function<void(CHIP_ERROR)> onConnectionFailure, uint16_t vendorId = 0, uint16_t productId = 0,
                           uint16_t deviceType = 0, const char * deviceName = {}, const char * hostName = {}, size_t numIPs = 0,
-                          chip::Inet::IPAddress * ipAddressList = nullptr);
+                          chip::Inet::IPAddress * ipAddressList = nullptr, uint16_t port = 0, const char * instanceName = {},
+                          chip::System::Clock::Timestamp lastDiscovered = chip::System::Clock::kZero);
     CHIP_ERROR FindOrEstablishCASESession(std::function<void(TargetVideoPlayerInfo *)> onConnectionSuccess,
                                           std::function<void(CHIP_ERROR)> onConnectionFailure);
     TargetEndpointInfo * GetOrAddEndpoint(chip::EndpointId endpointId);
@@ -170,5 +206,11 @@ private:
     char mHostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
     size_t mNumIPs                                       = 0; // number of valid IP addresses
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
+    char mInstanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1];
+    uint16_t mPort;
+    chip::CharSpan mMACAddress;
+    char mMACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength];
+    chip::System::Clock::Timestamp mLastDiscovered;
+    bool mIsAsleep    = false;
     bool mInitialized = false;
 };
