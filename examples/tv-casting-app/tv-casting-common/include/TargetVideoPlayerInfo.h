@@ -77,7 +77,7 @@ public:
     bool IsInitialized() { return mInitialized; }
     void Reset();
     uint16_t GetVendorId() const { return mVendorId; }
-    int GetProductId() const { return mProductId; }
+    uint16_t GetProductId() const { return mProductId; }
     chip::DeviceTypeId GetDeviceType() const { return mDeviceType; }
     chip::NodeId GetNodeId() const { return mNodeId; }
     chip::FabricIndex GetFabricIndex() const { return mFabricIndex; }
