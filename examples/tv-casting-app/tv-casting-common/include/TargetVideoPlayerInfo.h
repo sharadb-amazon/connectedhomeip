@@ -194,7 +194,7 @@ private:
     uint16_t mPort;
     chip::Inet::IPAddress mIpAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
     chip::CharSpan mMACAddress;
-    char mMACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength];
+    char mMACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength];
     chip::System::Clock::Timestamp mLastDiscovered;
     bool mInitialized = false;
 };
