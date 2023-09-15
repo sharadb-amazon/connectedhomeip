@@ -68,6 +68,8 @@
 // cached players that were seen before this window (in days) will not be surfaced as "discovered"
 #define CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_DAYS 60L
 
+#define CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC 5
+
 // Include the CHIPProjectConfig from config/standalone
 // Add this at the end so that we can hit our #defines first
 #include <CHIPProjectConfig.h>

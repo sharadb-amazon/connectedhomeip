@@ -223,6 +223,10 @@ public class VideoPlayer {
     return MACAddress;
   }
 
+  public String getInstanceName() {
+    return instanceName;
+  }
+
   public boolean isInitialized() {
     return isInitialized;
   }

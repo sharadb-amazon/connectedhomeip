@@ -108,6 +108,7 @@ public class DiscoveredNodeData {
 
   public DiscoveredNodeData(VideoPlayer player) {
     this.connectableVideoPlayer = player;
+    this.instanceName = player.getInstanceName();
     this.hostName = player.getHostName();
     this.deviceName = player.getDeviceName();
     this.deviceType = player.getDeviceType();

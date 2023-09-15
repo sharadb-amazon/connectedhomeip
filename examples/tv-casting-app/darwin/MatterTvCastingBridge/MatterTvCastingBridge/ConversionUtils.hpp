@@ -55,6 +55,11 @@
 
 + (VideoPlayer * _Nonnull)convertToObjCVideoPlayerFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo;
 
-@end
+/**
+ * @brief inter-object converters
+ */
++ (DiscoveredNodeData *)convertToDiscoveredNodeDataFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo
+
+    @end
 
 #endif /* ConversionUtils_h */

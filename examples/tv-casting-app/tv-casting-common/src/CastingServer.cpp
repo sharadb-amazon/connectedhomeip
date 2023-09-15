@@ -585,6 +585,11 @@ CHIP_ERROR CastingServer::PurgeCache()
     return mPersistenceManager.PurgeVideoPlayerCache();
 }
 
+CHIP_ERROR CastingServer::AddVideoPlayer(TargetVideoPlayerInfo * targetVideoPlayerInfo)
+{
+    return CastingServer::GetInstance()->mPersistenceManager.AddVideoPlayer(targetVideoPlayerInfo);
+}
+
 [[deprecated("Use ContentLauncher_LaunchURL(..) instead")]] CHIP_ERROR
 CastingServer::ContentLauncherLaunchURL(TargetEndpointInfo * endpoint, const char * contentUrl, const char * contentDisplayStr,
                                         std::function<void(CHIP_ERROR)> launchURLResponseCallback)

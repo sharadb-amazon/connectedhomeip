@@ -145,6 +145,34 @@
     return objCDiscoveredNodeData;
 }
 
++ (DiscoveredNodeData *)convertToDiscoveredNodeDataFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo
+{
+    DiscoveredNodeData * objCDiscoveredNodeData = [DiscoveredNodeData new];
+
+    objCDiscoveredNodeData.deviceType = cppTargetVideoPlayerInfo->GetDeviceType();
+    objCDiscoveredNodeData.vendorId = cppTargetVideoPlayerInfo->GetVendorId();
+    objCDiscoveredNodeData.productId = cppTargetVideoPlayerInfo->GetProductId();
+    objCDiscoveredNodeData.deviceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetDeviceName()
+                                                           encoding:NSUTF8StringEncoding];
+    objCDiscoveredNodeData.instanceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetInstanceName()
+                                                             encoding:NSUTF8StringEncoding];
+
+    // from CommonResolutionData
+    objCDiscoveredNodeData.port = cppTargetVideoPlayerInfo->GetPort();
+    objCDiscoveredNodeData.hostName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetHostName()
+                                                         encoding:NSUTF8StringEncoding];
+    objCDiscoveredNodeData.numIPs = cppTargetVideoPlayerInfo->GetNumIPs();
+    if (cppTargetVideoPlayerInfo->GetNumIPs() > 0) {
+        objCDiscoveredNodeData.ipAddresses = [NSMutableArray new];
+    }
+    for (size_t i = 0; i < cppTargetVideoPlayerInfo->GetNumIPs(); i++) {
+        char addrCString[chip::Inet::IPAddress::kMaxStringLength];
+        cppTargetVideoPlayerInfo->GetIpAddresses()[i].ToString(addrCString, chip::Inet::IPAddress::kMaxStringLength);
+        objCDiscoveredNodeData.ipAddresses[i] = [NSString stringWithCString:addrCString encoding:NSASCIIStringEncoding];
+    }
+    return objCDiscoveredNodeData;
+}
+
 + (VideoPlayer *)convertToObjCVideoPlayerFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo
 {
     VideoPlayer * objCVideoPlayer = [VideoPlayer new];

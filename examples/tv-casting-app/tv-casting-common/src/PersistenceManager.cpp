@@ -111,7 +111,9 @@ CHIP_ERROR PersistenceManager::WriteAllVideoPlayers(TargetVideoPlayerInfo videoP
                 tlvWriter.Put(TLV::ContextTag(kVideoPlayerLastDiscoveredTag), videoPlayer->GetLastDiscovered().count()));
             if (videoPlayer->GetMACAddress() != nullptr && videoPlayer->GetMACAddress()->size() > 0)
             {
-                ChipLogProgress(AppServer, "PersistenceManager::Write MAC Address Length %zu [%d]", videoPlayer->GetMACAddress()->size(), chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength);
+                ChipLogProgress(AppServer, "PersistenceManager::Write MAC Address Length %zu [%d]",
+                                videoPlayer->GetMACAddress()->size(),
+                                chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength);
                 ReturnErrorOnFailure(tlvWriter.PutBytes(TLV::ContextTag(kVideoPlayerMACAddressTag),
                                                         (const uint8_t *) videoPlayer->GetMACAddress()->data(),
                                                         static_cast<uint32_t>(videoPlayer->GetMACAddress()->size())));
@@ -227,11 +229,11 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
     char hostName[chip::Dnssd::kHostNameMaxLength + 1]  = {};
     size_t numIPs                                       = 0;
     Inet::IPAddress ipAddress[chip::Dnssd::CommonResolutionData::kMaxIPAddresses];
-    uint64_t lastDiscoveredTicks                                                              = 0;
+    uint64_t lastDiscoveredTicks                                                          = 0;
     char MACAddressBuf[2 * chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength] = {};
-    uint32_t MACAddressLength                                                                 = 0;
-    char instanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1]                    = {};
-    uint16_t port                                                                             = 0;
+    uint32_t MACAddressLength                                                             = 0;
+    char instanceName[chip::Dnssd::Commission::kInstanceNameMaxLength + 1]                = {};
+    uint16_t port                                                                         = 0;
 
     CHIP_ERROR err;
     while ((err = reader.Next()) == CHIP_NO_ERROR)
@@ -308,7 +310,8 @@ CHIP_ERROR PersistenceManager::ReadAllVideoPlayers(TargetVideoPlayerInfo outVide
         if (videoPlayersContainerTagNum == kVideoPlayerMACAddressTag)
         {
             MACAddressLength = reader.GetLength();
-            ChipLogProgress(AppServer, "PersistenceManager::Read MAC Address Length %u [%d]", MACAddressLength, chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength);
+            ChipLogProgress(AppServer, "PersistenceManager::Read MAC Address Length %u [%d]", MACAddressLength,
+                            chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength);
             ReturnErrorOnFailure(reader.GetBytes(reinterpret_cast<uint8_t *>(MACAddressBuf),
                                                  2 * chip::DeviceLayer::ConfigurationManager::kMaxMACAddressLength));
             continue;

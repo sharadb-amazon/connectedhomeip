@@ -101,6 +101,8 @@ public:
                                            std::function<void(TargetEndpointInfo *)> onNewOrUpdatedEndpoint);
 
     void LogCachedVideoPlayers();
+    CHIP_ERROR AddVideoPlayer(TargetVideoPlayerInfo * targetVideoPlayerInfo);
+
     CHIP_ERROR PurgeCache();
 
     /**

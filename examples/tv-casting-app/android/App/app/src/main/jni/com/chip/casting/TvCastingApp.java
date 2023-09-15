@@ -154,7 +154,6 @@ public class TvCastingApp {
           DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
       Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners started");
 
-      reportSleepingCommissioners(preCommissionedVideoPlayers, discoverySuccessCallback);
       Executors.newScheduledThreadPool(1)
           .schedule(
               () -> {
@@ -182,11 +181,13 @@ public class TvCastingApp {
             + (undiscoveredVideoPlayers != null ? undiscoveredVideoPlayers.size() : 0));
     if (undiscoveredVideoPlayers != null) {
       for (VideoPlayer player : undiscoveredVideoPlayers) {
+        Log.d(TAG, "Undisc Video Player: " + player);
         // report a player if we got its MAC address previously and it was recently discoverable
         if (player.getMACAddress() != null
-            && player.getLastDiscoveredMs()
-                > System.currentTimeMillis()
-                    - STR_CACHE_LAST_DISCOVERED_DAYS * 24 * 60 * 60 * 1000) {
+        /* TODO: add a recency check
+        && player.getLastDiscoveredMs()
+            > System.currentTimeMillis()
+                - STR_CACHE_LAST_DISCOVERED_DAYS * 24 * 60 * 60 * 1000*/ ) {
           discoverySuccessCallback.handle(new DiscoveredNodeData(player));
         }
       }

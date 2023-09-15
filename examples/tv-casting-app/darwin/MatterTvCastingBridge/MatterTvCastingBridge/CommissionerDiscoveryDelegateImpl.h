@@ -32,6 +32,10 @@ public:
         mClientQueue = clientQueue;
         mObjCDiscoveredCommissionerHandler = objCDiscoveredCommissionerHandler;
         mCachedTargetVideoPlayerInfos = cachedTargetVideoPlayerInfos;
+        mDiscoveredCommissioners.clear();
+        chip::DeviceLayer::SystemLayer().StartTimer(
+            chip::System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC * 1000), ReportSleepingCommissioners,
+            this);
     }
 
     void OnDiscoveredDevice(const chip::Dnssd::DiscoveredNodeData & nodeData)
@@ -40,6 +44,7 @@ public:
         __block const chip::Dnssd::DiscoveredNodeData cppNodeData = nodeData;
         dispatch_async(mClientQueue, ^{
             DiscoveredNodeData * objCDiscoveredNodeData = [ConversionUtils convertToObjCDiscoveredNodeDataFrom:&cppNodeData];
+            mDiscoveredCommissioners.push_back(objCDiscoveredNodeData); // add to the list of discovered commissioners
 
             // set associated connectable video player from cache, if any
             if (mCachedTargetVideoPlayerInfos != nullptr) {
@@ -47,6 +52,9 @@ public:
                     if (mCachedTargetVideoPlayerInfos[i].IsSameAs(&cppNodeData)) {
                         mCachedTargetVideoPlayerInfos[i].SetLastDiscovered(
                             chip::System::SystemClock().GetMonotonicMilliseconds64()); // add discovery timestamp
+                        CastingServer::GetInstance()->AddVideoPlayer(
+                            &mCachedTargetVideoPlayerInfos[i]); // write updated video player to cache
+
                         VideoPlayer * connectableVideoPlayer =
                             [ConversionUtils convertToObjCVideoPlayerFrom:&mCachedTargetVideoPlayerInfos[i]];
                         [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];
@@ -59,10 +67,42 @@ public:
         });
     }
 
+    static void ReportSleepingCommissioners(chip::System::Layer * _Nonnull aSystemLayer, void * _Nullable context)
+    {
+        CommissionerDiscoveryDelegateImpl * thiz = (CommissionerDiscoveryDelegateImpl *) context;
+        if (thiz != nullptr && thiz->mCachedTargetVideoPlayerInfos != nullptr) {
+            for (size_t i = 0; i < kMaxCachedVideoPlayers && thiz->mCachedTargetVideoPlayerInfos[i].IsInitialized(); i++) {
+                // check if there is a MACAddress to wake this Video Player up with
+                if (thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress() != nullptr
+                    && thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress()->size() > 0) {
+                    bool discovered = false;
+                    // check if it was already discovered
+                    for (DiscoveredNodeData * discoveredCommissioner : thiz->mDiscoveredCommissioners) {
+                        if (strcmp((char *) [discoveredCommissioner.hostName UTF8String],
+                                thiz->mCachedTargetVideoPlayerInfos[i].GetHostName())
+                            == 0) {
+                            discovered = true;
+                            break;
+                        }
+                    }
+
+                    // surface the *sleeping* video player as a DiscoveredNodeData
+                    if (!discovered) {
+                        DiscoveredNodeData * objCDiscoveredNodeData =
+                            [ConversionUtils convertToDiscoveredNodeDataFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
+                        // make the callback
+                        thiz->mObjCDiscoveredCommissionerHandler(objCDiscoveredNodeData);
+                    }
+                }
+            }
+        }
+    }
+
 private:
     void (^_Nonnull mObjCDiscoveredCommissionerHandler)(DiscoveredNodeData * _Nonnull);
     dispatch_queue_t _Nonnull mClientQueue;
     TargetVideoPlayerInfo * _Nullable mCachedTargetVideoPlayerInfos;
+    std::vector<DiscoveredNodeData *> mDiscoveredCommissioners;
 };
 
 #endif /* CommissionerDiscoveryDelegateImpl_h */
