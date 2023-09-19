@@ -36,6 +36,7 @@ public class VideoPlayer {
   private List<ContentApp> contentApps;
   private long lastDiscoveredMs;
   private String MACAddress;
+  private boolean isAsleep = false;
   private boolean isConnected = false;
 
   private int numIPs;
@@ -138,6 +139,9 @@ public class VideoPlayer {
         + ", deviceName='"
         + deviceName
         + '\''
+        + ", instanceName='"
+        + instanceName
+        + '\''
         + ", vendorId="
         + vendorId
         + ", productId="
@@ -151,6 +155,8 @@ public class VideoPlayer {
         + ", MACAddress='"
         + MACAddress
         + '\''
+        + ", isAsleep="
+        + isAsleep
         + ", isConnected="
         + isConnected
         + ", numIPs="
@@ -225,6 +231,14 @@ public class VideoPlayer {
 
   public String getInstanceName() {
     return instanceName;
+  }
+
+  public void setAsleep(boolean asleep) {
+    isAsleep = asleep;
+  }
+
+  public boolean isAsleep() {
+    return isAsleep;
   }
 
   public boolean isInitialized() {

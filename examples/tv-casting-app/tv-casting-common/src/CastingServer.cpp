@@ -25,6 +25,9 @@ using namespace chip::Controller;
 using namespace chip::Credentials;
 using namespace chip::app::Clusters::ContentLauncher::Commands;
 
+constexpr int kBroadcastOption    = 1;
+constexpr int kWoLMagicPacketSize = 102;
+
 CastingServer * CastingServer::castingServer_ = nullptr;
 
 CastingServer::CastingServer() {}
@@ -355,6 +358,69 @@ CastingServer::GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPl
         }
         return strNodeData;
     }
+}
+
+CHIP_ERROR CastingServer::SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlayerInfo)
+{
+    VerifyOrReturnError(targetVideoPlayerInfo.getMACAddress() != nullptr && targetVideoPlayerInfo.getMACAddress()->size() > 0,
+                        CHIP_ERROR_INVALID_ARGUMENT);
+    chip::CharSpan MACAddress = *(targetVideoPlayerInfo.getMACAddress());
+    ChipLogProgress(AppServer, "SendWakeOnLAN called with MACAddress %.*s", 2 * kMACLength, MACAddress.data());
+
+    // Create a socket
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sockfd < 0)
+    {
+        ChipLogError(AppServer, "socket(): Could not create socket");
+        return CHIP_ERROR_INCORRECT_STATE;
+    }
+
+    // Enable broadcast option
+    if (setsockopt(sockfd, SOL_SOCKET, SO_BROADCAST, &kBroadcastOption, sizeof(kBroadcastOption)) < 0)
+    {
+        ChipLogError(AppServer, "setsockopt(): Could not enable broadcast option on socket");
+        close(sockfd);
+        return CHIP_ERROR_INCORRECT_STATE;
+    }
+
+    // Convert MAC Address to bytes
+    const int kMACLength = chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength;
+    uint8_t MACBytes[kMACLength];
+    for (int i = 0; i < 2 * kMACLength; i += 2)
+    {
+        char byteString[3];
+        byteString[0]   = MACAddress.data()[i];
+        byteString[1]   = MACAddress.data()[i + 1];
+        byteString[2]   = '\0';
+        MACBytes[i / 2] = static_cast<uint8_t>(std::strtol(byteString, nullptr, 16));
+    }
+
+    // Create the Wake On LAN "magic" packet
+    char magicPacket[kWoLMagicPacketSize];
+    std::memset(magicPacket, 0xFF, kMACLength);
+    for (int i = kMACLength; i < kWoLMagicPacketSize; i += kMACLength)
+    {
+        std::memcpy(magicPacket + i, MACBytes, kMACLength);
+    }
+
+    // Set up the broadcast address
+    struct sockaddr_in addr;
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family      = AF_INET;
+    addr.sin_port        = htons(9);
+    addr.sin_addr.s_addr = INADDR_BROADCAST;
+
+    // Send the Wake On LAN packet
+    ssize_t bytesSent = sendto(sockfd, magicPacket, kWoLMagicPacketSize, 0, (struct sockaddr *) &addr, sizeof(addr));
+    if (bytesSent < 0)
+    {
+        ChipLogError(AppServer, "sendto(): Could not send WoL magic packet");
+        return CHIP_ERROR_INCORRECT_STATE;
+    }
+
+    close(sockfd);
+    return CHIP_NO_ERROR;
 }
 
 void CastingServer::ReadServerClustersForNode(NodeId nodeId)

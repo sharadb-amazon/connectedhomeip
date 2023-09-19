@@ -243,7 +243,7 @@ JNI_METHOD(jobject, readCachedVideoPlayers)(JNIEnv * env, jobject)
     return jVideoPlayerList;
 }
 
-JNI_METHOD(jboolean, verifyOrEstablishConnection)
+JNI_METHOD(jboolean, _verifyOrEstablishConnection)
 (JNIEnv * env, jobject, jobject videoPlayer, jobject jOnConnectionSuccessHandler, jobject jOnConnectionFailureHandler,
  jobject jOnNewOrUpdatedEndpointHandler)
 {
@@ -277,6 +277,28 @@ JNI_METHOD(jboolean, verifyOrEstablishConnection)
         [](TargetEndpointInfo * endpoint) { TvCastingAppJNIMgr().getOnNewOrUpdatedEndpointHandler(true).Handle(endpoint); });
     VerifyOrExit(CHIP_NO_ERROR == err,
                  ChipLogError(AppServer, "CastingServer::verifyOrEstablishConnection failed: %" CHIP_ERROR_FORMAT, err.Format()));
+
+exit:
+    return (err == CHIP_NO_ERROR);
+}
+
+JNI_METHOD(jboolean, _sendWakeOnLAN)
+(JNIEnv * env, jobject, jobject videoPlayer)
+{
+    chip::DeviceLayer::StackLock lock;
+
+    ChipLogProgress(AppServer, "JNI_METHOD _sendWakeOnLAN called");
+
+    TargetVideoPlayerInfo targetVideoPlayerInfo;
+    CHIP_ERROR err = convertJVideoPlayerToTargetVideoPlayerInfo(videoPlayer, targetVideoPlayerInfo);
+    VerifyOrExit(err == CHIP_NO_ERROR,
+                 ChipLogError(AppServer,
+                              "Conversion from jobject VideoPlayer to TargetVideoPlayerInfo * failed: %" CHIP_ERROR_FORMAT,
+                              err.Format()));
+
+    err = CastingServer::GetInstance()->SendWakeOnLAN(targetVideoPlayerInfo);
+    VerifyOrExit(CHIP_NO_ERROR == err,
+                 ChipLogError(AppServer, "CastingServer::_sendWakeOnLAN failed: %" CHIP_ERROR_FORMAT, err.Format()));
 
 exit:
     return (err == CHIP_NO_ERROR);

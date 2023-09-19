@@ -188,6 +188,7 @@ public class TvCastingApp {
         && player.getLastDiscoveredMs()
             > System.currentTimeMillis()
                 - STR_CACHE_LAST_DISCOVERED_DAYS * 24 * 60 * 60 * 1000*/ ) {
+          player.setAsleep(true);
           discoverySuccessCallback.handle(new DiscoveredNodeData(player));
         }
       }
@@ -233,11 +234,76 @@ public class TvCastingApp {
 
   public native List<VideoPlayer> readCachedVideoPlayers();
 
-  public native boolean verifyOrEstablishConnection(
+  public boolean verifyOrEstablishConnection(
+      VideoPlayer targetVideoPlayer,
+      SuccessCallback<VideoPlayer> onConnectionSuccess,
+      FailureCallback onConnectionFailure,
+      SuccessCallback<ContentApp> onNewOrUpdatedEndpointCallback) {
+    // check if the targetVideoPlayer is asleep and if so, send WakeOnLAN packet to it
+    if (targetVideoPlayer.isAsleep()) {
+      boolean status = false;
+      if (_sendWakeOnLAN(targetVideoPlayer)) {
+        // check if it woke up by discovering it
+        discoverVideoPlayerCommissioners(
+            new SuccessCallback<DiscoveredNodeData>() {
+              @Override
+              public void handle(DiscoveredNodeData response) {
+                Log.d(
+                    TAG,
+                    "Video player discovered after WakeOnLAN with hostname "
+                        + response.getHostName());
+                if (targetVideoPlayer.getHostName().equals(response.getHostName())) {
+                  targetVideoPlayer.setAsleep(false); // not asleep anymore
+                  boolean callStatus =
+                      _verifyOrEstablishConnection(
+                          targetVideoPlayer,
+                          onConnectionSuccess,
+                          onConnectionFailure,
+                          onNewOrUpdatedEndpointCallback);
+                  if (callStatus == false) {
+                    Log.e(
+                        TAG,
+                        "_verifyOrEstablishConnection failed after waking up and discovering targetVideoPlayer");
+                    onConnectionFailure.handle(new MatterError(0x03, "CHIP_ERROR_INCORRECT_STATE"));
+                  }
+                }
+              }
+            },
+            new FailureCallback() {
+              @Override
+              public void handle(MatterError err) {
+                Log.e(TAG, "Failure while discovering targetVideoPlayer after waking it up " + err);
+              }
+            });
+
+        // stop looking for the video player after some time and fail fast
+        Executors.newScheduledThreadPool(1)
+            .schedule(
+                () -> {
+                  Log.d(TAG, "Scheduling stopVideoPlayerDiscovery after sending WoL");
+                  stopVideoPlayerDiscovery();
+                },
+                10000,
+                TimeUnit.MILLISECONDS);
+        status = true;
+      }
+      return status;
+    } else {
+      return _verifyOrEstablishConnection(
+          targetVideoPlayer,
+          onConnectionSuccess,
+          onConnectionFailure,
+          onNewOrUpdatedEndpointCallback);
+    }
+  }
+
+  private native boolean _verifyOrEstablishConnection(
       VideoPlayer targetVideoPlayer,
       SuccessCallback<VideoPlayer> onConnectionSuccess,
       FailureCallback onConnectionFailure,
       SuccessCallback<ContentApp> onNewOrUpdatedEndpointCallback);
+
+  private native boolean _sendWakeOnLAN(VideoPlayer targetVideoPlayer);
 
   public native void shutdownAllSubscriptions();
 

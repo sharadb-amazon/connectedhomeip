@@ -73,6 +73,8 @@ public:
     CHIP_ERROR SendUserDirectedCommissioningRequest(chip::Dnssd::DiscoveredNodeData * selectedCommissioner);
 #endif // CHIP_DEVICE_CONFIG_ENABLE_COMMISSIONER_DISCOVERY_CLIENT
 
+    CHIP_ERROR SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlayerInfo);
+
     TargetVideoPlayerInfo * GetActiveTargetVideoPlayer() { return &mActiveTargetVideoPlayerInfo; }
 
     CHIP_ERROR TargetVideoPlayerInfoInit(chip::NodeId nodeId, chip::FabricIndex fabricIndex,

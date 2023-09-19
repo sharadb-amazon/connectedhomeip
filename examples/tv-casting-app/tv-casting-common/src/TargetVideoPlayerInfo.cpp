@@ -167,7 +167,7 @@ void TargetVideoPlayerInfo::PrintInfo()
     ChipLogProgress(NotSpecified,
                     " TargetVideoPlayerInfo deviceName=%s nodeId=0x" ChipLogFormatX64 " fabric index=%d"
                     " lastDiscovered=%lu",
-                    mDeviceName, ChipLogValueX64(mNodeId), mFabricIndex, mLastDiscovered.count());
+                    mDeviceName, ChipLogValueX64(mNodeId), mFabricIndex, static_cast<unsigned long>(mLastDiscovered.count()));
     if (mMACAddress.size() > 0)
     {
         ChipLogProgress(NotSpecified, "  MACAddress=%.*s", static_cast<int>(mMACAddress.size()), mMACAddress.data());
