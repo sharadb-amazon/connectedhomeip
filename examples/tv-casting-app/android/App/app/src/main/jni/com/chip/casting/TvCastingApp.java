@@ -32,6 +32,7 @@ import chip.platform.PreferencesKeyValueStoreManager;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class TvCastingApp {
@@ -52,6 +53,7 @@ public class TvCastingApp {
   private WifiManager.MulticastLock multicastLock;
   private NsdManager nsdManager;
   private NsdDiscoveryListener nsdDiscoveryListener;
+  private ScheduledFuture<?> reportSleepingCommissionersFuture;
 
   private TvCastingApp() {}
 
@@ -154,21 +156,24 @@ public class TvCastingApp {
           DISCOVERY_TARGET_SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, nsdDiscoveryListener);
       Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners started");
 
-      Executors.newScheduledThreadPool(1)
-          .schedule(
-              () -> {
-                Log.d(
-                    TAG,
-                    "Scheduling reportSleepingCommissioners with commissioner count "
-                        + (preCommissionedVideoPlayers != null
-                            ? preCommissionedVideoPlayers.size()
-                            : 0));
-                reportSleepingCommissioners(preCommissionedVideoPlayers, discoverySuccessCallback);
-              },
-              5000,
-              TimeUnit.MILLISECONDS);
+      this.reportSleepingCommissionersFuture =
+          Executors.newScheduledThreadPool(1)
+              .schedule(
+                  () -> {
+                    Log.d(
+                        TAG,
+                        "Scheduling reportSleepingCommissioners with commissioner count "
+                            + (preCommissionedVideoPlayers != null
+                                ? preCommissionedVideoPlayers.size()
+                                : 0));
+                    reportSleepingCommissioners(
+                        preCommissionedVideoPlayers, discoverySuccessCallback);
+                  },
+                  5000,
+                  TimeUnit.MILLISECONDS);
 
       this.discoveryStarted = true;
+      reportSleepingCommissionersFuture.cancel(true);
     }
   }
 
@@ -201,7 +206,8 @@ public class TvCastingApp {
       if (this.discoveryStarted
           && nsdManager != null
           && multicastLock != null
-          && nsdDiscoveryListener != null) {
+          && nsdDiscoveryListener != null
+          && reportSleepingCommissionersFuture != null) {
         Log.d(TAG, "TvCastingApp stopping Video Player commissioner discovery");
         try {
           nsdManager.stopServiceDiscovery(nsdDiscoveryListener);
@@ -215,6 +221,8 @@ public class TvCastingApp {
         if (multicastLock.isHeld()) {
           multicastLock.release();
         }
+
+        reportSleepingCommissionersFuture.cancel(false);
         this.discoveryStarted = false;
       }
     }
@@ -239,61 +247,45 @@ public class TvCastingApp {
       SuccessCallback<VideoPlayer> onConnectionSuccess,
       FailureCallback onConnectionFailure,
       SuccessCallback<ContentApp> onNewOrUpdatedEndpointCallback) {
-    // check if the targetVideoPlayer is asleep and if so, send WakeOnLAN packet to it
-    if (targetVideoPlayer.isAsleep()) {
-      boolean status = false;
-      if (_sendWakeOnLAN(targetVideoPlayer)) {
-        // check if it woke up by discovering it
-        discoverVideoPlayerCommissioners(
-            new SuccessCallback<DiscoveredNodeData>() {
-              @Override
-              public void handle(DiscoveredNodeData response) {
-                Log.d(
-                    TAG,
-                    "Video player discovered after WakeOnLAN with hostname "
-                        + response.getHostName());
-                if (targetVideoPlayer.getHostName().equals(response.getHostName())) {
-                  targetVideoPlayer.setAsleep(false); // not asleep anymore
-                  boolean callStatus =
-                      _verifyOrEstablishConnection(
-                          targetVideoPlayer,
-                          onConnectionSuccess,
-                          onConnectionFailure,
-                          onNewOrUpdatedEndpointCallback);
-                  if (callStatus == false) {
-                    Log.e(
-                        TAG,
-                        "_verifyOrEstablishConnection failed after waking up and discovering targetVideoPlayer");
-                    onConnectionFailure.handle(new MatterError(0x03, "CHIP_ERROR_INCORRECT_STATE"));
-                  }
-                }
-              }
-            },
-            new FailureCallback() {
-              @Override
-              public void handle(MatterError err) {
-                Log.e(TAG, "Failure while discovering targetVideoPlayer after waking it up " + err);
-              }
-            });
-
-        // stop looking for the video player after some time and fail fast
-        Executors.newScheduledThreadPool(1)
-            .schedule(
-                () -> {
-                  Log.d(TAG, "Scheduling stopVideoPlayerDiscovery after sending WoL");
-                  stopVideoPlayerDiscovery();
-                },
-                10000,
-                TimeUnit.MILLISECONDS);
-        status = true;
-      }
-      return status;
-    } else {
+    Log.d(TAG, "TvCastingApp.verifyOrEstablishConnection called");
+    if (!targetVideoPlayer.isAsleep()) {
+      // if the player is NOT asleep, establish connection right away
       return _verifyOrEstablishConnection(
           targetVideoPlayer,
           onConnectionSuccess,
           onConnectionFailure,
           onNewOrUpdatedEndpointCallback);
+    } else {
+      boolean status = false;
+      // targetVideoPlayer is asleep. Send WakeOnLAN packet to it
+      if (_sendWakeOnLAN(targetVideoPlayer)) {
+        status = true;
+        // wait for player to turn on, then establish connection
+        Log.d(TAG, "Scheduling delayed call to _verifyOrEstablishConnection after sending WoL");
+        Executors.newScheduledThreadPool(1)
+            .schedule(
+                () -> {
+                  boolean callStatus =
+                      _verifyOrEstablishConnection(
+                          targetVideoPlayer,
+                          new SuccessCallback<VideoPlayer>() {
+                            @Override
+                            public void handle(VideoPlayer response) {
+                              response.setAsleep(false);
+                              onConnectionSuccess.handle(response);
+                            }
+                          },
+                          onConnectionFailure,
+                          onNewOrUpdatedEndpointCallback);
+                  if (callStatus == false) {
+                    Log.e(TAG, "_verifyOrEstablishConnection failed after attempting to WoL");
+                    onConnectionFailure.handle(new MatterError(0x03, "CHIP_ERROR_INCORRECT_STATE"));
+                  }
+                },
+                10000,
+                TimeUnit.MILLISECONDS);
+      }
+      return status;
     }
   }
 

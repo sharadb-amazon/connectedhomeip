@@ -165,7 +165,7 @@ CHIP_ERROR convertJVideoPlayerToTargetVideoPlayerInfo(jobject videoPlayer, Targe
     const char * instanceName     = env->GetStringUTFChars(jInstanceName, 0);
 
     jfieldID jLastDiscoveredMs = env->GetFieldID(jVideoPlayerClass, "lastDiscoveredMs", "J");
-    long lastDiscoveredMs      = static_cast<uint16_t>(env->GetIntField(videoPlayer, jLastDiscoveredMs));
+    long lastDiscoveredMs      = static_cast<long>(env->GetLongField(videoPlayer, jLastDiscoveredMs));
 
     jfieldID getMACAddressField = env->GetFieldID(jVideoPlayerClass, "MACAddress", "Ljava/lang/String;");
     jstring jMACAddress         = static_cast<jstring>(env->GetObjectField(videoPlayer, getMACAddressField));

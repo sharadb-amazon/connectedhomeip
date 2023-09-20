@@ -362,10 +362,10 @@ CastingServer::GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPl
 
 CHIP_ERROR CastingServer::SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlayerInfo)
 {
-    VerifyOrReturnError(targetVideoPlayerInfo.getMACAddress() != nullptr && targetVideoPlayerInfo.getMACAddress()->size() > 0,
-                        CHIP_ERROR_INVALID_ARGUMENT);
-    chip::CharSpan MACAddress = *(targetVideoPlayerInfo.getMACAddress());
-    ChipLogProgress(AppServer, "SendWakeOnLAN called with MACAddress %.*s", 2 * kMACLength, MACAddress.data());
+    chip::CharSpan * MACAddress = targetVideoPlayerInfo.GetMACAddress();
+    VerifyOrReturnError(MACAddress != nullptr && MACAddress->size() > 0, CHIP_ERROR_INVALID_ARGUMENT);
+    const int kMACLength = chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength;
+    ChipLogProgress(AppServer, "SendWakeOnLAN called with MACAddress %.*s", 2 * kMACLength, MACAddress->data());
 
     // Create a socket
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -385,13 +385,12 @@ CHIP_ERROR CastingServer::SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlaye
     }
 
     // Convert MAC Address to bytes
-    const int kMACLength = chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength;
     uint8_t MACBytes[kMACLength];
     for (int i = 0; i < 2 * kMACLength; i += 2)
     {
         char byteString[3];
-        byteString[0]   = MACAddress.data()[i];
-        byteString[1]   = MACAddress.data()[i + 1];
+        byteString[0]   = MACAddress->data()[i];
+        byteString[1]   = MACAddress->data()[i + 1];
         byteString[2]   = '\0';
         MACBytes[i / 2] = static_cast<uint8_t>(std::strtol(byteString, nullptr, 16));
     }
@@ -418,6 +417,7 @@ CHIP_ERROR CastingServer::SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlaye
         ChipLogError(AppServer, "sendto(): Could not send WoL magic packet");
         return CHIP_ERROR_INCORRECT_STATE;
     }
+    ChipLogProgress(AppServer, "Broadcasted WoL magic packet with MACAddress %.*s", 2 * kMACLength, MACAddress->data());
 
     close(sockfd);
     return CHIP_NO_ERROR;
