@@ -55,6 +55,7 @@
         _instanceName = instanceName;
         _port = port;
         _lastDiscoveredMs = lastDiscoveredMs;
+        _isAsleep = false;
         _isInitialized = true;
     }
     return self;

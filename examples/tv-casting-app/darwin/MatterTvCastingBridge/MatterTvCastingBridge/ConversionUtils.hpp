@@ -58,8 +58,8 @@
 /**
  * @brief inter-object converters
  */
-+ (DiscoveredNodeData *)convertToDiscoveredNodeDataFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo
++ (DiscoveredNodeData *)convertToDiscoveredNodeDataFrom:(TargetVideoPlayerInfo * _Nonnull)cppTargetVideoPlayerInfo;
 
-    @end
+@end
 
 #endif /* ConversionUtils_h */

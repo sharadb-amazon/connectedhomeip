@@ -33,6 +33,8 @@ public:
         mObjCDiscoveredCommissionerHandler = objCDiscoveredCommissionerHandler;
         mCachedTargetVideoPlayerInfos = cachedTargetVideoPlayerInfos;
         mDiscoveredCommissioners.clear();
+        chip::DeviceLayer::SystemLayer().CancelTimer(
+            ReportSleepingCommissioners, this); // cancel preexisting timer for ReportSleepingCommissioners, if any
         chip::DeviceLayer::SystemLayer().StartTimer(
             chip::System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC * 1000), ReportSleepingCommissioners,
             this);
@@ -88,8 +90,14 @@ public:
 
                     // surface the *sleeping* video player as a DiscoveredNodeData
                     if (!discovered) {
+                        VideoPlayer * connectableVideoPlayer =
+                            [ConversionUtils convertToObjCVideoPlayerFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
+                        connectableVideoPlayer.isAsleep = true;
+
                         DiscoveredNodeData * objCDiscoveredNodeData =
                             [ConversionUtils convertToDiscoveredNodeDataFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
+                        [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];
+
                         // make the callback
                         thiz->mObjCDiscoveredCommissionerHandler(objCDiscoveredNodeData);
                     }

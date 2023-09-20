@@ -50,6 +50,8 @@
 
 @property uint64_t lastDiscoveredMs;
 
+@property bool isAsleep;
+
 /**
  @brief true, if all the required fields are initialized, false otherwise
  */

@@ -31,6 +31,7 @@
 #include <lib/support/CHIPListUtils.h>
 #include <lib/support/CHIPMem.h>
 #include <platform/PlatformManager.h>
+#include <unistd.h>
 
 #ifndef CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE
 #define CHIP_DEVICE_CONFIG_USE_TEST_SETUP_PIN_CODE 20202021
@@ -749,38 +750,48 @@
                                  [ConversionUtils convertToCppTargetVideoPlayerInfoFrom:videoPlayer
                                                                outTargetVideoPlayerInfo:targetVideoPlayerInfo];
 
-                                 CHIP_ERROR err = CastingServer::GetInstance()->VerifyOrEstablishConnection(
-                                     targetVideoPlayerInfo,
-                                     [clientQueue, onConnectionSuccessCallback](TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
-                                         VideoPlayer * videoPlayer =
-                                             [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
-                                         [[CastingServerBridge getSharedInstance]
-                                             dispatchOnClientQueue:clientQueue
-                                                       description:@"onConnectionSuccessCallback"
-                                                             block:^{
-                                                                 onConnectionSuccessCallback(videoPlayer);
-                                                             }];
-                                     },
-                                     [clientQueue, onConnectionFailureCallback](CHIP_ERROR err) {
-                                         [[CastingServerBridge getSharedInstance]
-                                             dispatchOnClientQueue:clientQueue
-                                                       description:@"onConnectionFailureCallback"
-                                                             block:^{
-                                                                 onConnectionFailureCallback([[MatterError alloc]
-                                                                     initWithCode:err.AsInteger()
-                                                                          message:[NSString stringWithUTF8String:err.AsString()]]);
-                                                             }];
-                                     },
-                                     [clientQueue, onNewOrUpdatedEndpointCallback](TargetEndpointInfo * cppTargetEndpointInfo) {
-                                         ContentApp * contentApp =
-                                             [ConversionUtils convertToObjCContentAppFrom:cppTargetEndpointInfo];
-                                         [[CastingServerBridge getSharedInstance]
-                                             dispatchOnClientQueue:clientQueue
-                                                       description:@"onNewOrUpdatedEndpointCallback"
-                                                             block:^{
-                                                                 onNewOrUpdatedEndpointCallback(contentApp);
-                                                             }];
-                                     });
+                                 CHIP_ERROR err = CHIP_NO_ERROR;
+                                 if (videoPlayer.isAsleep) {
+                                     err = CastingServer::GetInstance()->SendWakeOnLAN(targetVideoPlayerInfo);
+                                     usleep(10 * 1000 * 1000); // 10sec
+                                 }
+
+                                 if (err == CHIP_NO_ERROR) {
+                                     err = CastingServer::GetInstance()->VerifyOrEstablishConnection(
+                                         targetVideoPlayerInfo,
+                                         [clientQueue, onConnectionSuccessCallback](
+                                             TargetVideoPlayerInfo * cppTargetVideoPlayerInfo) {
+                                             VideoPlayer * videoPlayer =
+                                                 [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
+                                             [[CastingServerBridge getSharedInstance]
+                                                 dispatchOnClientQueue:clientQueue
+                                                           description:@"onConnectionSuccessCallback"
+                                                                 block:^{
+                                                                     onConnectionSuccessCallback(videoPlayer);
+                                                                 }];
+                                         },
+                                         [clientQueue, onConnectionFailureCallback](CHIP_ERROR err) {
+                                             [[CastingServerBridge getSharedInstance]
+                                                 dispatchOnClientQueue:clientQueue
+                                                           description:@"onConnectionFailureCallback"
+                                                                 block:^{
+                                                                     onConnectionFailureCallback([[MatterError alloc]
+                                                                         initWithCode:err.AsInteger()
+                                                                              message:[NSString
+                                                                                          stringWithUTF8String:err.AsString()]]);
+                                                                 }];
+                                         },
+                                         [clientQueue, onNewOrUpdatedEndpointCallback](TargetEndpointInfo * cppTargetEndpointInfo) {
+                                             ContentApp * contentApp =
+                                                 [ConversionUtils convertToObjCContentAppFrom:cppTargetEndpointInfo];
+                                             [[CastingServerBridge getSharedInstance]
+                                                 dispatchOnClientQueue:clientQueue
+                                                           description:@"onNewOrUpdatedEndpointCallback"
+                                                                 block:^{
+                                                                     onNewOrUpdatedEndpointCallback(contentApp);
+                                                                 }];
+                                         });
+                                 }
 
                                  dispatch_async(clientQueue, ^{
                                      requestSentHandler(
