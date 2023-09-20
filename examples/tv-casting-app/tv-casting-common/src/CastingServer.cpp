@@ -643,7 +643,13 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
                 CastingServer::GetInstance()->mOnConnectionSuccessClientCallback(videoPlayer);
             }
         },
-        onConnectionFailure);
+        [onConnectionFailure](CHIP_ERROR err) {
+            ChipLogProgress(AppServer, "Deleting VideoPlayer from cache after connection failure: %" CHIP_ERROR_FORMAT,
+                            err.Format());
+            CastingServer::GetInstance()->mPersistenceManager.DeleteVideoPlayer(
+                &CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo);
+            onConnectionFailure(err);
+        });
 }
 
 CHIP_ERROR CastingServer::PurgeCache()

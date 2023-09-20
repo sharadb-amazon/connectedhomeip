@@ -66,6 +66,47 @@ CHIP_ERROR PersistenceManager::AddVideoPlayer(TargetVideoPlayerInfo * targetVide
     return WriteAllVideoPlayers(cachedVideoPlayers);
 }
 
+CHIP_ERROR PersistenceManager::DeleteVideoPlayer(TargetVideoPlayerInfo * targetVideoPlayerInfo)
+{
+    ChipLogProgress(AppServer, "PersistenceManager::DeleteVideoPlayer called");
+    VerifyOrReturnError(targetVideoPlayerInfo != nullptr && targetVideoPlayerInfo->IsInitialized(), CHIP_ERROR_INVALID_ARGUMENT);
+
+    // Read cache for video players targetted in previous runs
+    TargetVideoPlayerInfo cachedVideoPlayers[kMaxCachedVideoPlayers];
+    CHIP_ERROR err = ReadAllVideoPlayers(cachedVideoPlayers);
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(AppServer,
+                     "PersistenceManager::DeleteVideoPlayer status of reading previously cached video players %" CHIP_ERROR_FORMAT,
+                     err.Format());
+        return err;
+    }
+
+    size_t i;
+    bool found = false;
+    for (i = 0; i < kMaxCachedVideoPlayers && cachedVideoPlayers[i].IsInitialized(); i++)
+    {
+        if (cachedVideoPlayers[i] == *targetVideoPlayerInfo) // found the video player, delete it
+        {
+            ChipLogProgress(AppServer, "PersistenceManager::DeleteVideoPlayer found video player in cache at position: %lu",
+                            static_cast<unsigned long>(i));
+            found = true;
+            break;
+        }
+    }
+    if (found)
+    {
+        while (i + 1 < kMaxCachedVideoPlayers && cachedVideoPlayers[i + 1].IsInitialized())
+        {
+            cachedVideoPlayers[i] = cachedVideoPlayers[i + 1];
+            i++;
+        }
+        cachedVideoPlayers[i].Reset();
+        return WriteAllVideoPlayers(cachedVideoPlayers);
+    }
+    return CHIP_NO_ERROR;
+}
+
 CHIP_ERROR PersistenceManager::WriteAllVideoPlayers(TargetVideoPlayerInfo videoPlayers[])
 {
     ChipLogProgress(AppServer, "PersistenceManager::WriteAllVideoPlayers called");
