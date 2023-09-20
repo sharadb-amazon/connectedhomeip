@@ -173,7 +173,6 @@ public class TvCastingApp {
                   TimeUnit.MILLISECONDS);
 
       this.discoveryStarted = true;
-      reportSleepingCommissionersFuture.cancel(true);
     }
   }
 
