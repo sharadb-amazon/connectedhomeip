@@ -71,6 +71,7 @@ public:
 
     static void ReportSleepingCommissioners(chip::System::Layer * _Nonnull aSystemLayer, void * _Nullable context)
     {
+        ChipLogProgress(AppServer, "CommissionerDiscoveryDelegateImpl().ReportSleepingCommissioners() called");
         CommissionerDiscoveryDelegateImpl * thiz = (CommissionerDiscoveryDelegateImpl *) context;
         if (thiz != nullptr && thiz->mCachedTargetVideoPlayerInfos != nullptr) {
             for (size_t i = 0; i < kMaxCachedVideoPlayers && thiz->mCachedTargetVideoPlayerInfos[i].IsInitialized(); i++) {
@@ -99,6 +100,8 @@ public:
                         [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];
 
                         // make the callback
+                        ChipLogProgress(AppServer,
+                            "CommissionerDiscoveryDelegateImpl().ReportSleepingCommissioners() reporting sleeping video player");
                         thiz->mObjCDiscoveredCommissionerHandler(objCDiscoveredNodeData);
                     }
                 }
