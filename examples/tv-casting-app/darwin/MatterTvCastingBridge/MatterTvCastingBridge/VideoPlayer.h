@@ -48,6 +48,8 @@
 
 @property uint16_t port;
 
+@property NSString * MACAddress;
+
 @property uint64_t lastDiscoveredMs;
 
 @property bool isAsleep;
@@ -68,6 +70,7 @@
                       hostName:(NSString *)hostName
                   instanceName:(NSString *)instanceName
                           port:(uint16_t)port
+                    MACAddress:(NSString *)MACAddress
               lastDiscoveredMs:(uint64_t)lastDiscoveredMs;
 
 @end

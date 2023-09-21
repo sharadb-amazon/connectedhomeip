@@ -40,6 +40,7 @@
                       hostName:(NSString *)hostName
                   instanceName:(NSString *)instanceName
                           port:(uint16_t)port
+                    MACAddress:(NSString *)MACAddress
               lastDiscoveredMs:(uint64_t)lastDiscoveredMs
 {
     if (self = [super init]) {
@@ -54,6 +55,7 @@
         _hostName = hostName;
         _instanceName = instanceName;
         _port = port;
+        _MACAddress = MACAddress;
         _lastDiscoveredMs = lastDiscoveredMs;
         _isAsleep = false;
         _isInitialized = true;

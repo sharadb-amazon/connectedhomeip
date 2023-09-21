@@ -87,6 +87,11 @@
         objCVideoPlayer.vendorId, objCVideoPlayer.productId, objCVideoPlayer.deviceType, [objCVideoPlayer.deviceName UTF8String],
         [objCVideoPlayer.hostName UTF8String], 0, nullptr, objCVideoPlayer.port, [objCVideoPlayer.instanceName UTF8String],
         chip::System::Clock::Timestamp(objCVideoPlayer.lastDiscoveredMs)));
+    if (objCVideoPlayer.MACAddress != nil) {
+        outTargetVideoPlayerInfo.SetMACAddress(
+            chip::CharSpan([objCVideoPlayer.MACAddress UTF8String], objCVideoPlayer.MACAddress.length));
+    }
+
     for (ContentApp * contentApp in objCVideoPlayer.contentApps) {
         TargetEndpointInfo * endpoint = outTargetVideoPlayerInfo.GetOrAddEndpoint(contentApp.endpointId);
         VerifyOrReturnError(endpoint != nullptr, CHIP_ERROR_INCORRECT_STATE);
@@ -170,6 +175,9 @@
         cppTargetVideoPlayerInfo->GetIpAddresses()[i].ToString(addrCString, chip::Inet::IPAddress::kMaxStringLength);
         objCDiscoveredNodeData.ipAddresses[i] = [NSString stringWithCString:addrCString encoding:NSASCIIStringEncoding];
     }
+
+    VideoPlayer * connectableVideoPlayer = [ConversionUtils convertToObjCVideoPlayerFrom:cppTargetVideoPlayerInfo];
+    [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];
     return objCDiscoveredNodeData;
 }
 
@@ -186,6 +194,10 @@
         objCVideoPlayer.deviceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetDeviceName()
                                                         encoding:NSUTF8StringEncoding];
         objCVideoPlayer.port = cppTargetVideoPlayerInfo->GetPort();
+        if (cppTargetVideoPlayerInfo->GetMACAddress() != nullptr && cppTargetVideoPlayerInfo->GetMACAddress()->size() > 0) {
+            objCVideoPlayer.MACAddress = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetMACAddress()->data()
+                                                            encoding:NSUTF8StringEncoding];
+        }
         objCVideoPlayer.lastDiscoveredMs = cppTargetVideoPlayerInfo->GetLastDiscovered().count();
         objCVideoPlayer.instanceName = [NSString stringWithCString:cppTargetVideoPlayerInfo->GetInstanceName()
                                                           encoding:NSUTF8StringEncoding];

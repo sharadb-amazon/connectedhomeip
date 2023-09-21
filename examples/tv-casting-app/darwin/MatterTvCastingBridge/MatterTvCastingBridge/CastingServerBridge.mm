@@ -752,6 +752,7 @@
 
                                  CHIP_ERROR err = CHIP_NO_ERROR;
                                  if (videoPlayer.isAsleep) {
+                                     ChipLogProgress(AppServer, "verifyOrEstablishConnection called on a sleeping VideoPlayer");
                                      err = CastingServer::GetInstance()->SendWakeOnLAN(targetVideoPlayerInfo);
                                      usleep(10 * 1000 * 1000); // 10sec
                                  }

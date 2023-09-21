@@ -33,11 +33,15 @@ public:
         mObjCDiscoveredCommissionerHandler = objCDiscoveredCommissionerHandler;
         mCachedTargetVideoPlayerInfos = cachedTargetVideoPlayerInfos;
         mDiscoveredCommissioners.clear();
-        chip::DeviceLayer::SystemLayer().CancelTimer(
-            ReportSleepingCommissioners, this); // cancel preexisting timer for ReportSleepingCommissioners, if any
-        chip::DeviceLayer::SystemLayer().StartTimer(
-            chip::System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC * 1000), ReportSleepingCommissioners,
-            this);
+
+        // cancel preexisting timer for ReportSleepingCommissioners, if any and schedule a new one if there are any cached
+        // commissioners
+        chip::DeviceLayer::SystemLayer().CancelTimer(ReportSleepingCommissioners, this);
+        if (mCachedTargetVideoPlayerInfos != nullptr && mCachedTargetVideoPlayerInfos[0].IsInitialized()) {
+            chip::DeviceLayer::SystemLayer().StartTimer(
+                chip::System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC * 1000), ReportSleepingCommissioners,
+                this);
+        }
     }
 
     void OnDiscoveredDevice(const chip::Dnssd::DiscoveredNodeData & nodeData)
@@ -91,13 +95,9 @@ public:
 
                     // surface the *sleeping* video player as a DiscoveredNodeData
                     if (!discovered) {
-                        VideoPlayer * connectableVideoPlayer =
-                            [ConversionUtils convertToObjCVideoPlayerFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
-                        connectableVideoPlayer.isAsleep = true;
-
                         DiscoveredNodeData * objCDiscoveredNodeData =
                             [ConversionUtils convertToDiscoveredNodeDataFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
-                        [objCDiscoveredNodeData setConnectableVideoPlayer:connectableVideoPlayer];
+                        objCDiscoveredNodeData.getConnectableVideoPlayer.isAsleep = true;
 
                         // make the callback
                         ChipLogProgress(AppServer,

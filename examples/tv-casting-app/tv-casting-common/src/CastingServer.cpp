@@ -362,10 +362,10 @@ CastingServer::GetDiscoveredCommissioner(int index, chip::Optional<TargetVideoPl
 
 CHIP_ERROR CastingServer::SendWakeOnLAN(TargetVideoPlayerInfo & targetVideoPlayerInfo)
 {
+    ChipLogProgress(AppServer, "SendWakeOnLAN called");
     chip::CharSpan * MACAddress = targetVideoPlayerInfo.GetMACAddress();
     VerifyOrReturnError(MACAddress != nullptr && MACAddress->size() > 0, CHIP_ERROR_INVALID_ARGUMENT);
     const int kMACLength = chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength;
-    ChipLogProgress(AppServer, "SendWakeOnLAN called with MACAddress %.*s", 2 * kMACLength, MACAddress->data());
 
     // Create a socket
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
