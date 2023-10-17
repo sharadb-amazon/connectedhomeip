@@ -655,7 +655,11 @@ void CastingServer::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * eve
         {
             // add discovery timestamp
             chip::System::Clock::Timestamp currentUnixTimeMS = chip::System::Clock::kZero;
+#ifdef __ANDROID__
+            AndroidClockImpl::GetClock_RealTimeMS(currentUnixTimeMS);
+#else
             chip::System::SystemClock().GetClock_RealTimeMS(currentUnixTimeMS);
+#endif
             ChipLogProgress(AppServer, "Updating discovery timestamp for VideoPlayer to %lu",
                             static_cast<unsigned long>(currentUnixTimeMS.count()));
             CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.SetLastDiscovered(currentUnixTimeMS);
