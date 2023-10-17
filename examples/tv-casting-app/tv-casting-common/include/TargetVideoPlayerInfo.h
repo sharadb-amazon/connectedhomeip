@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "AndroidSystemTimeSupport.h"
 #include "TargetEndpointInfo.h"
 #include "app/clusters/bindings/BindingManager.h"
 #include <platform/CHIPDeviceLayer.h>
@@ -99,13 +100,19 @@ public:
     }
     chip::System::Clock::Timestamp GetLastDiscovered() { return mLastDiscovered; }
     void SetLastDiscovered(chip::System::Clock::Timestamp lastDiscovered) { mLastDiscovered = lastDiscovered; }
+
     bool WasRecentlyDiscoverable()
     {
 #ifdef CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS
         // it was recently discoverable if its mLastDiscovered.count is within
         // CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS of current time
         chip::System::Clock::Timestamp currentUnixTimeMS = chip::System::Clock::kZero;
+#ifdef __ANDROID__
+        VerifyOrReturnValue(AndroidClockImpl::GetClock_RealTimeMS(currentUnixTimeMS) == CHIP_NO_ERROR, true);
+#else
         VerifyOrReturnValue(chip::System::SystemClock().GetClock_RealTimeMS(currentUnixTimeMS) == CHIP_NO_ERROR, true);
+#endif
+
         ChipLogProgress(AppServer, "WasRecentlyDiscoverable currentUnixTimeMS: %lu mLastDiscovered: %lu",
                         static_cast<unsigned long>(currentUnixTimeMS.count()), static_cast<unsigned long>(mLastDiscovered.count()));
         return mLastDiscovered.count() >
