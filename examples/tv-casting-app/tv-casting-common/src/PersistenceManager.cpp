@@ -441,6 +441,11 @@ void PersistenceManager::OnFabricRemoved(const FabricTable & fabricTable, Fabric
     }
 
     WriteAllVideoPlayers(cachedVideoPlayers);
+
+    err = chip::Server::GetInstance().GetSessionResumptionStorage()->DeleteAll(fabricIndex);
+    ChipLogProgress(AppServer,
+                    "PersistenceManager::OnFabricRemoved SessionResumptionStorage.DeleteAll(%d) status %" CHIP_ERROR_FORMAT,
+                    fabricIndex, err.Format());
 }
 
 CHIP_ERROR PersistenceManager::PurgeVideoPlayerCache()
