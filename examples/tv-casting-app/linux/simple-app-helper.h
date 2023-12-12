@@ -59,6 +59,17 @@ public:
 };
 
 /**
+ * @brief Success handler for the ContentLauncher.LaunchURL command's response
+ */
+void OnLaunchURLSuccess(void * context,
+                        const chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type::ResponseType & response);
+
+/**
+ * @brief Failure handler for the ContentLauncher.LaunchURL command's response
+ */
+void OnLaunchURLFailure(void * context, CHIP_ERROR error);
+
+/**
  * @brief Linux tv-casting-app's onCompleted handler for CastingPlayer.VerifyOrEstablishConnection API
  */
 void ConnectionHandler(CHIP_ERROR err, matter::casting::core::CastingPlayer * castingPlayer);

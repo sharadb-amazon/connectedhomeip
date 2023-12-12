@@ -61,9 +61,53 @@ void DiscoveryDelegateImpl::HandleOnUpdated(matter::casting::memory::Strong<matt
     ChipLogProgress(AppServer, "Updated CastingPlayer with ID: %s", player->GetId());
 }
 
+void OnLaunchURLSuccess(void * context,
+                        const chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type::ResponseType & response)
+{
+    ChipLogProgress(AppServer, "OnLaunchURLSuccess with response: %.*s", static_cast<int>(response.data.Value().size()),
+                    response.data.Value().data());
+}
+
+void OnLaunchURLFailure(void * context, CHIP_ERROR error)
+{
+    ChipLogError(AppServer, "OnLaunchURLFailure with err %" CHIP_ERROR_FORMAT, error.Format());
+}
+
 void ConnectionHandler(CHIP_ERROR err, matter::casting::core::CastingPlayer * castingPlayer)
 {
-    ChipLogProgress(AppServer, "ConnectionHandler called with %" CHIP_ERROR_FORMAT, err.Format());
+    VerifyOrReturn(err == CHIP_NO_ERROR,
+                   ChipLogProgress(AppServer,
+                                   "ConnectionHandler: Failed to connect to CastingPlayer(ID: %s) with err %" CHIP_ERROR_FORMAT,
+                                   castingPlayer->GetId(), err.Format()));
+
+    ChipLogProgress(AppServer, "ConnectionHandler: Successfully connected to CastingPlayer(ID: %s)", castingPlayer->GetId());
+    std::vector<matter::casting::memory::Strong<matter::casting::core::Endpoint>> endpoints = castingPlayer->GetEndpoints();
+
+    // Find the desired Endpoint and auto-trigger some Matter Casting demo interactions
+    auto it = std::find_if(endpoints.begin(), endpoints.end(),
+                           [](const matter::casting::memory::Strong<matter::casting::core::Endpoint> & endpoint) {
+                               return endpoint->GetVendorId() == 65521;
+                           });
+    if (it != endpoints.end())
+    {
+        unsigned index = (unsigned int) std::distance(endpoints.begin(), it);
+        matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster> cluster =
+            endpoints[index]->GetCluster<matter::casting::clusters::content_launcher::ContentLauncherCluster>();
+        if (cluster != nullptr)
+        {
+            chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type request;
+            request.contentURL    = chip::CharSpan::fromCharString("https://www.test.com/videoid");
+            request.displayString = chip::Optional<chip::CharSpan>(chip::CharSpan::fromCharString("Test video"));
+            request.brandingInformation =
+                chip::MakeOptional(chip::app::Clusters::ContentLauncher::Structs::BrandingInformationStruct::Type());
+            cluster->LaunchURL(request, nullptr, OnLaunchURLSuccess, OnLaunchURLFailure,
+                               chip::MakeOptional(static_cast<unsigned short>(5 * 1000)));
+        }
+    }
+    else
+    {
+        ChipLogError(AppServer, "Desired Endpoint not found on the CastingPlayer(ID: %s)", castingPlayer->GetId());
+    }
 }
 
 #if defined(ENABLE_CHIP_SHELL)

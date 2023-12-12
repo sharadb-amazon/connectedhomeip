@@ -59,9 +59,6 @@ private:
     EndpointAttributes mAttributes;
     std::map<chip::ClusterId, memory::Strong<BaseCluster>> mClusters;
 
-protected:
-    CastingPlayer * GetCastingPlayer() const { return mCastingPlayer; }
-
 public:
     Endpoint(CastingPlayer * castingPlayer, const EndpointAttributes & attributes)
     {
@@ -74,6 +71,8 @@ public:
     Endpoint()                       = delete;
     Endpoint(Endpoint & other)       = delete;
     void operator=(const Endpoint &) = delete;
+
+    CastingPlayer * GetCastingPlayer() const { return mCastingPlayer; }
 
     /**
      * @brief Compares based on the Id

@@ -18,34 +18,24 @@
 
 #pragma once
 
-#include "Endpoint.h"
-#include "Types.h"
-
-#include "lib/support/logging/CHIPLogging.h"
+#include <controller/CHIPCluster.h>
 
 namespace matter {
 namespace casting {
-namespace core {
+namespace support {
 
-class Endpoint;
-
-// Base cluster class
-class BaseCluster
+/**
+ * @brief MediaClusterBase is used to invoke controller/CHIPCluster.h#ReadAttribute() API calls
+ */
+class MediaClusterBase : public chip::Controller::ClusterBase
 {
 public:
-    BaseCluster(memory::Weak<Endpoint> endpoint) { this->mEndpoint = endpoint; }
-
-    virtual ~BaseCluster() {}
-
-    BaseCluster()                       = delete;
-    BaseCluster(BaseCluster & other)    = delete;
-    void operator=(const BaseCluster &) = delete;
-
-protected:
-    memory::Weak<Endpoint> GetEndpoint() const { return mEndpoint.lock(); }
-    memory::Weak<Endpoint> mEndpoint;
+    MediaClusterBase(chip::Messaging::ExchangeManager & exchangeManager, const chip::SessionHandle & session,
+                     chip::EndpointId endpoint) :
+        ClusterBase(exchangeManager, session, endpoint)
+    {}
 };
 
-}; // namespace core
+}; // namespace support
 }; // namespace casting
 }; // namespace matter

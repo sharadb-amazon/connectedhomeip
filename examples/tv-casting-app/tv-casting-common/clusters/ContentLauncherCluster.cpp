@@ -16,36 +16,23 @@
  *    limitations under the License.
  */
 
-#pragma once
-
-#include "Endpoint.h"
-#include "Types.h"
-
-#include "lib/support/logging/CHIPLogging.h"
+#include "ContentLauncherCluster.h"
 
 namespace matter {
 namespace casting {
-namespace core {
+namespace clusters {
+namespace content_launcher {
 
-class Endpoint;
-
-// Base cluster class
-class BaseCluster
+void ContentLauncherCluster::LaunchURL(
+    chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type request, void * context,
+    SuccessCallbackType<chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type::ResponseType> successCb,
+    FailureCallbackType failureCb, const chip::Optional<uint16_t> & timedInvokeTimeoutMs)
 {
-public:
-    BaseCluster(memory::Weak<Endpoint> endpoint) { this->mEndpoint = endpoint; }
+    LaunchURLCommand command(this->GetEndpoint());
+    command.Invoke(request, context, successCb, failureCb, timedInvokeTimeoutMs);
+}
 
-    virtual ~BaseCluster() {}
-
-    BaseCluster()                       = delete;
-    BaseCluster(BaseCluster & other)    = delete;
-    void operator=(const BaseCluster &) = delete;
-
-protected:
-    memory::Weak<Endpoint> GetEndpoint() const { return mEndpoint.lock(); }
-    memory::Weak<Endpoint> mEndpoint;
-};
-
-}; // namespace core
+}; // namespace content_launcher
+}; // namespace clusters
 }; // namespace casting
 }; // namespace matter

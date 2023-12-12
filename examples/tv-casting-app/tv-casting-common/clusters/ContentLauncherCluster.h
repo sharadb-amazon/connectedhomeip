@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "clusters/ClusterTemplates.h"
 #include "core/Endpoint.h"
 #include "core/Types.h"
 
@@ -26,19 +27,35 @@
 namespace matter {
 namespace casting {
 namespace clusters {
+namespace content_launcher {
 
 class ContentLauncherCluster : public core::BaseCluster
 {
-private:
-protected:
 public:
     ContentLauncherCluster(memory::Weak<core::Endpoint> endpoint) : core::BaseCluster(endpoint) {}
 
-    // TODO:
-    // LaunchURL(const char * contentUrl, const char * contentDisplayStr,
-    //       chip::Optional<chip::app::Clusters::ContentLauncher::Structs::BrandingInformationStruct::Type> brandingInformation);
+    void LaunchURL(chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type request, void * context,
+                   SuccessCallbackType<chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type::ResponseType> successCb,
+                   FailureCallbackType failureCb, const chip::Optional<uint16_t> & timedInvokeTimeoutMs);
 };
 
+struct LaunchURLContext : public CommandContext<chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type>
+{
+    LaunchURLContext(memory::Strong<core::Endpoint> endpoint,
+                     chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type request, void * context,
+                     SuccessCallbackType<chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type::ResponseType> successCb,
+                     FailureCallbackType failureCb, const chip::Optional<uint16_t> & timedInvokeTimeoutMs) :
+        CommandContext(endpoint, request, context, successCb, failureCb, timedInvokeTimeoutMs)
+    {}
+};
+
+class LaunchURLCommand : public Command<chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Type, LaunchURLContext>
+{
+public:
+    LaunchURLCommand(memory::Weak<core::Endpoint> endpoint) : Command(endpoint) {}
+};
+
+}; // namespace content_launcher
 }; // namespace clusters
 }; // namespace casting
 }; // namespace matter

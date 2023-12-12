@@ -126,7 +126,7 @@ void EndpointListLoader::Complete()
                 switch (clusterId)
                 {
                 case chip::app::Clusters::ContentLauncher::Id:
-                    endpoint->RegisterCluster<clusters::ContentLauncherCluster>(clusterId);
+                    endpoint->RegisterCluster<clusters::content_launcher::ContentLauncherCluster>(clusterId);
                     break;
 
                 case chip::app::Clusters::MediaPlayback::Id:
