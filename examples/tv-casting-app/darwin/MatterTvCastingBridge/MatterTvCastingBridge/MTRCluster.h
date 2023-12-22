@@ -1,6 +1,6 @@
 /**
  *
- *    Copyright (c) 2020-2022 Project CHIP Authors
+ *    Copyright (c) 2020-2023 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,25 +15,17 @@
  *    limitations under the License.
  */
 
-import SwiftUI
+#import "MTREndpoint.h"
 
-struct ContentView: View {
-    var body: some View {
-        NavigationView {
-            if ProcessInfo.processInfo.environment["CHIP_CASTING_SIMPLIFIED"] == "1"
-            {
-                MTRDiscoveryExampleView()
-            }
-            else
-            {
-                StartFromCacheView()
-            }
-        }
-    }
-}
+#ifndef MTRCluster_h
+#define MTRCluster_h
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-    }
-}
+@class MTREndpoint;
+
+@protocol MTRCluster
+@required
+@property (nonatomic, weak, readonly) MTREndpoint * _Nullable endpoint;
+
+@end
+
+#endif /* MTRCluster_h */

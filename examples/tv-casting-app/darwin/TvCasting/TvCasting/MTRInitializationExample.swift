@@ -79,14 +79,14 @@ class MTRInitializationExample {
     let Log = Logger(subsystem: "com.matter.casting",
                      category: "MTRInitializationExample")
     
-    func initialize() -> MatterError {
+    func initialize() -> Error? {
         if let castingApp = MTRCastingApp.getSharedInstance()
         {
             return castingApp.initialize(with: MTRAppParametersDataSource())
         }
         else
         {
-            return MATTER_ERROR_INCORRECT_STATE
+            return NSError(domain: "com.matter.casting", code: Int(MATTER_ERROR_INCORRECT_STATE.code))
         }
     }
 }

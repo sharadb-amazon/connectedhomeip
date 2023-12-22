@@ -77,6 +77,11 @@ public:
      */
     CHIP_ERROR ShutdownAllSubscriptions();
 
+    /**
+     * @brief Clears app cache that contains the information about CastingPlayers previously connected to
+     */
+    CHIP_ERROR ClearCache();
+
 private:
     CastingApp();
     static CastingApp * _castingApp;

@@ -18,6 +18,7 @@
 
 #include "CastingApp.h"
 
+#include "support/CastingStore.h"
 #include "support/ChipDeviceEventHandler.h"
 
 #include <app/InteractionModelEngine.h>
@@ -145,6 +146,11 @@ CHIP_ERROR CastingApp::ShutdownAllSubscriptions()
     chip::app::InteractionModelEngine::GetInstance()->ShutdownAllSubscriptions();
 
     return CHIP_NO_ERROR;
+}
+
+CHIP_ERROR CastingApp::ClearCache()
+{
+    return support::CastingStore::GetInstance()->DeleteAll();
 }
 
 }; // namespace core
