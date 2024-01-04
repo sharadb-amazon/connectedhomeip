@@ -17,6 +17,7 @@
 
 #import "MTRCommissionableData.h"
 #import "MTRDeviceAttestationCredentials.h"
+#import "MatterError.h"
 
 #ifndef MTRDataSource_h
 #define MTRDataSource_h
@@ -29,7 +30,7 @@
 - (MTRCommissionableData * _Nonnull)castingAppDidReceiveRequestForCommissionableData:(id _Nonnull)sender;
 - (MTRDeviceAttestationCredentials * _Nonnull)castingAppDidReceiveRequestForDeviceAttestationCredentials:(id _Nonnull)sender;
 
-- (NSError * _Nullable)castingApp:(id _Nonnull)sender didReceiveRequestToSignCertificateRequest:(NSData * _Nonnull)csrData outRawSignature:(NSData ** _Nonnull)outRawSignature;
+- (MatterError * _Nonnull)castingApp:(id _Nonnull)sender didReceiveRequestToSignCertificateRequest:(NSData * _Nonnull)csrData outRawSignature:(NSData ** _Nonnull)outRawSignature;
 
 @end
 

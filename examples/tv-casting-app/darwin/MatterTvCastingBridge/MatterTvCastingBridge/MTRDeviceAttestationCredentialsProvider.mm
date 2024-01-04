@@ -27,7 +27,7 @@
 
 namespace matter {
 namespace casting {
-namespace support {
+    namespace support {
 
         CHIP_ERROR MTRDeviceAttestationCredentialsProvider::Initialize(id<MTRDataSource> dataSource)
         {
@@ -113,16 +113,15 @@ namespace support {
 
             __block NSData * signedData = [NSData dataWithBytes:outSignatureBuffer.data() length:outSignatureBuffer.size()];
             __block NSData * csrData = [NSData dataWithBytes:messageToSign.data() length:messageToSign.size()];
-            __block NSError *err = nil;
+            __block MatterError * err = nil;
             dispatch_sync(mDataSource.clientQueue, ^{
                 err = [mDataSource castingApp:@"MTRDeviceAttestationCredentialsProvider.SignWithDeviceAttestationKey()"
-                    didReceiveRequestToSignCertificateRequest:csrData outRawSignature:&signedData];
+                    didReceiveRequestToSignCertificateRequest:csrData
+                                              outRawSignature:&signedData];
             });
 
-            if(err != nil) {
-                // TODO return correct error and log
-                return CHIP_ERROR_INCORRECT_STATE;
-            }
+            VerifyOrReturnValue(MATTER_NO_ERROR != err, CHIP_ERROR(chip::ChipError::SdkPart::kCore, err.code), ChipLogError(AppServer, "castingApp::SignCertificateRequest failed"));
+
             if (signedData != nil && outSignatureBuffer.size() >= signedData.length) {
                 memcpy(outSignatureBuffer.data(), signedData.bytes, signedData.length);
                 outSignatureBuffer.reduce_size(signedData.length);

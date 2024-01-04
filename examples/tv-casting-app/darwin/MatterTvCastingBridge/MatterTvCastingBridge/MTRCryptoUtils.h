@@ -15,6 +15,8 @@
  *    limitations under the License.
  */
 
+#import "MatterError.h"
+
 #import <Foundation/Foundation.h>
 
 #ifndef MTRCryptoUtils_h
@@ -36,9 +38,9 @@
  * @param[out] outRawSignature Raw signature of <r,s> concatenated format output buffer. Size must be at
  * least >= `2 * fe_length_bytes`. On success, the outRawSignature buffer will be re-assigned
  * to have the correct size (2 * feLengthBytes).
- * @return Returns an NSError on error, nil otherwise
+ * @return Returns an MatterError on error, MATTER_NO_ERROR otherwise
  */
-+ (NSError * _Nullable)ecdsaAsn1SignatureToRawWithFeLengthBytes:(NSUInteger)feLengthBytes asn1Signature:(CFDataRef _Nonnull)asn1Signature outRawSignature:(NSData *_Nullable* _Nullable)outRawSignature;
++ (MatterError * _Nonnull)ecdsaAsn1SignatureToRawWithFeLengthBytes:(NSUInteger)feLengthBytes asn1Signature:(CFDataRef _Nonnull)asn1Signature outRawSignature:(NSData * _Nullable * _Nullable)outRawSignature;
 
 @end
 

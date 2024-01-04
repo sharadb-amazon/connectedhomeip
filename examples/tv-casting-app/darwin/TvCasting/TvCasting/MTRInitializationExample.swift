@@ -61,7 +61,7 @@ class MTRAppParametersDataSource : NSObject, MTRDataSource
             productAttestationIntermediateCert: KPAI_FFF1_8000_Cert_Array)
     }
     
-    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, outRawSignature: AutoreleasingUnsafeMutablePointer<NSData?>) -> Error? {
+    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, outRawSignature: AutoreleasingUnsafeMutablePointer<NSData?>) -> MatterError {
         Log.info("castingApp didReceiveRequestToSignCertificateRequest")
 
         // get the private SecKey
@@ -78,29 +78,21 @@ class MTRAppParametersDataSource : NSObject, MTRDataSource
         // sign csrData to get asn1SignatureData
         var error: Unmanaged<CFError>?
         var asn1SignatureData: CFData? = SecKeyCreateSignature(privateSecKey, .ecdsaSignatureMessageX962SHA256, csrData as CFData, &error)
-        if error != nil || asn1SignatureData == nil {
+        if(error != nil)
+        {
             Log.error("Failed to sign message. Error: \(String(describing: error))")
-            return nil  // return error
+            return MATTER_ERROR_INVALID_ARGUMENT
         }
-       
+        else if (asn1SignatureData == nil)
+        {
+            Log.error("Failed to sign message. asn1SignatureData is nil")
+            return MATTER_ERROR_INVALID_ARGUMENT
+        }
+        
         // convert ASN.1 DER signature to SEC1 raw format
-        //var rawSignatureData: NSData?
-/*        let err = MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
-                                            asn1Signature: Data(bytes: CFDataGetBytePtr(asn1SignatureData!), count: CFDataGetLength(asn1SignatureData!)),
-                                            outRawSignature: &rawSignatureData)*/
-        let err = MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
+        return MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
                                                     asn1Signature: asn1SignatureData!,
                                                          outRawSignature: &outRawSignature.pointee)
-        if(err == nil && outRawSignature.pointee != nil)
-        {
-            return nil
-            //return Data(rawSignatureData!)
-        }
-        else
-        {
-            Log.error("Failed in ecdsaAsn1SignatureToRaw conversion while signing CSR data. Error: \(String(describing: error))")
-            return nil // return error
-        }
     }
 }
 
