@@ -120,7 +120,7 @@ namespace casting {
                                               outRawSignature:&signedData];
             });
 
-            VerifyOrReturnValue(MATTER_NO_ERROR != err, CHIP_ERROR(chip::ChipError::SdkPart::kCore, err.code), ChipLogError(AppServer, "castingApp::SignCertificateRequest failed"));
+            VerifyOrReturnValue(MATTER_NO_ERROR == err, CHIP_ERROR(chip::ChipError::SdkPart::kCore, err.code), ChipLogError(AppServer, "castingApp::SignCertificateRequest failed"));
 
             if (signedData != nil && outSignatureBuffer.size() >= signedData.length) {
                 memcpy(outSignatureBuffer.data(), signedData.bytes, signedData.length);

@@ -36,7 +36,7 @@
     CFDataGetBytes(asn1Signature, CFRangeMake(0, signatureLen), asn1SignatureByteSpan.data());
     asn1SignatureByteSpan.reduce_size(signatureLen);
 
-    // get a MutableByteSpan outRawSignatureMutableByteSpan to pass to chip::Crypto::EcdsaAsn1SignatureToRaw
+    // get a rawSignatureMutableByteSpan to pass to chip::Crypto::EcdsaAsn1SignatureToRaw
     uint8_t * rawSignatureBytes = new uint8_t[(*outRawSignature).length];
     chip::MutableByteSpan rawSignatureMutableByteSpan = chip::MutableByteSpan(rawSignatureBytes, (*outRawSignature).length);
 
@@ -44,13 +44,13 @@
     CHIP_ERROR err = chip::Crypto::EcdsaAsn1SignatureToRaw(feLengthBytes, chip::ByteSpan(asn1SignatureByteSpan.data(), asn1SignatureByteSpan.size()), rawSignatureMutableByteSpan);
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "chip::Crypto::EcdsaAsn1SignatureToRaw() failed");
-        //delete[] rawSignatureBytes;
+        // delete[] rawSignatureBytes;
         return [MTRErrorUtils MatterErrorFromChipError:err];
     }
 
     // copy from rawSignatureMutableByteSpan into *outRawSignature
     *outRawSignature = [NSData dataWithBytes:rawSignatureMutableByteSpan.data() length:rawSignatureMutableByteSpan.size()];
-    //delete[] rawSignatureBytes;
+    // delete[] rawSignatureBytes;
     return MATTER_NO_ERROR;
 }
 
