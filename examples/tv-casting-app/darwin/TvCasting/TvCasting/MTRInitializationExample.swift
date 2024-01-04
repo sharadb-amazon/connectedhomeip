@@ -16,10 +16,14 @@
  */
 
 import Foundation
+import Security
 import os.log
 
 class MTRAppParametersDataSource : NSObject, MTRDataSource
 {
+    let Log = Logger(subsystem: "com.matter.casting",
+                     category: "MTRAppParametersDataSource")
+    
     func clientQueue() -> DispatchQueue {
         return DispatchQueue.main;
     }
@@ -57,21 +61,46 @@ class MTRAppParametersDataSource : NSObject, MTRDataSource
             productAttestationIntermediateCert: KPAI_FFF1_8000_Cert_Array)
     }
     
-    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data) -> Data {
-        var privateKey = Data()
-        privateKey.append(kDevelopmentDAC_PublicKey_FFF1_8001);
-        privateKey.append(kDevelopmentDAC_PrivateKey_FFF1_8001);
-        
-        let privateKeyRef: SecKey = SecKeyCreateWithData(privateKey as NSData,
+    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, outRawSignature: AutoreleasingUnsafeMutablePointer<NSData?>) -> Error? {
+        Log.info("castingApp didReceiveRequestToSignCertificateRequest")
+
+        // get the private SecKey
+        var privateKeyData = Data()
+        privateKeyData.append(kDevelopmentDAC_PublicKey_FFF1_8001);
+        privateKeyData.append(kDevelopmentDAC_PrivateKey_FFF1_8001);
+        let privateSecKey: SecKey = SecKeyCreateWithData(privateKeyData as NSData,
                                     [
                                         kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
                                         kSecAttrKeyClass: kSecAttrKeyClassPrivate,
                                         kSecAttrKeySizeInBits: 256
                                     ] as NSDictionary, nil)!
         
-        let _:Unmanaged<SecKey> = Unmanaged<SecKey>.passRetained(privateKeyRef);
-        
-        return Data()       // TODO: use SecKey above to sign csrData and return resulting value
+        // sign csrData to get asn1SignatureData
+        var error: Unmanaged<CFError>?
+        var asn1SignatureData: CFData? = SecKeyCreateSignature(privateSecKey, .ecdsaSignatureMessageX962SHA256, csrData as CFData, &error)
+        if error != nil || asn1SignatureData == nil {
+            Log.error("Failed to sign message. Error: \(String(describing: error))")
+            return nil  // return error
+        }
+       
+        // convert ASN.1 DER signature to SEC1 raw format
+        //var rawSignatureData: NSData?
+/*        let err = MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
+                                            asn1Signature: Data(bytes: CFDataGetBytePtr(asn1SignatureData!), count: CFDataGetLength(asn1SignatureData!)),
+                                            outRawSignature: &rawSignatureData)*/
+        let err = MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
+                                                    asn1Signature: asn1SignatureData!,
+                                                         outRawSignature: &outRawSignature.pointee)
+        if(err == nil && outRawSignature.pointee != nil)
+        {
+            return nil
+            //return Data(rawSignatureData!)
+        }
+        else
+        {
+            Log.error("Failed in ecdsaAsn1SignatureToRaw conversion while signing CSR data. Error: \(String(describing: error))")
+            return nil // return error
+        }
     }
 }
 

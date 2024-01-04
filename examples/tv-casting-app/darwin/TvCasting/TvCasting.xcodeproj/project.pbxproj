@@ -198,6 +198,8 @@
 			dependencies = (
 			);
 			name = TvCasting;
+			packageProductDependencies = (
+			);
 			productName = TvCasting;
 			productReference = 3CC0E8F62841DD3400EC6A18 /* TvCasting.app */;
 			productType = "com.apple.product-type.application";
@@ -227,6 +229,9 @@
 				Base,
 			);
 			mainGroup = 3CC0E8ED2841DD3400EC6A18;
+			packageReferences = (
+				3C2696F72B4628FE0026E771 /* XCRemoteSwiftPackageReference "swift-asn1" */,
+			);
 			productRefGroup = 3CC0E8F72841DD3400EC6A18 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -543,6 +548,17 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3C2696F72B4628FE0026E771 /* XCRemoteSwiftPackageReference "swift-asn1" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-asn1.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = 3CC0E8EE2841DD3400EC6A18 /* Project object */;
 }

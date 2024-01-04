@@ -148,10 +148,10 @@ CHIP_ERROR CastingPlayer::SendUserDirectedCommissioningRequest()
     VerifyOrReturnValue(ipAddressToUse != nullptr, CHIP_ERROR_INCORRECT_STATE,
                         ChipLogError(AppServer, "No IP Address found to send UDC request to"));
 
+    ReturnErrorOnFailure(support::ChipDeviceEventHandler::SetUdcStatus(true));
+
     ReturnErrorOnFailure(chip::Server::GetInstance().SendUserDirectedCommissioningRequest(
         chip::Transport::PeerAddress::UDP(*ipAddressToUse, mAttributes.port, mAttributes.interfaceId)));
-
-    ReturnErrorOnFailure(support::ChipDeviceEventHandler::SetUdcStatus(true));
 
     return CHIP_NO_ERROR;
 }

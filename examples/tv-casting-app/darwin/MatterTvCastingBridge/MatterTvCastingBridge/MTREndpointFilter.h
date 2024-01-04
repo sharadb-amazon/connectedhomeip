@@ -27,7 +27,7 @@
 // value of 0 means unspecified
 @property (nonatomic, readonly) uint16_t vendorId;
 @property (nonatomic, readonly) uint16_t productId;
-//std::vector<chip::app::Clusters::Descriptor::Structs::DeviceTypeStruct::DecodableType> requiredDeviceTypes;
+// std::vector<chip::app::Clusters::Descriptor::Structs::DeviceTypeStruct::DecodableType> requiredDeviceTypes;
 
 @end
 #endif /* MTREndpointFilter_h */

@@ -27,13 +27,14 @@
 
 namespace matter {
 namespace casting {
-    namespace support {
+namespace support {
 
         CHIP_ERROR MTRDeviceAttestationCredentialsProvider::Initialize(id<MTRDataSource> dataSource)
         {
             VerifyOrReturnError(dataSource != nullptr, CHIP_ERROR_INVALID_ARGUMENT);
             VerifyOrReturnError(mDataSource == nullptr, CHIP_ERROR_INCORRECT_STATE);
 
+            mDataSource = dataSource;
             mDac = [mDataSource
                 castingAppDidReceiveRequestForDeviceAttestationCredentials:@"MTRDeviceAttestationCredentialsProvider.Initialize()"];
 
@@ -110,13 +111,18 @@ namespace casting {
         {
             VerifyOrReturnError(mDataSource != nullptr, CHIP_ERROR_INCORRECT_STATE);
 
-            __block NSData * signedData = nil;
-            NSData * csrData = [NSData dataWithBytes:messageToSign.data() length:messageToSign.size()];
+            __block NSData * signedData = [NSData dataWithBytes:outSignatureBuffer.data() length:outSignatureBuffer.size()];
+            __block NSData * csrData = [NSData dataWithBytes:messageToSign.data() length:messageToSign.size()];
+            __block NSError *err = nil;
             dispatch_sync(mDataSource.clientQueue, ^{
-                signedData = [mDataSource castingApp:@"MTRDeviceAttestationCredentialsProvider.SignWithDeviceAttestationKey()"
-                    didReceiveRequestToSignCertificateRequest:csrData];
+                err = [mDataSource castingApp:@"MTRDeviceAttestationCredentialsProvider.SignWithDeviceAttestationKey()"
+                    didReceiveRequestToSignCertificateRequest:csrData outRawSignature:&signedData];
             });
 
+            if(err != nil) {
+                // TODO return correct error and log
+                return CHIP_ERROR_INCORRECT_STATE;
+            }
             if (signedData != nil && outSignatureBuffer.size() >= signedData.length) {
                 memcpy(outSignatureBuffer.data(), signedData.bytes, signedData.length);
                 outSignatureBuffer.reduce_size(signedData.length);

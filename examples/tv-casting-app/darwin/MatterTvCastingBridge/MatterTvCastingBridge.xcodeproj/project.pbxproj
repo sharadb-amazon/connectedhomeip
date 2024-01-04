@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		3C0474062B3F7E5F0012AE95 /* MTREndpointFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C0474052B3F7E5F0012AE95 /* MTREndpointFilter.h */; };
+		3C04740C2B4604CF0012AE95 /* MTRCryptoUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C04740B2B4604CF0012AE95 /* MTRCryptoUtils.h */; };
+		3C04740E2B4605B40012AE95 /* MTRCryptoUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C04740D2B4605B40012AE95 /* MTRCryptoUtils.mm */; };
 		3C2346212B362B4F00FA276E /* MTRCastingPlayer.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C2346202B362B4F00FA276E /* MTRCastingPlayer.h */; };
 		3C2346232B362B9500FA276E /* MTRCastingPlayerDiscovery.h in Headers */ = {isa = PBXBuildFile; fileRef = 3C2346222B362B9500FA276E /* MTRCastingPlayerDiscovery.h */; };
 		3C2346252B362BBB00FA276E /* MTRCastingPlayerDiscovery.mm in Sources */ = {isa = PBXBuildFile; fileRef = 3C2346242B362BBB00FA276E /* MTRCastingPlayerDiscovery.mm */; };
@@ -67,6 +69,8 @@
 
 /* Begin PBXFileReference section */
 		3C0474052B3F7E5F0012AE95 /* MTREndpointFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTREndpointFilter.h; sourceTree = "<group>"; };
+		3C04740B2B4604CF0012AE95 /* MTRCryptoUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRCryptoUtils.h; sourceTree = "<group>"; };
+		3C04740D2B4605B40012AE95 /* MTRCryptoUtils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MTRCryptoUtils.mm; sourceTree = "<group>"; };
 		3C0D9CDF2920A30C00D3332B /* CommissionableDataProviderImpl.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = CommissionableDataProviderImpl.hpp; sourceTree = "<group>"; };
 		3C2346202B362B4F00FA276E /* MTRCastingPlayer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRCastingPlayer.h; sourceTree = "<group>"; };
 		3C2346222B362B9500FA276E /* MTRCastingPlayerDiscovery.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MTRCastingPlayerDiscovery.h; sourceTree = "<group>"; };
@@ -230,6 +234,8 @@
 				3CF8532628E37F1000F07B9F /* MatterError.mm */,
 				3C9437912B3B478E0096E5F4 /* MTRErrorUtils.h */,
 				3C9437932B3B47A10096E5F4 /* MTRErrorUtils.mm */,
+				3C04740B2B4604CF0012AE95 /* MTRCryptoUtils.h */,
+				3C04740D2B4605B40012AE95 /* MTRCryptoUtils.mm */,
 				3CCB873A286A593700771BAD /* CastingServerBridge.h */,
 				3CCB873D286A593700771BAD /* CastingServerBridge.mm */,
 				3C66FBFA2903279A00B63FE7 /* AppParameters.h */,
@@ -298,6 +304,7 @@
 				3CCB87212869085400771BAD /* MatterTvCastingBridge.h in Headers */,
 				3C2346352B362D7900FA276E /* MTRLaunchResponse.h in Headers */,
 				3C6920462AA1093300D0F613 /* MTRDeviceAttestationCredentialsProvider.h in Headers */,
+				3C04740C2B4604CF0012AE95 /* MTRCryptoUtils.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -409,6 +416,7 @@
 				3CCB8744286A593700771BAD /* ConversionUtils.mm in Sources */,
 				3CF71C0C2A992D25003A5CE5 /* MTRCastingApp.mm in Sources */,
 				3C4E53B028E4F28100F293E8 /* MediaPlaybackTypes.mm in Sources */,
+				3C04740E2B4605B40012AE95 /* MTRCryptoUtils.mm in Sources */,
 				3CD73F1E2A9E83C1009D82D1 /* MTRCommissionableDataProvider.mm in Sources */,
 				3CD73F222A9EA078009D82D1 /* MTRDeviceAttestationCredentials.mm in Sources */,
 				3C2346252B362BBB00FA276E /* MTRCastingPlayerDiscovery.mm in Sources */,
