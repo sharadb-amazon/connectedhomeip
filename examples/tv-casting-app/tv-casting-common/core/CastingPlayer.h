@@ -130,6 +130,8 @@ public:
                                      unsigned long long int commissioningWindowTimeoutSec = kCommissioningWindowTimeoutSec,
                                      EndpointFilter desiredEndpointFilter                 = EndpointFilter());
 
+    void Disconnect();
+
     /**
      * @brief Find an existing session for this CastingPlayer, or trigger a new session
      * request.

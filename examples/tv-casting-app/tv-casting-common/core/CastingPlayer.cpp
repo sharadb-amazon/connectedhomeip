@@ -63,6 +63,7 @@ void CastingPlayer::VerifyOrEstablishConnection(ConnectCallback onCompleted, uns
             unsigned index = (unsigned int) std::distance(cachedCastingPlayers.begin(), it);
             if (ContainsDesiredEndpoint(&cachedCastingPlayers[index], desiredEndpointFilter))
             {
+                ChipLogProgress(AppServer, "CastingPlayer::VerifyOrEstablishConnection calling FindOrEstablishSession on cached CastingPlayer");
                 *this = cachedCastingPlayers[index];
 
                 FindOrEstablishSession(
@@ -80,7 +81,12 @@ void CastingPlayer::VerifyOrEstablishConnection(ConnectCallback onCompleted, uns
                     [](void * context, const chip::ScopedNodeId & peerId, CHIP_ERROR error) {
                         ChipLogError(AppServer, "CastingPlayer::VerifyOrEstablishConnection Connection to CastingPlayer failed");
                         CastingPlayer::GetTargetCastingPlayer()->mConnectionState = CASTING_PLAYER_NOT_CONNECTED;
-                        support::CastingStore::GetInstance()->Delete(*CastingPlayer::GetTargetCastingPlayer());
+                        CHIP_ERROR err = support::CastingStore::GetInstance()->Delete(*CastingPlayer::GetTargetCastingPlayer());
+                        if(err != CHIP_NO_ERROR)
+                        {
+                            ChipLogError(AppServer, "CastingStore::Delete() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
+                        }
+
                         VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted);
                         CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(error, nullptr);
                         mTargetCastingPlayer = nullptr;
@@ -121,6 +127,12 @@ exit:
         mOnCompleted(err, nullptr);
         mOnCompleted = nullptr;
     }
+}
+
+void CastingPlayer::Disconnect()
+{
+    mConnectionState = CASTING_PLAYER_NOT_CONNECTED;
+    mTargetCastingPlayer = nullptr;
 }
 
 void CastingPlayer::RegisterEndpoint(const memory::Strong<Endpoint> endpoint)

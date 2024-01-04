@@ -111,8 +111,8 @@ namespace casting {
         {
             VerifyOrReturnError(mDataSource != nullptr, CHIP_ERROR_INCORRECT_STATE);
 
+            NSData * csrData = [NSData dataWithBytes:messageToSign.data() length:messageToSign.size()];
             __block NSData * signedData = [NSData dataWithBytes:outSignatureBuffer.data() length:outSignatureBuffer.size()];
-            __block NSData * csrData = [NSData dataWithBytes:messageToSign.data() length:messageToSign.size()];
             __block MatterError * err = nil;
             dispatch_sync(mDataSource.clientQueue, ^{
                 err = [mDataSource castingApp:@"MTRDeviceAttestationCredentialsProvider.SignWithDeviceAttestationKey()"

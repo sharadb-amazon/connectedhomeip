@@ -181,8 +181,14 @@ void EndpointListLoader::Complete()
         mSessionHandle       = nullptr;
         mNewEndpointsToLoad  = 0;
 
-        // done loading endpoints, callback client OnCompleted
-        support::CastingStore::GetInstance()->AddOrUpdate(*CastingPlayer::GetTargetCastingPlayer());
+        // done loading endpoints, store TargetCastingPlayer
+        CHIP_ERROR err = support::CastingStore::GetInstance()->AddOrUpdate(*CastingPlayer::GetTargetCastingPlayer());
+        if(err != CHIP_NO_ERROR)
+        {
+            ChipLogError(AppServer, "CastingStore::AddOrUpdate() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
+        }
+
+        // callback client OnCompleted
         VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted);
         CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(CHIP_NO_ERROR, CastingPlayer::GetTargetCastingPlayer());
     }

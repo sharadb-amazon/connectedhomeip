@@ -39,7 +39,7 @@
 
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion timeout:(long long)timeout desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter
 {
-    ChipLogProgress(AppServer, "MTRCastingPlayerDiscovery.verifyOrEstablishConnectionWithCompletionBlock called");
+    ChipLogProgress(AppServer, "MTRCastingPlayer.verifyOrEstablishConnectionWithCompletionBlock called");
     VerifyOrReturn([[MTRCastingApp getSharedInstance] isRunning], ChipLogError(AppServer, "MTRCastingApp NOT running"));
 
     dispatch_queue_t workQueue = [[MTRCastingApp getSharedInstance] getWorkQueue];
@@ -57,6 +57,17 @@
                     completion(err == CHIP_NO_ERROR ? nil : [MTRErrorUtils NSErrorFromChipError:err]);
                 });
             }, timeout, cppDesiredEndpointFilter);
+    });
+}
+
+- (void)disconnect
+{
+    ChipLogProgress(AppServer, "MTRCastingPlayer.disconnect called");
+    VerifyOrReturn([[MTRCastingApp getSharedInstance] isRunning], ChipLogError(AppServer, "MTRCastingApp NOT running"));
+
+    dispatch_queue_t workQueue = [[MTRCastingApp getSharedInstance] getWorkQueue];
+    dispatch_sync(workQueue, ^{
+        _cppCastingPlayer->Disconnect();
     });
 }
 
