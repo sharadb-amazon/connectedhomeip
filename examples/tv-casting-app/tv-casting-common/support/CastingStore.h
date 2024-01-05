@@ -74,7 +74,6 @@ private:
         kCastingStoreDataVersionTag = 1,
 
         kCastingPlayersContainerTag,
-        kCastingPlayerContainerTag,
         kCastingPlayerIdTag,
         kCastingPlayerNodeIdTag,
         kCastingPlayerFabricIndexTag,
@@ -85,13 +84,11 @@ private:
         kCastingPlayerHostNameTag,
 
         kCastingPlayerEndpointsContainerTag,
-        kCastingPlayerEndpointContainerTag,
         kCastingPlayerEndpointIdTag,
         kCastingPlayerEndpointVendorIdTag,
         kCastingPlayerEndpointProductIdTag,
 
         kCastingPlayerEndpointDeviceTypeListContainerTag,
-        kCastingPlayerEndpointDeviceTypeStructContainerTag,
         kCastingPlayerEndpointDeviceTypeTag,
         kCastingPlayerEndpointDeviceTypeRevisionTag,
 
