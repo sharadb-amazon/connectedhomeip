@@ -321,7 +321,6 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
 
                                     deviceTypeList.push_back(deviceTypeStruct);
                                     continue;
-                                    // break;
                                 }
                             }
                             if (err == CHIP_END_OF_TLV)
@@ -334,9 +333,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
 
                                 endpointAttributes.mDeviceTypeList = deviceTypeList;
                                 continue;
-                                // break;
                             }
-                            // continue;
                         }
                     }
 
@@ -350,7 +347,6 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
 
                         endpointAttributesList.push_back(endpointAttributes);
                         continue;
-                        // break;
                     }
                 }
 
@@ -362,10 +358,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
                         err == CHIP_NO_ERROR, std::vector<core::CastingPlayer>(),
                         ChipLogError(AppServer, "TLVReader.ExitContainer failed %" CHIP_ERROR_FORMAT, err.Format()));
                     continue;
-                    // break;
                 }
-
-                // continue;
             }
         }
         if (err == CHIP_END_OF_TLV)
@@ -384,7 +377,6 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
             }
             castingPlayers.push_back(castingPlayer);
             continue;
-            // break;
         }
     }
 
