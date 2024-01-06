@@ -80,6 +80,8 @@ private:
         kCastingPlayerVendorIdTag,
         kCastingPlayerProductIdTag,
         kCastingPlayerDeviceTypeIdTag,
+        kCastingPlayerPortTag,
+        kCastingPlayerInstanceNameTag,
         kCastingPlayerDeviceNameTag,
         kCastingPlayerHostNameTag,
 

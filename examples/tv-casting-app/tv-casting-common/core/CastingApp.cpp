@@ -98,22 +98,20 @@ CHIP_ERROR CastingApp::Start()
     ReturnErrorOnFailure(PostStartRegistrations());
 
     // reconnect (or verify connection) to the CastingPlayer that the app was connected to before being stopped, if any
-    if(CastingPlayer::GetTargetCastingPlayer() != nullptr)
+    if (CastingPlayer::GetTargetCastingPlayer() != nullptr)
     {
         CastingPlayer::GetTargetCastingPlayer()->VerifyOrEstablishConnection(
-            [](CHIP_ERROR err, matter::casting::core::CastingPlayer * castingPlayer)
-            {
-                if(err != CHIP_NO_ERROR)
+            [](CHIP_ERROR err, matter::casting::core::CastingPlayer * castingPlayer) {
+                if (err != CHIP_NO_ERROR)
                 {
-                    ChipLogError(AppServer, "CastingApp::Start Could not reconnect to CastingPlayer(ID: %s) %" CHIP_ERROR_FORMAT, castingPlayer->GetId(),
-                             err.Format());
+                    ChipLogError(AppServer, "CastingApp::Start Could not reconnect to CastingPlayer %" CHIP_ERROR_FORMAT,
+                                 err.Format());
                 }
                 else
                 {
                     ChipLogProgress(AppServer, "CastingApp::Start Reconnected to CastingPlayer(ID: %s)", castingPlayer->GetId());
                 }
-            }
-        );
+            });
     }
 
     return CHIP_NO_ERROR;

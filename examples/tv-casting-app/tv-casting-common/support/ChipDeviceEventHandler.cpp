@@ -77,10 +77,10 @@ void ChipDeviceEventHandler::Handle(const chip::DeviceLayer::ChipDeviceEvent * e
                 ChipLogError(AppServer, "ChipDeviceEventHandler::Handle: Connection to CastingPlayer failed");
                 CastingPlayer::GetTargetCastingPlayer()->mConnectionState = CASTING_PLAYER_NOT_CONNECTED;
                 CHIP_ERROR err = support::CastingStore::GetInstance()->Delete(*CastingPlayer::GetTargetCastingPlayer());
-                        if(err != CHIP_NO_ERROR)
-                        {
-                            ChipLogError(AppServer, "CastingStore::Delete() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
-                        }
+                if (err != CHIP_NO_ERROR)
+                {
+                    ChipLogError(AppServer, "CastingStore::Delete() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
+                }
 
                 VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted);
                 CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(error, nullptr);

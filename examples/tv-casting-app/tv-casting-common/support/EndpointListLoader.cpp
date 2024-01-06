@@ -183,7 +183,7 @@ void EndpointListLoader::Complete()
 
         // done loading endpoints, store TargetCastingPlayer
         CHIP_ERROR err = support::CastingStore::GetInstance()->AddOrUpdate(*CastingPlayer::GetTargetCastingPlayer());
-        if(err != CHIP_NO_ERROR)
+        if (err != CHIP_NO_ERROR)
         {
             ChipLogError(AppServer, "CastingStore::AddOrUpdate() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
         }

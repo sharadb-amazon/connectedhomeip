@@ -28,14 +28,14 @@
 @interface MTRCastingPlayer : NSObject
 
 /**
- 
+
 minimum matter::casting::core::kCommissioningWindowTimeoutSec
  */
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion timeout:(long long)timeout desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter;
 
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter;
 
--(void)disconnect;
+- (void)disconnect;
 
 - (NSString * _Nonnull)identifier;
 - (NSString * _Nonnull)deviceName;
