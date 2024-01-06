@@ -126,6 +126,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
 
         core::CastingPlayerAttributes attributes;
         std::vector<core::EndpointAttributes> endpointAttributesList;
+        std::map<chip::EndpointId, std::vector<chip::ClusterId>> endpointServerListMap;
         while ((err = reader.Next()) == CHIP_NO_ERROR)
         {
             chip::TLV::Tag castingPlayerContainerTag = reader.GetTag();
@@ -222,6 +223,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
                 VerifyOrReturnValue(err == CHIP_NO_ERROR, std::vector<core::CastingPlayer>(),
                                     ChipLogError(AppServer, "TLVReader.EnterContainer failed %" CHIP_ERROR_FORMAT, err.Format()));
                 core::EndpointAttributes endpointAttributes;
+                std::vector<chip::ClusterId> serverList;
                 while ((err = reader.Next()) == CHIP_NO_ERROR)
                 {
                     // Entering Endpoint container
@@ -335,6 +337,47 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
                                 continue;
                             }
                         }
+
+                        if (endpointContainerTagNum == kCastingPlayerEndpointServerListContainerTag)
+                        {
+                            // Entering ServerList container
+                            chip::TLV::TLVType serverListContainerType;
+                            err = reader.EnterContainer(serverListContainerType);
+                            VerifyOrReturnValue(
+                                err == CHIP_NO_ERROR, std::vector<core::CastingPlayer>(),
+                                ChipLogError(AppServer, "TLVReader.EnterContainer failed %" CHIP_ERROR_FORMAT, err.Format()));
+
+                            while ((err = reader.Next()) == CHIP_NO_ERROR)
+                            {
+                                chip::TLV::Tag serverListContainerTag = reader.GetTag();
+                                VerifyOrReturnValue(chip::TLV::IsContextTag(serverListContainerTag),
+                                                    std::vector<core::CastingPlayer>(),
+                                                    ChipLogError(AppServer, "Unexpected non-context TLV tag"));
+
+                                uint8_t serverListContainerTagNum =
+                                    static_cast<uint8_t>(chip::TLV::TagNumFromTag(serverListContainerTag));
+                                if (serverListContainerTagNum == kCastingPlayerEndpointServerClusterIdTag)
+                                {
+                                    chip::ClusterId clusterId;
+                                    err = reader.Get(clusterId);
+                                    VerifyOrReturnValue(
+                                        err == CHIP_NO_ERROR, std::vector<core::CastingPlayer>(),
+                                        ChipLogError(AppServer, "TLVReader.Get failed %" CHIP_ERROR_FORMAT, err.Format()));
+                                    serverList.push_back(clusterId);
+                                    continue;
+                                }
+                            }
+
+                            if (err == CHIP_END_OF_TLV)
+                            {
+                                // Exiting ServerList container
+                                err = reader.ExitContainer(serverListContainerType);
+                                VerifyOrReturnValue(
+                                    err == CHIP_NO_ERROR, std::vector<core::CastingPlayer>(),
+                                    ChipLogError(AppServer, "TLVReader.ExitContainer failed %" CHIP_ERROR_FORMAT, err.Format()));
+                                continue;
+                            }
+                        }
                     }
 
                     if (err == CHIP_END_OF_TLV)
@@ -346,6 +389,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
                             ChipLogError(AppServer, "TLVReader.ExitContainer failed %" CHIP_ERROR_FORMAT, err.Format()));
 
                         endpointAttributesList.push_back(endpointAttributes);
+                        endpointServerListMap[endpointAttributes.mId] = serverList;
                         continue;
                     }
                 }
@@ -373,6 +417,7 @@ std::vector<core::CastingPlayer> CastingStore::ReadAll()
             for (auto & endpointAttributes : endpointAttributesList)
             {
                 std::shared_ptr<core::Endpoint> endpoint(new core::Endpoint(&castingPlayer, endpointAttributes));
+                endpoint->RegisterClusters(endpointServerListMap[endpointAttributes.mId]);
                 castingPlayer.RegisterEndpoint(endpoint);
             }
             castingPlayers.push_back(castingPlayer);
