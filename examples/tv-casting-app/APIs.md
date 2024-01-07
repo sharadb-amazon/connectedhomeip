@@ -375,7 +375,8 @@ int main(int argc, char * argv[]) {
 On Android, create an `AppParameters` object using the
 `rotatingDeviceIdUniqueIdProvider`, `commissioningDataProvider`, `dacProvider`
 and `DataProvider<ConfigurationManager>`, and call
-`CastingApp.getInstance().initialize` with it. Then, call `start` on the `CastingApp`
+`CastingApp.getInstance().initialize` with it. Then, call `start` on the
+`CastingApp`
 
 ```java
 public static MatterError initAndStart(Context applicationContext) {
@@ -475,9 +476,16 @@ struct TvCastingApp: App {
 }   // App
 ```
 
-Note about on-device cache: The Casting App maintains an on-device cache containing information about the Casting Players it has connected with so far.
-This cached information allows the Casting App to connect with Casting Players (that it had previously connected with) faster and using fewer resources, by potentially skipping the longer commissioning process and instead, simply re-establishing the CASE session.
-This cache can be cleared by calling the `ClearCache` API on the `CastingApp`, say when the user signs out of the app. See API and its documentation for [Linux](tv-casting-common/core/CastingApp.h), Android and [iOS](darwin/MatterTvCastingBridge/MatterTvCastingBridge/MTRCastingApp.h).
+Note about on-device cache: The Casting App maintains an on-device cache
+containing information about the Casting Players it has connected with so far.
+This cached information allows the Casting App to connect with Casting Players
+(that it had previously connected with) faster and using fewer resources, by
+potentially skipping the longer commissioning process and instead, simply
+re-establishing the CASE session. This cache can be cleared by calling the
+`ClearCache` API on the `CastingApp`, say when the user signs out of the app.
+See API and its documentation for [Linux](tv-casting-common/core/CastingApp.h),
+Android and
+[iOS](darwin/MatterTvCastingBridge/MatterTvCastingBridge/MTRCastingApp.h).
 
 ### Discover Casting Players
 
@@ -643,8 +651,8 @@ chip::DeviceLayer::PlatformMgr().RunEventLoop();
 ```
 
 On Android, add the implemented `castingPlayerChangeListener` as a listener to
-the singleton instance of `MatterCastingPlayerDiscovery` to listen to changes in the
-discovered CastingPlayers and call `startDiscovery`.
+the singleton instance of `MatterCastingPlayerDiscovery` to listen to changes in
+the discovered CastingPlayers and call `startDiscovery`.
 
 ```java
 MatterError err = MatterCastingPlayerDiscovery.getInstance().addCastingPlayerChangeListener(castingPlayerChangeListener);
@@ -956,4 +964,6 @@ void SubscribeToMediaPlaybackCurrentState(matter::casting::memory::Strong<matter
         },
         kMinIntervalFloorSeconds, kMaxIntervalCeilingSeconds);
 }
+
+The Casting client can Shutdown all running Subscriptions by calling the `ShutdownAllSubscriptions` API on the CastingApp. See API and its documentation for [Linux](tv-casting-common/core/CastingApp.h), Android and [iOS](darwin/MatterTvCastingBridge/MatterTvCastingBridge/MTRCastingApp.h).
 ```
