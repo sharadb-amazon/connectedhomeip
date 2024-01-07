@@ -39,7 +39,8 @@ struct MTRConnectionExampleView: View {
                 
                 if(connectionSuccess)
                 {
-                    NavigationLink(
+                    /* TODO add this back in
+                     NavigationLink(
                         destination: ClusterSelectorView(),
                         label: {
                             Text("Next")
@@ -49,7 +50,7 @@ struct MTRConnectionExampleView: View {
                     ).background(Color.blue)
                         .foregroundColor(Color.white)
                         .frame(maxHeight: .infinity, alignment: .bottom)
-                        .padding()
+                        .padding()*/
                 }
             }
         }

@@ -36,7 +36,7 @@
 - (dispatch_queue_t _Nullable)getClientQueue;
 
 /**
- * @brief Initializes the MTRCastingApp with appParameters
+ * @brief Initializes the MTRCastingApp with an MTRDataSource
  *
  * @param dataSource provides all the parameters required to initialize the MTRCastingApp
  */

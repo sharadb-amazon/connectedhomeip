@@ -47,7 +47,7 @@ extern NSString * _Nonnull const UPDATE_CASTING_PLAYER_NOTIFICATION_NAME;
 extern NSString * _Nonnull const CASTING_PLAYER_KEY;
 
 /**
- * @brief MTRCastingPlayerDiscovery is a singleton utility class for discovering CastingPlayers.
+ * @brief MTRCastingPlayerDiscovery is a singleton utility class for discovering MTRCastingPlayers.
  */
 @interface MTRCastingPlayerDiscovery : NSObject
 + (MTRCastingPlayerDiscovery * _Nonnull)sharedInstance;
@@ -58,14 +58,14 @@ extern NSString * _Nonnull const CASTING_PLAYER_KEY;
 @property (nonatomic, strong) NSArray<MTRCastingPlayer *> * _Nonnull castingPlayers;
 
 /**
- * @brief Starts the discovery for CastingPlayers
+ * @brief Starts the discovery for MTRCastingPlayers
  *
  * @return Returns nil if discovery for CastingPlayers started successfully, NSError * describing the error otherwise.
  */
 - (NSError * _Nullable)start;
 
 /**
- * @brief Starts the discovery for CastingPlayers
+ * @brief Starts the discovery for MTRCastingPlayers
  *
  * @param filterBydeviceType if passed as a non-zero value, MTRCastingPlayerDiscovery will only discover
  * MTRCastingPlayers whose deviceType matches filterBydeviceType
@@ -74,7 +74,7 @@ extern NSString * _Nonnull const CASTING_PLAYER_KEY;
 - (NSError * _Nullable)start:(const uint32_t)filterBydeviceType;
 
 /**
- * @brief Stop the discovery for CastingPlayers
+ * @brief Stop the discovery for MTRCastingPlayers
  *
  * @return Returns nil if discovery for MTRCastingPlayers stopped successfully, NSError * describing the error otherwise.
  */

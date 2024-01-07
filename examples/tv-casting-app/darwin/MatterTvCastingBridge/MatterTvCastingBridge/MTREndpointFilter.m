@@ -1,6 +1,6 @@
 /**
  *
- *    Copyright (c) 2020-2023 Project CHIP Authors
+ *    Copyright (c) 2023 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,19 +15,8 @@
  *    limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
+#import "MTREndpointFilter.h"
 
-#ifndef MTREndpointFilter_h
-#define MTREndpointFilter_h
-
-/**
- * @brief Describes a MTREndpoint that the client wants to connect to
- */
-@interface MTREndpointFilter : NSObject
-// value of 0 means unspecified
-@property (nonatomic) uint16_t vendorId;
-@property (nonatomic) uint16_t productId;
-// std::vector<chip::app::Clusters::Descriptor::Structs::DeviceTypeStruct::DecodableType> requiredDeviceTypes;
+@implementation MTREndpointFilter
 
 @end
-#endif /* MTREndpointFilter_h */
