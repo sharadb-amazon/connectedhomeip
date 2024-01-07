@@ -305,7 +305,7 @@ client's lifecycle:
                                         kSecAttrKeyClass: kSecAttrKeyClassPrivate,
                                         kSecAttrKeySizeInBits: 256
                                     ] as NSDictionary, nil)!
-        
+
         // sign csrData to get asn1SignatureData
         var error: Unmanaged<CFError>?
         let asn1SignatureData: CFData? = SecKeyCreateSignature(privateSecKey, .ecdsaSignatureMessageX962SHA256, csrData as CFData, &error)
@@ -319,7 +319,7 @@ client's lifecycle:
             Log.error("Failed to sign message. asn1SignatureData is nil")
             return MATTER_ERROR_INVALID_ARGUMENT
         }
-        
+
         // convert ASN.1 DER signature to SEC1 raw format
         return MTRCryptoUtils.ecdsaAsn1SignatureToRaw(withFeLengthBytes: 32,
                                                     asn1Signature: asn1SignatureData!,
@@ -423,9 +423,10 @@ func initialize() -> MatterError {
 }
 ```
 
-After initialization, on iOS, call `start` and `stop` on the `MTRCastingApp` shared 
-instance when the App sends the `UIApplication.didBecomeActiveNotification` 
-and `UIApplication.willResignActiveNotification`
+After initialization, on iOS, call `start` and `stop` on the `MTRCastingApp`
+shared instance when the App sends the
+`UIApplication.didBecomeActiveNotification` and
+`UIApplication.willResignActiveNotification`
 
 ```objectivec
 struct TvCastingApp: App {
@@ -553,7 +554,10 @@ private static final CastingPlayerDiscovery.CastingPlayerChangeListener castingP
 };
 ```
 
-On iOS, implement a `func addDiscoveredCastingPlayers`, `func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers` which listen to notifications as Casting Players are added, removed, or updated.
+On iOS, implement a `func addDiscoveredCastingPlayers`,
+`func removeDiscoveredCastingPlayers` and `func updateDiscoveredCastingPlayers`
+which listen to notifications as Casting Players are added, removed, or updated.
+
 ```objectivec
 @objc
 func didAddDiscoveredCastingPlayers(notification: Notification)
@@ -564,14 +568,14 @@ func didAddDiscoveredCastingPlayers(notification: Notification)
         self.Log.error("didAddDiscoveredCastingPlayers called with no MTRCastingPlayer")
         return
     }
-        
+
     self.Log.info("didAddDiscoveredCastingPlayers notified of a MTRCastingPlayer with ID: \(castingPlayer.identifier())")
     DispatchQueue.main.async
     {
         self.displayedCastingPlayers.append(castingPlayer)
     }
 }
-    
+
 @objc
 func didRemoveDiscoveredCastingPlayers(notification: Notification)
 {
@@ -581,14 +585,14 @@ func didRemoveDiscoveredCastingPlayers(notification: Notification)
         self.Log.error("didRemoveDiscoveredCastingPlayers called with no MTRCastingPlayer")
         return
     }
-        
+
     self.Log.info("didRemoveDiscoveredCastingPlayers notified of a MTRCastingPlayer with ID: \(castingPlayer.identifier())")
     DispatchQueue.main.async
     {
         self.displayedCastingPlayers.removeAll(where: {$0 == castingPlayer})
     }
 }
-    
+
 @objc
 func didUpdateDiscoveredCastingPlayers(notification: Notification)
 {
@@ -598,7 +602,7 @@ func didUpdateDiscoveredCastingPlayers(notification: Notification)
         self.Log.error("didUpdateDiscoveredCastingPlayers called with no MTRCastingPlayer")
         return
     }
-        
+
     self.Log.info("didUpdateDiscoveredCastingPlayers notified of a MTRCastingPlayer with ID: \(castingPlayer.identifier())")
     if let index = displayedCastingPlayers.firstIndex(where: { castingPlayer.identifier() == $0.identifier() })
     {
@@ -633,8 +637,9 @@ chip::DeviceLayer::PlatformMgr().RunEventLoop();
 ...
 ```
 
-On Android, add the implemented `castingPlayerChangeListener` as a listener to singleton instance of 
-`MatterCastingPlayerDiscovery` to listen to changes in the discovered CastingPlayers and call `startDiscovery`.
+On Android, add the implemented `castingPlayerChangeListener` as a listener to
+the singleton instance of `MatterCastingPlayerDiscovery` to listen to changes in the
+discovered CastingPlayers and call `startDiscovery`.
 
 ```java
 MatterError err = MatterCastingPlayerDiscovery.getInstance().addCastingPlayerChangeListener(castingPlayerChangeListener);
@@ -652,8 +657,10 @@ if (err.hasError()) {
 }
 ```
 
-On iOS, register the listeners by calling `addObserver` on the `NotificationCenter` with the appropriate selector, 
-and then call start on the `sharedInstance` of MTRCastingPlayerDiscovery.
+On iOS, register the listeners by calling `addObserver` on the
+`NotificationCenter` with the appropriate selector, and then call start on the
+`sharedInstance` of MTRCastingPlayerDiscovery.
+
 ```objectivec
 func startDiscovery() {
     NotificationCenter.default.addObserver(self, selector: #selector(self.didAddDiscoveredCastingPlayers), name: NSNotification.Name.didAddCastingPlayers, object: nil)
@@ -665,14 +672,15 @@ func startDiscovery() {
 }
 ```
 
-Note: You will need to connect with a Casting Player as described below to see the list of Endpoints that they support. 
-Refer to the [Connection](#connect-to-a-casting-player) section for details on how to discover available endpoints supported by a Casting Player.
+Note: You will need to connect with a Casting Player as described below to see
+the list of Endpoints that they support. Refer to the
+[Connection](#connect-to-a-casting-player) section for details on how to
+discover available endpoints supported by a Casting Player.
 
 ### Connect to a Casting Player
 
-_{Complete Connection examples:
-[Linux](linux/simple-app-helper.cpp)
-| [iOS](darwin/TvCasting/TvCasting/MTRConnectionExampleViewModel.swift)}_
+_{Complete Connection examples: [Linux](linux/simple-app-helper.cpp) |
+[iOS](darwin/TvCasting/TvCasting/MTRConnectionExampleViewModel.swift)}_
 
 Each `CastingPlayer` object created during
 [Discovery](#discover-casting-players) contains information such as
@@ -719,12 +727,14 @@ targetCastingPlayer->VerifyOrEstablishConnection(ConnectionHandler,
 ...
 ```
 
-On iOS, the Casting Client may call `verifyOrEstablishConnection` on the `MTRCastingPlayer` object
-it wants to connect to and handle any `NSErrors` that may happen in the process.
+On iOS, the Casting Client may call `verifyOrEstablishConnection` on the
+`MTRCastingPlayer` object it wants to connect to and handle any `NSErrors` that
+may happen in the process.
+
 ```objectivec
 // VendorId of the MTREndpoint on the MTRCastingPlayer that the MTRCastingApp desires to interact with after connection
 let kDesiredEndpointVendorId: UInt16 = 65521;
-    
+
 @Published var connectionSuccess: Bool?;
 
 @Published var connectionStatus: String?;
