@@ -31,6 +31,7 @@
 
 /**
  * @brief Provide UniqueId used to generate the RotatingDeviceId advertised during commissioning by the MTRCastingApp
+ * Must be at least 16 bytes (i.e. ConfigurationManager::kMinRotatingDeviceIDUniqueIDLength)
  */
 - (NSData * _Nonnull)castingAppDidReceiveRequestForRotatingDeviceIdUniqueId:(id _Nonnull)sender;
 
