@@ -229,9 +229,6 @@
 				Base,
 			);
 			mainGroup = 3CC0E8ED2841DD3400EC6A18;
-			packageReferences = (
-				3C2696F72B4628FE0026E771 /* XCRemoteSwiftPackageReference "swift-asn1" */,
-			);
 			productRefGroup = 3CC0E8F72841DD3400EC6A18 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
