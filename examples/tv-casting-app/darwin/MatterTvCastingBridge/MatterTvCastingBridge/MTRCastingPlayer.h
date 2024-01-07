@@ -25,16 +25,45 @@
 
 @class MTREndpoint;
 
+/**
+ * @brief MTRCastingPlayer represents a Matter commissioner that is able to play media to a physical
+ * output or to a display screen which is part of the device.
+ */
 @interface MTRCastingPlayer : NSObject
 
-/**
++ (NSInteger)kMinCommissioningWindowTimeoutSec;
 
-minimum matter::casting::core::kCommissioningWindowTimeoutSec
+/**
+ * @brief (async) Verifies that a connection exists with this CastingPlayer, or triggers a new session request. If the
+ * CastingApp does not have the nodeId and fabricIndex of this CastingPlayer cached on disk, this will execute the user
+ * directed commissioning process.
+ *
+ * @param completion - called back when the connection process completes. Parameter is nil if it completed successfully
+ * @param timeout -  time (in sec) to keep the commissioning window open, if commissioning is required.
+ * Needs to be >= CastingPlayer.kMinCommissioningWindowTimeoutSec.
+ * @param desiredEndpointFilter - Attributes (such as VendorId) describing an Endpoint that the client wants to interact
+ * with after commissioning. If this value is passed in, the VerifyOrEstablishConnection will force User Directed
+ * Commissioning, in case the desired Endpoint is not found in the on-device cached information about the CastingPlayer
+ * (if any)
  */
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion timeout:(long long)timeout desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter;
 
+/**
+ * @brief (async) Verifies that a connection exists with this CastingPlayer, or triggers a new session request. If the
+ * CastingApp does not have the nodeId and fabricIndex of this CastingPlayer cached on disk, this will execute the user
+ * directed commissioning process.
+ *
+ * @param completion - called back when the connection process completes. Parameter is nil if it completed successfully
+ * @param desiredEndpointFilter - Attributes (such as VendorId) describing an Endpoint that the client wants to interact
+ * with after commissioning. If this value is passed in, the VerifyOrEstablishConnection will force User Directed
+ * Commissioning, in case the desired Endpoint is not found in the on-device cached information about the CastingPlayer
+ * (if any)
+ */
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter;
 
+/**
+ * @brief Sets the internal connection state of this CastingPlayer to "disconnected"
+ */
 - (void)disconnect;
 
 - (NSString * _Nonnull)identifier;

@@ -23,6 +23,9 @@
 #ifndef MTRErrorUtils_h
 #define MTRErrorUtils_h
 
+/**
+ * @brief - Conversion utilities to/from CHIP_ERROR (C++) / MatterError (Objective C) / NSError
+ */
 @interface MTRErrorUtils : NSObject
 
 + (MatterError * _Nonnull)MatterErrorFromChipError:(CHIP_ERROR)chipError;

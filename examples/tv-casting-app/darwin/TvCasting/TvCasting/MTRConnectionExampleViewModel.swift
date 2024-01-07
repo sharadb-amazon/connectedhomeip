@@ -22,12 +22,17 @@ import os.log
 class MTRConnectionExampleViewModel: ObservableObject {
     let Log = Logger(subsystem: "com.matter.casting",
                      category: "MTRConnectionExampleViewModel")
-        
+    
+    // VendorId of the MTREndpoint on the MTRCastingPlayer that the MTRCastingApp desires to interact with after connection
+    let kDesiredEndpointVendorId: UInt16 = 65521;
+    
     @Published var connectionSuccess: Bool?;
 
     @Published var connectionStatus: String?;
 
     func connect(selectedCastingPlayer: MTRCastingPlayer?) {
+        let desiredEndpointFilter: MTREndpointFilter = MTREndpointFilter()
+        desiredEndpointFilter.vendorId = kDesiredEndpointVendorId
         selectedCastingPlayer?.verifyOrEstablishConnection(completionBlock: { err in
             self.Log.error("MTRConnectionExampleViewModel connect() completed with \(err)")
             if(err == nil)
@@ -40,6 +45,6 @@ class MTRConnectionExampleViewModel: ObservableObject {
                 self.connectionSuccess = false
                 self.connectionStatus = "Connection failed with \(String(describing: err))"
             }
-        }, desiredEndpointFilter: nil)
+        }, desiredEndpointFilter: desiredEndpointFilter)
     }
 }

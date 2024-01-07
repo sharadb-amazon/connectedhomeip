@@ -57,8 +57,10 @@ NSString * const CASTING_PLAYER_KEY = @"castingPlayer";
 {
     self = [super init];
     if (self) {
-        // dispatch_sync
-        core::CastingPlayerDiscovery::GetInstance()->SetDelegate(MTRDiscoveryDelegateImpl::GetInstance());
+        dispatch_queue_t workQueue = [[MTRCastingApp getSharedInstance] getWorkQueue];
+        dispatch_sync(workQueue, ^{
+            core::CastingPlayerDiscovery::GetInstance()->SetDelegate(MTRDiscoveryDelegateImpl::GetInstance());
+        });
     }
     return self;
 }
@@ -75,10 +77,10 @@ NSString * const CASTING_PLAYER_KEY = @"castingPlayer";
 
 - (NSError *)start
 {
-    return [self start:0]; // default to targetPlayerDeviceType: 0
+    return [self start:0]; // default to filterBydeviceType: 0
 }
 
-- (NSError *)start:(const uint32_t)targetPlayerDeviceType
+- (NSError *)start:(const uint32_t)filterBydeviceType
 {
     ChipLogProgress(AppServer, "MTRCastingPlayerDiscovery.start called");
     VerifyOrReturnValue([[MTRCastingApp getSharedInstance] isRunning], [MTRErrorUtils NSErrorFromChipError:CHIP_ERROR_INCORRECT_STATE]);
@@ -86,7 +88,7 @@ NSString * const CASTING_PLAYER_KEY = @"castingPlayer";
     dispatch_queue_t workQueue = [[MTRCastingApp getSharedInstance] getWorkQueue];
     __block CHIP_ERROR err = CHIP_NO_ERROR;
     dispatch_sync(workQueue, ^{
-        err = core::CastingPlayerDiscovery::GetInstance()->StartDiscovery(targetPlayerDeviceType);
+        err = core::CastingPlayerDiscovery::GetInstance()->StartDiscovery(filterBydeviceType);
     });
 
     return [MTRErrorUtils NSErrorFromChipError:err];

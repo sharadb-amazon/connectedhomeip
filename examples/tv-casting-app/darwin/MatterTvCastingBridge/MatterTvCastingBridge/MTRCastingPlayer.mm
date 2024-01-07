@@ -32,9 +32,16 @@
 
 @implementation MTRCastingPlayer
 
+static const NSInteger kMinCommissioningWindowTimeoutSec = matter::casting::core::kCommissioningWindowTimeoutSec;
+
++ (NSInteger)kMinCommissioningWindowTimeoutSec
+{
+    return kMinCommissioningWindowTimeoutSec;
+}
+
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter
 {
-    [self verifyOrEstablishConnectionWithCompletionBlock:completion timeout:matter::casting::core::kCommissioningWindowTimeoutSec desiredEndpointFilter:desiredEndpointFilter];
+    [self verifyOrEstablishConnectionWithCompletionBlock:completion timeout:kMinCommissioningWindowTimeoutSec desiredEndpointFilter:desiredEndpointFilter];
 }
 
 - (void)verifyOrEstablishConnectionWithCompletionBlock:(void (^_Nonnull)(NSError * _Nullable))completion timeout:(long long)timeout desiredEndpointFilter:(MTREndpointFilter * _Nullable)desiredEndpointFilter
@@ -123,6 +130,7 @@
 
 - (NSArray<MTREndpoint *> * _Nonnull)endpoints
 {
+    // TODO convert to Obj-C endpoints and return
     return [NSMutableArray new];
 }
 

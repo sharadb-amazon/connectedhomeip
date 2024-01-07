@@ -22,11 +22,13 @@
 
 - (id<MTRCluster> _Nullable)clusterForType:(MTREndpointClusterType)type
 {
+    // TODO
     return nil;
 }
 
 - (BOOL)hasCluster:(MTREndpointClusterType)type
 {
+    // TODO
     return nil;
 }
 

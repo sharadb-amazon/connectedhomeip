@@ -44,13 +44,11 @@
     CHIP_ERROR err = chip::Crypto::EcdsaAsn1SignatureToRaw(feLengthBytes, chip::ByteSpan(asn1SignatureByteSpan.data(), asn1SignatureByteSpan.size()), rawSignatureMutableByteSpan);
     if (err != CHIP_NO_ERROR) {
         ChipLogError(AppServer, "chip::Crypto::EcdsaAsn1SignatureToRaw() failed");
-        // delete[] rawSignatureBytes;
         return [MTRErrorUtils MatterErrorFromChipError:err];
     }
 
     // copy from rawSignatureMutableByteSpan into *outRawSignature
     *outRawSignature = [NSData dataWithBytes:rawSignatureMutableByteSpan.data() length:rawSignatureMutableByteSpan.size()];
-    // delete[] rawSignatureBytes;
     return MATTER_NO_ERROR;
 }
 
