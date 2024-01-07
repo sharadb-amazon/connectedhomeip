@@ -336,6 +336,7 @@ On Linux, create an `AppParameters` object using the
 `RotatingDeviceIdUniqueIdProvider`, `LinuxCommissionableDataProvider`,
 `CommonCaseDeviceServerInitParamsProvider`, `ExampleDACProvider` and
 `DefaultDACVerifier`, and call `CastingApp::GetInstance()->Initialize` with it.
+Then, call `Start` on the `CastingApp`.
 
 ```c
 LinuxCommissionableDataProvider gCommissionableDataProvider;
@@ -374,7 +375,7 @@ int main(int argc, char * argv[]) {
 On Android, create an `AppParameters` object using the
 `rotatingDeviceIdUniqueIdProvider`, `commissioningDataProvider`, `dacProvider`
 and `DataProvider<ConfigurationManager>`, and call
-`CastingApp.getInstance().initialize` with it.
+`CastingApp.getInstance().initialize` with it. Then, call `start` on the `CastingApp`
 
 ```java
 public static MatterError initAndStart(Context applicationContext) {
@@ -473,6 +474,10 @@ struct TvCastingApp: App {
     }   // body
 }   // App
 ```
+
+Note about on-device cache: The Casting App maintains an on-device cache containing information about the Casting Players it has connected with so far.
+This cached information allows the Casting App to connect with Casting Players (that it had previously connected with) faster and using fewer resources, by potentially skipping the longer commissioning process and instead, simply re-establishing the CASE session.
+This cache can be cleared by calling the `ClearCache` API on the `CastingApp`, say when the user signs out of the app. See API and its documentation for [Linux](tv-casting-common/core/CastingApp.h), Android and [iOS](darwin/MatterTvCastingBridge/MatterTvCastingBridge/MTRCastingApp.h).
 
 ### Discover Casting Players
 
