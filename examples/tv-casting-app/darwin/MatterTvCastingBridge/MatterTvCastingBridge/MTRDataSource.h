@@ -40,7 +40,7 @@
 - (MTRCommissionableData * _Nonnull)castingAppDidReceiveRequestForCommissionableData:(id _Nonnull)sender;
 
 /**
- * @brief Provides MTRDeviceAttestationCredentials of the CastingApp used during commissioning
+ * @brief Provides MTRDeviceAttestationCredentials of the MTRCastingApp used during commissioning
  */
 - (MTRDeviceAttestationCredentials * _Nonnull)castingAppDidReceiveRequestForDeviceAttestationCredentials:(id _Nonnull)sender;
 
@@ -51,7 +51,7 @@
  * @param outRawSignature [in, out] - Buffer to receive the signature in raw <r,s> format.
  * @returns MATTER_NO_ERROR on success. Otherwise, a MATTER_ERROR with a code corresponding to the underlying failure
  */
-- (MatterError * _Nonnull)castingApp:(id _Nonnull)sender didReceiveRequestToSignCertificateRequest:(NSData * _Nonnull)csrData outRawSignature:(NSData ** _Nonnull)outRawSignature;
+- (MatterError * _Nonnull)castingApp:(id _Nonnull)sender didReceiveRequestToSignCertificateRequest:(NSData * _Nonnull)csrData outRawSignature:(NSData * _Nonnull * _Nonnull)outRawSignature;
 
 @end
 

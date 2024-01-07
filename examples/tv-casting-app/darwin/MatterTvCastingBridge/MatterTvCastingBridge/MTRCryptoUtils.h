@@ -40,7 +40,7 @@
  * to have the correct size (2 * feLengthBytes).
  * @return Returns an MatterError on error, MATTER_NO_ERROR otherwise
  */
-+ (MatterError * _Nonnull)ecdsaAsn1SignatureToRawWithFeLengthBytes:(NSUInteger)feLengthBytes asn1Signature:(CFDataRef _Nonnull)asn1Signature outRawSignature:(NSData * _Nullable * _Nullable)outRawSignature;
++ (MatterError * _Nonnull)ecdsaAsn1SignatureToRawWithFeLengthBytes:(NSUInteger)feLengthBytes asn1Signature:(CFDataRef _Nonnull)asn1Signature outRawSignature:(NSData * _Nonnull * _Nonnull)outRawSignature;
 
 @end
 

@@ -20,7 +20,7 @@ import Security
 import os.log
 
 class MTRAppParametersDataSource : NSObject, MTRDataSource
-{
+{    
     let Log = Logger(subsystem: "com.matter.casting",
                      category: "MTRAppParametersDataSource")
     
@@ -61,7 +61,7 @@ class MTRAppParametersDataSource : NSObject, MTRDataSource
             productAttestationIntermediateCert: KPAI_FFF1_8000_Cert_Array)
     }
     
-    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, outRawSignature: AutoreleasingUnsafeMutablePointer<NSData?>) -> MatterError {
+    func castingApp(_ sender: Any, didReceiveRequestToSignCertificateRequest csrData: Data, outRawSignature: AutoreleasingUnsafeMutablePointer<NSData>) -> MatterError {
         Log.info("castingApp didReceiveRequestToSignCertificateRequest")
 
         // get the private SecKey
@@ -77,7 +77,7 @@ class MTRAppParametersDataSource : NSObject, MTRDataSource
         
         // sign csrData to get asn1SignatureData
         var error: Unmanaged<CFError>?
-        var asn1SignatureData: CFData? = SecKeyCreateSignature(privateSecKey, .ecdsaSignatureMessageX962SHA256, csrData as CFData, &error)
+        let asn1SignatureData: CFData? = SecKeyCreateSignature(privateSecKey, .ecdsaSignatureMessageX962SHA256, csrData as CFData, &error)
         if(error != nil)
         {
             Log.error("Failed to sign message. Error: \(String(describing: error))")
