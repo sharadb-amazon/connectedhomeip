@@ -44,7 +44,7 @@ public class TvCastingApp {
       Arrays.asList(35L); // Video player = 35;
 
   // delay before which we assume undiscovered cached players may be in STR mode
-  private static final long CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC = 5;
+  private static final long CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC = 3;
 
   private static TvCastingApp sInstance;
   private Context applicationContext;
@@ -132,7 +132,7 @@ public class TvCastingApp {
       SuccessCallback<DiscoveredNodeData> discoverySuccessCallback,
       FailureCallback discoveryFailureCallback) {
     synchronized (discoveryLock) {
-      Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners called");
+      Log.d(TAG, "TvCastingApp.discoverVideoPlayerCommissioners called (WoL)");
 
       if (this.discoveryStarted) {
         Log.d(TAG, "Discovery already started, stopping before starting again");

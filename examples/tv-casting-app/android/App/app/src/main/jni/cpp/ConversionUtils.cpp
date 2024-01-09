@@ -121,6 +121,7 @@ CHIP_ERROR convertTargetEndpointInfoToJContentApp(TargetEndpointInfo * targetEnd
         outContentApp =
             env->NewObject(jContentAppClass, jContentAppConstructor, targetEndpointInfo->GetEndpointId(), jClustersArrayList);
     }
+    ChipLogProgress(AppServer, "convertTargetEndpointInfoToJContentApp returning CHIP_NO_ERROR");
     return CHIP_NO_ERROR;
 }
 
@@ -170,19 +171,19 @@ CHIP_ERROR convertJVideoPlayerToTargetVideoPlayerInfo(jobject videoPlayer, Targe
     jfieldID jLastDiscoveredMs = env->GetFieldID(jVideoPlayerClass, "lastDiscoveredMs", "J");
     long lastDiscoveredMs      = static_cast<long>(env->GetLongField(videoPlayer, jLastDiscoveredMs));
 
-    jfieldID getMACAddressField = env->GetFieldID(jVideoPlayerClass, "MACAddress", "Ljava/lang/String;");
-    jstring jMACAddress         = static_cast<jstring>(env->GetObjectField(videoPlayer, getMACAddressField));
-    const char * MACAddress     = jMACAddress == nullptr ? nullptr : env->GetStringUTFChars(jMACAddress, 0);
-
     jfieldID jIsAsleep = env->GetFieldID(jVideoPlayerClass, "isAsleep", "Z");
     bool isAsleep      = static_cast<bool>(env->GetBooleanField(videoPlayer, jIsAsleep));
 
     outTargetVideoPlayerInfo.Initialize(nodeId, fabricIndex, nullptr, nullptr, vendorId, productId, deviceType, deviceName,
                                         hostName, 0, nullptr, port, instanceName, chip::System::Clock::Timestamp(lastDiscoveredMs));
 
+    jfieldID getMACAddressField = env->GetFieldID(jVideoPlayerClass, "MACAddress", "Ljava/lang/String;");
+    jstring jMACAddress         = static_cast<jstring>(env->GetObjectField(videoPlayer, getMACAddressField));
+    const char * MACAddress     = jMACAddress == nullptr ? nullptr : env->GetStringUTFChars(jMACAddress, 0);
     if (MACAddress != nullptr)
     {
-        chip::CharSpan MACAddressSpan(MACAddress, 2 * 2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength);
+        ChipLogProgress(AppServer, "convertJVideoPlayerToTargetVideoPlayerInfo MACAddress: %s", MACAddress);
+        chip::CharSpan MACAddressSpan(MACAddress, 2 * chip::DeviceLayer::ConfigurationManager::kPrimaryMACAddressLength);
         outTargetVideoPlayerInfo.SetMACAddress(MACAddressSpan);
     }
 
@@ -252,6 +253,7 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
         jstring instanceName = targetVideoPlayerInfo->GetInstanceName() == nullptr
             ? nullptr
             : env->NewStringUTF(targetVideoPlayerInfo->GetInstanceName());
+        ChipLogProgress(AppServer, "convertTargetVideoPlayerInfoToJVideoPlayer created jstring instanceName");
 
         jstring MACAddress = nullptr;
         if (targetVideoPlayerInfo->GetMACAddress() != nullptr && targetVideoPlayerInfo->GetMACAddress()->data() != nullptr)
@@ -260,7 +262,8 @@ CHIP_ERROR convertTargetVideoPlayerInfoToJVideoPlayer(TargetVideoPlayerInfo * ta
             memcpy(MACAddressWithNil, targetVideoPlayerInfo->GetMACAddress()->data(),
                    targetVideoPlayerInfo->GetMACAddress()->size());
             MACAddressWithNil[targetVideoPlayerInfo->GetMACAddress()->size()] = '\0';
-            MACAddress                                                        = env->NewStringUTF(MACAddressWithNil);
+            ChipLogProgress(AppServer, "convertTargetVideoPlayerInfoToJVideoPlayer MACAddressWithNil: %s", MACAddressWithNil);
+            MACAddress = env->NewStringUTF(MACAddressWithNil);
         }
 
         jobject jIPAddressList                    = nullptr;

@@ -17,6 +17,7 @@
  */
 package com.chip.casting;
 
+import android.util.Log;
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.List;
@@ -63,9 +64,11 @@ public class VideoPlayer {
       String MACAddress,
       boolean isAsleep,
       boolean isConnected) {
+    Log.d(TAG, "VideoPlayer() called with MACAddress = " + MACAddress);
+
     this.nodeId = nodeId;
     this.fabricIndex = fabricIndex;
-    this.deviceName = deviceName;
+    this.deviceName = deviceName != null ? new String(deviceName) : null;
     this.vendorId = vendorId;
     this.productId = productId;
     this.deviceType = deviceType;
@@ -73,10 +76,10 @@ public class VideoPlayer {
     this.isConnected = isConnected;
     this.numIPs = numIPs;
     this.ipAddresses = ipAddresses;
-    this.hostName = hostName;
-    this.MACAddress = MACAddress;
+    this.hostName = hostName != null ? new String(hostName) : null;
+    this.MACAddress = MACAddress != null ? new String(MACAddress) : null;
     this.lastDiscoveredMs = lastDiscoveredMs;
-    this.instanceName = instanceName;
+    this.instanceName = instanceName != null ? new String(instanceName) : null;
     this.port = port;
     this.isAsleep = isAsleep;
     this.isInitialized = true;

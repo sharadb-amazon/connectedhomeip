@@ -90,11 +90,35 @@ public:
 
     uint16_t GetPort() const { return mPort; }
     const char * GetInstanceName() const { return mInstanceName; }
-    chip::CharSpan * GetMACAddress() { return &mMACAddress; }
+    chip::CharSpan * GetMACAddress()
+    {
+        if (mMACAddress.data() != nullptr && mMACAddress.size() > 0)
+        {
+            ChipLogProgress(AppServer, "TargetVideoPlayerInfo.GetMACAddress: %.*s", static_cast<int>(mMACAddress.size()),
+                            mMACAddress.data());
+        }
+        else
+        {
+            ChipLogProgress(AppServer, "TargetVideoPlayerInfo.GetMACAddress returning ref to empty CharSpan");
+        }
+
+        return &mMACAddress;
+    }
+
     void SetIsAsleep(bool isAsleep) { mIsAsleep = isAsleep; }
     bool IsAsleep() { return mIsAsleep; }
     void SetMACAddress(chip::CharSpan MACAddress)
     {
+        if (MACAddress.data() != nullptr && MACAddress.size() > 0)
+        {
+            ChipLogProgress(AppServer, "TargetVideoPlayerInfo.SetMACAddress: %.*s", static_cast<int>(MACAddress.size()),
+                            MACAddress.data());
+        }
+        else
+        {
+            ChipLogProgress(AppServer, "TargetVideoPlayerInfo.SetMACAddress to empty CharSpan");
+        }
+
         memcpy(mMACAddressBuf, MACAddress.data(), sizeof(mMACAddressBuf));
         mMACAddress = chip::CharSpan(mMACAddressBuf, sizeof(mMACAddressBuf));
     }
