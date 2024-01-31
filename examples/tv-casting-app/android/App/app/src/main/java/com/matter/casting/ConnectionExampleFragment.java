@@ -100,7 +100,7 @@ public class ConnectionExampleFragment extends Fragment {
                   new EndpointFilter(null, 65521, new ArrayList<DeviceTypeStruct>());
               // The desired commissioning window timeout and EndpointFilter are optional.
               CompletableFuture<Void> completableFuture =
-                  targetCastingPlayer.VerifyOrEstablishConnection(
+                  targetCastingPlayer.verifyOrEstablishConnection(
                       MIN_CONNECTION_TIMEOUT_SEC, desiredEndpointFilter);
 
               Log.d(TAG, "onViewCreated() verifyOrEstablishConnection() called");

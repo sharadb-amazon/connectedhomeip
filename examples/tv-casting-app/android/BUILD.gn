@@ -36,14 +36,24 @@ shared_library("jni") {
 
   # add simplified casting API files here
   sources += [
+    "App/app/src/main/jni/cpp/clusters/Commands-JNI.cpp",
+    "App/app/src/main/jni/cpp/clusters/Commands-JNI.h",
     "App/app/src/main/jni/cpp/core/CastingApp-JNI.cpp",
     "App/app/src/main/jni/cpp/core/CastingApp-JNI.h",
     "App/app/src/main/jni/cpp/core/CastingPlayer-JNI.cpp",
     "App/app/src/main/jni/cpp/core/CastingPlayer-JNI.h",
     "App/app/src/main/jni/cpp/core/CastingPlayerDiscovery-JNI.cpp",
     "App/app/src/main/jni/cpp/core/CastingPlayerDiscovery-JNI.h",
+    "App/app/src/main/jni/cpp/core/Cluster-JNI.cpp",
+    "App/app/src/main/jni/cpp/core/Cluster-JNI.h",
+    "App/app/src/main/jni/cpp/core/Endpoint-JNI.cpp",
+    "App/app/src/main/jni/cpp/core/Endpoint-JNI.h",
     "App/app/src/main/jni/cpp/support/CastingPlayerConverter-JNI.cpp",
     "App/app/src/main/jni/cpp/support/CastingPlayerConverter-JNI.h",
+    "App/app/src/main/jni/cpp/support/ClusterConverter-JNI.cpp",
+    "App/app/src/main/jni/cpp/support/ClusterConverter-JNI.h",
+    "App/app/src/main/jni/cpp/support/EndpointConverter-JNI.cpp",
+    "App/app/src/main/jni/cpp/support/EndpointConverter-JNI.h",
     "App/app/src/main/jni/cpp/support/ErrorConverter-JNI.cpp",
     "App/app/src/main/jni/cpp/support/ErrorConverter-JNI.h",
     "App/app/src/main/jni/cpp/support/RotatingDeviceIdUniqueIdProvider-JNI.cpp",
@@ -101,12 +111,19 @@ android_library("java") {
 
   # add simplified casting API files here
   sources += [
+    "App/app/src/main/jni/com/matter/casting/clusters/MatterCommands.java",
     "App/app/src/main/jni/com/matter/casting/core/CastingApp.java",
     "App/app/src/main/jni/com/matter/casting/core/CastingAppState.java",
     "App/app/src/main/jni/com/matter/casting/core/CastingPlayer.java",
     "App/app/src/main/jni/com/matter/casting/core/CastingPlayerDiscovery.java",
+    "App/app/src/main/jni/com/matter/casting/core/Cluster.java",
+    "App/app/src/main/jni/com/matter/casting/core/Command.java",
+    "App/app/src/main/jni/com/matter/casting/core/Endpoint.java",
     "App/app/src/main/jni/com/matter/casting/core/MatterCastingPlayer.java",
     "App/app/src/main/jni/com/matter/casting/core/MatterCastingPlayerDiscovery.java",
+    "App/app/src/main/jni/com/matter/casting/core/MatterCluster.java",
+    "App/app/src/main/jni/com/matter/casting/core/MatterCommand.java",
+    "App/app/src/main/jni/com/matter/casting/core/MatterEndpoint.java",
     "App/app/src/main/jni/com/matter/casting/support/AppParameters.java",
     "App/app/src/main/jni/com/matter/casting/support/CommissionableData.java",
     "App/app/src/main/jni/com/matter/casting/support/DACProvider.java",
@@ -114,6 +131,8 @@ android_library("java") {
     "App/app/src/main/jni/com/matter/casting/support/DeviceTypeStruct.java",
     "App/app/src/main/jni/com/matter/casting/support/EndpointFilter.java",
     "App/app/src/main/jni/com/matter/casting/support/MatterError.java",
+    "App/app/src/main/jni/com/matter/casting/support/UnsupportedClusterException.java",
+    "App/app/src/main/jni/com/matter/casting/support/UnsupportedCommandException.java",
   ]
 
   javac_flags = [ "-Xlint:deprecation" ]

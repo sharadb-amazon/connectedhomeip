@@ -20,10 +20,10 @@
 
 #include "../JNIDACProvider.h"
 #include "../support/CastingPlayerConverter-JNI.h"
+#include "../support/EndpointConverter-JNI.h"
 #include "../support/ErrorConverter-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
 #include "core/CastingApp.h"             // from tv-casting-common
-#include "core/CastingPlayer.h"          // from tv-casting-common
 #include "core/CastingPlayerDiscovery.h" // from tv-casting-common
 
 #include <app/clusters/bindings/BindingManager.h>
@@ -41,24 +41,16 @@ namespace matter {
 namespace casting {
 namespace core {
 
-JNI_METHOD(jobject, VerifyOrEstablishConnection)
+JNI_METHOD(jobject, verifyOrEstablishConnection)
 (JNIEnv * env, jobject thiz, jlong commissioningWindowTimeoutSec, jobject desiredEndpointFilterJavaObject)
 {
     chip::DeviceLayer::StackLock lock;
-    ChipLogProgress(AppServer, "CastingPlayer-JNI::VerifyOrEstablishConnection() called with a timeout of: %ld seconds",
+    ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() called with a timeout of: %ld seconds",
                     static_cast<long>(commissioningWindowTimeoutSec));
 
-    // Convert the CastingPlayer jlong to a CastingPlayer pointer
-    jclass castingPlayerClass         = env->GetObjectClass(thiz);
-    jfieldID _cppCastingPlayerFieldId = env->GetFieldID(castingPlayerClass, "_cppCastingPlayer", "J");
-    VerifyOrReturnValue(
-        _cppCastingPlayerFieldId != nullptr, nullptr,
-        ChipLogError(AppServer, "CastingPlayer-JNI::VerifyOrEstablishConnection() _cppCastingPlayerFieldId == nullptr"));
-
-    jlong _cppCastingPlayerValue  = env->GetLongField(thiz, _cppCastingPlayerFieldId);
-    CastingPlayer * castingPlayer = reinterpret_cast<CastingPlayer *>(_cppCastingPlayerValue);
+    CastingPlayer * castingPlayer = CastingPlayerJNIMgr().GetCastingPlayer(thiz);
     VerifyOrReturnValue(castingPlayer != nullptr, nullptr,
-                        ChipLogError(AppServer, "CastingPlayer-JNI::VerifyOrEstablishConnection() castingPlayer == nullptr"));
+                        ChipLogError(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() castingPlayer == nullptr"));
 
     // Create a new Java CompletableFuture
     jclass completableFutureClass          = env->FindClass("java/util/concurrent/CompletableFuture");
@@ -67,10 +59,10 @@ JNI_METHOD(jobject, VerifyOrEstablishConnection)
     jobject completableFutureObjGlobalRef  = env->NewGlobalRef(completableFutureObj);
     VerifyOrReturnValue(
         completableFutureObjGlobalRef != nullptr, nullptr,
-        ChipLogError(AppServer, "CastingPlayer-JNI::VerifyOrEstablishConnection() completableFutureObjGlobalRef == nullptr"));
+        ChipLogError(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() completableFutureObjGlobalRef == nullptr"));
 
     ConnectCallback callback = [completableFutureObjGlobalRef](CHIP_ERROR err, CastingPlayer * playerPtr) {
-        ChipLogProgress(AppServer, "CastingPlayer-JNI::VerifyOrEstablishConnection() ConnectCallback called");
+        ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() ConnectCallback called");
         VerifyOrReturn(completableFutureObjGlobalRef != nullptr,
                        ChipLogError(AppServer, "ConnectCallback, completableFutureObjGlobalRef == nullptr"));
 
@@ -122,7 +114,7 @@ JNI_METHOD(jobject, VerifyOrEstablishConnection)
     if (desiredEndpointFilterJavaObject == nullptr)
     {
         ChipLogProgress(AppServer,
-                        "CastingPlayer-JNI::VerifyOrEstablishConnection() calling CastingPlayer::VerifyOrEstablishConnection() on "
+                        "CastingPlayer-JNI::verifyOrEstablishConnection() calling CastingPlayer::VerifyOrEstablishConnection() on "
                         "Casting Player with device ID: %s",
                         castingPlayer->GetId());
         castingPlayer->VerifyOrEstablishConnection(callback, static_cast<unsigned long long int>(commissioningWindowTimeoutSec));
@@ -156,7 +148,7 @@ JNI_METHOD(jobject, VerifyOrEstablishConnection)
         // passing an empty list of DeviceTypeStruct.
 
         ChipLogProgress(AppServer,
-                        "CastingPlayer-JNI::VerifyOrEstablishConnection() calling "
+                        "CastingPlayer-JNI::verifyOrEstablishConnection() calling "
                         "CastingPlayer::VerifyOrEstablishConnection() on Casting Player with device ID: %s",
                         castingPlayer->GetId());
         castingPlayer->VerifyOrEstablishConnection(callback, static_cast<unsigned long long int>(commissioningWindowTimeoutSec),
@@ -164,6 +156,40 @@ JNI_METHOD(jobject, VerifyOrEstablishConnection)
     }
 
     return completableFutureObjGlobalRef;
+}
+
+JNI_METHOD(jobject, getEndpoints)
+(JNIEnv * env, jobject thiz)
+{
+    chip::DeviceLayer::StackLock lock;
+    ChipLogProgress(AppServer, "CastingPlayer-JNI::getEndpoints() called");
+
+    CastingPlayer * castingPlayer = CastingPlayerJNIMgr().GetCastingPlayer(thiz);
+    VerifyOrReturnValue(castingPlayer != nullptr, nullptr,
+                        ChipLogError(AppServer, "CastingPlayer-JNI::getEndpoints() castingPlayer == nullptr"));
+
+    const std::vector<memory::Strong<Endpoint>> endpoints = castingPlayer->GetEndpoints();
+    jobject jEndpointList                                 = nullptr;
+    chip::JniReferences::GetInstance().CreateArrayList(jEndpointList);
+    for (memory::Strong<Endpoint> endpoint : endpoints)
+    {
+        jobject matterEndpointJavaObject = support::createJEndpoint(endpoint);
+        VerifyOrReturnValue(matterEndpointJavaObject != nullptr, jEndpointList,
+                            ChipLogError(AppServer, "CastingPlayer-JNI::getEndpoints(): Could not create Endpoint jobject"));
+        chip::JniReferences::GetInstance().AddToList(jEndpointList, matterEndpointJavaObject);
+    }
+    return jEndpointList;
+}
+
+CastingPlayer * CastingPlayerJNI::GetCastingPlayer(jobject jCastingPlayerObject)
+{
+    JNIEnv * env                      = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+    jclass castingPlayerClass         = env->GetObjectClass(jCastingPlayerObject);
+    jfieldID _cppCastingPlayerFieldId = env->GetFieldID(castingPlayerClass, "_cppCastingPlayer", "J");
+    VerifyOrReturnValue(_cppCastingPlayerFieldId != nullptr, nullptr,
+                        ChipLogError(AppServer, "CastingPlayerJNI-JNI::GetCastingPlayer() _cppCastingPlayerFieldId == nullptr"));
+    jlong _cppCastingPlayerValue = env->GetLongField(jCastingPlayerObject, _cppCastingPlayerFieldId);
+    return reinterpret_cast<CastingPlayer *>(_cppCastingPlayerValue);
 }
 
 }; // namespace core

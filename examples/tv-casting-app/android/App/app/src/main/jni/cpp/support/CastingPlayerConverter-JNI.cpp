@@ -82,7 +82,7 @@ jobject createJCastingPlayer(matter::casting::memory::Strong<core::CastingPlayer
     if (jMatterCastingPlayer == nullptr)
     {
         ChipLogError(AppServer,
-                     "CastingPlayerConverter-JNI.createJCastingPlayer() Warning: Could not create MatterCastingPlayer Java object");
+                     "CastingPlayerConverter-JNI.createJCastingPlayer(): Could not create MatterCastingPlayer Java object");
         return jMatterCastingPlayer;
     }
     // Set the value of the _cppCastingPlayer field in the Java object to the C++ CastingPlayer pointer.

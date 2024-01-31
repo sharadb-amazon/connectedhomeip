@@ -1,7 +1,6 @@
 /*
  *
- *    Copyright (c) 2024 Project CHIP Authors
- *    All rights reserved.
+ *    Copyright (c) 2023-2024 Project CHIP Authors
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -15,31 +14,25 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-
 #pragma once
 
-#include "core/CastingPlayer.h" // from tv-casting-common
+#include "core/BaseCluster.h"
+
+#include <lib/core/CHIPError.h>
 
 #include <jni.h>
 
 namespace matter {
 namespace casting {
-namespace core {
+namespace support {
 
-class CastingPlayerJNI
-{
-public:
-    CastingPlayer * GetCastingPlayer(jobject jCastingPlayerObject);
+/**
+ * @brief Converts a native Cluster into a MatterCluster jobject
+ *
+ * @return pointer to the Cluster jobject if created successfully, nullptr otherwise.
+ */
+jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster);
 
-private:
-    friend CastingPlayerJNI & CastingPlayerJNIMgr();
-    static CastingPlayerJNI sInstance;
-};
-
-inline class CastingPlayerJNI & CastingPlayerJNIMgr()
-{
-    return CastingPlayerJNI::sInstance;
-}
-}; // namespace core
+}; // namespace support
 }; // namespace casting
 }; // namespace matter

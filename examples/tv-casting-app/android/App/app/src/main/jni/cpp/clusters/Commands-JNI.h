@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/CastingPlayer.h" // from tv-casting-common
+#include "core/Command.h"          // from tv-casting-common
 
 #include <jni.h>
 
@@ -26,19 +26,19 @@ namespace matter {
 namespace casting {
 namespace core {
 
-class CastingPlayerJNI
+class CommandsJNI
 {
 public:
-    CastingPlayer * GetCastingPlayer(jobject jCastingPlayerObject);
+    void * GetCommand(jobject jCommandObject);
 
 private:
-    friend CastingPlayerJNI & CastingPlayerJNIMgr();
-    static CastingPlayerJNI sInstance;
+    friend CommandsJNI & CommandsJNIMgr();
+    static CommandsJNI sInstance;
 };
 
-inline class CastingPlayerJNI & CastingPlayerJNIMgr()
+inline class CommandsJNI & CommandsJNIMgr()
 {
-    return CastingPlayerJNI::sInstance;
+    return CommandsJNI::sInstance;
 }
 }; // namespace core
 }; // namespace casting

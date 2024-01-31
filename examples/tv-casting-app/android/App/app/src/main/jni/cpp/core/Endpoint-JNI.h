@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2024 Project CHIP Authors
+ *    Copyright (c) 2020-24 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/CastingPlayer.h" // from tv-casting-common
+#include "core/Endpoint.h"          // from tv-casting-common
 
 #include <jni.h>
 
@@ -26,19 +26,19 @@ namespace matter {
 namespace casting {
 namespace core {
 
-class CastingPlayerJNI
+class EndpointJNI
 {
 public:
-    CastingPlayer * GetCastingPlayer(jobject jCastingPlayerObject);
+    Endpoint * GetEndpoint(jobject jEndpointObject);
 
 private:
-    friend CastingPlayerJNI & CastingPlayerJNIMgr();
-    static CastingPlayerJNI sInstance;
+    friend EndpointJNI & EndpointJNIMgr();
+    static EndpointJNI sInstance;
 };
 
-inline class CastingPlayerJNI & CastingPlayerJNIMgr()
+inline class EndpointJNI & EndpointJNIMgr()
 {
-    return CastingPlayerJNI::sInstance;
+    return EndpointJNI::sInstance;
 }
 }; // namespace core
 }; // namespace casting

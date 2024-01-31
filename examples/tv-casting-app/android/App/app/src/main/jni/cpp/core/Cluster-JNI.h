@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2024 Project CHIP Authors
+ *    Copyright (c) 2020-24 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/CastingPlayer.h" // from tv-casting-common
+#include "core/BaseCluster.h"          // from tv-casting-common
 
 #include <jni.h>
 
@@ -26,19 +26,19 @@ namespace matter {
 namespace casting {
 namespace core {
 
-class CastingPlayerJNI
+class ClusterJNI
 {
 public:
-    CastingPlayer * GetCastingPlayer(jobject jCastingPlayerObject);
+    BaseCluster * GetCluster(jobject jClusterObject);
 
 private:
-    friend CastingPlayerJNI & CastingPlayerJNIMgr();
-    static CastingPlayerJNI sInstance;
+    friend ClusterJNI & ClusterJNIMgr();
+    static ClusterJNI sInstance;
 };
 
-inline class CastingPlayerJNI & CastingPlayerJNIMgr()
+inline class ClusterJNI & ClusterJNIMgr()
 {
-    return CastingPlayerJNI::sInstance;
+    return ClusterJNI::sInstance;
 }
 }; // namespace core
 }; // namespace casting
