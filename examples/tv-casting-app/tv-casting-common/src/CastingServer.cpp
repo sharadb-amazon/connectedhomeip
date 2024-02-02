@@ -493,7 +493,8 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
         prevDeviceProxy->Disconnect();
     }
 
-    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = targetVideoPlayerInfo;
+    int cacheIndex                                             = GetVideoPlayerIndex(&targetVideoPlayerInfo);
+    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = mCachedTargetVideoPlayerInfo[cacheIndex];
     uint32_t delay                                             = 0;
     if (targetVideoPlayerInfo.IsAsleep())
     {
@@ -509,6 +510,21 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
     chip::DeviceLayer::SystemLayer().CancelTimer(VerifyOrEstablishConnectionTask, nullptr);
     return chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Milliseconds32(delay), VerifyOrEstablishConnectionTask,
                                                        nullptr);
+}
+
+int CastingServer::GetVideoPlayerIndex(TargetVideoPlayerInfo * targetVideoPlayerInfo)
+{
+    if (targetVideoPlayerInfo != nullptr)
+    {
+        for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfo[i].IsInitialized(); i++)
+        {
+            if (mCachedTargetVideoPlayerInfo[i] == *targetVideoPlayerInfo)
+            {
+                return static_cast<int>(i);
+            }
+        }
+    }
+    return -1;
 }
 
 void CastingServer::VerifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context)
