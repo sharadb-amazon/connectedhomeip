@@ -446,6 +446,7 @@ private:
 
     static void VerifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context);
     CHIP_ERROR ReadMACAddress(TargetEndpointInfo * endpoint);
+    int GetCachedVideoPlayerIndex(TargetVideoPlayerInfo * targetVideoPlayerInfo);
 
     /**
      * @brief Retrieve the IP Address to use for the UDC request.

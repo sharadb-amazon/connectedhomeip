@@ -140,7 +140,20 @@ public class TvCastingApp {
       }
 
       List<VideoPlayer> preCommissionedVideoPlayers = readCachedVideoPlayers();
-
+      if (preCommissionedVideoPlayers != null) {
+        for (VideoPlayer videoPlayer : preCommissionedVideoPlayers) {
+          Log.d(
+              TAG,
+              "preCommissionedVideoPlayer hostName: "
+                  + videoPlayer.getHostName()
+                  + " MACAddress: "
+                  + videoPlayer.getMACAddress()
+                  + " numIPs: "
+                  + videoPlayer.getNumIPs()
+                  + " IP Addresses: "
+                  + videoPlayer.getIpAddresses());
+        }
+      }
       WifiManager wifiManager =
           (WifiManager) applicationContext.getSystemService(Context.WIFI_SERVICE);
       multicastLock = wifiManager.createMulticastLock("multicastLock");
