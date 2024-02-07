@@ -34,7 +34,7 @@
 using namespace chip;
 
 #define JNI_METHOD(RETURN, METHOD_NAME)                                                                                            \
-    extern "C" JNIEXPORT RETURN JNICALL Java_com_matter_casting_clusters_MatterCommands_ContentLauncherClusterLaunchURLCommand##METHOD_NAME
+    extern "C" JNIEXPORT RETURN JNICALL Java_com_matter_casting_clusters_MatterCommands_ContentLauncherClusterLaunchURLCommand_##METHOD_NAME
 
 namespace matter {
 namespace casting {

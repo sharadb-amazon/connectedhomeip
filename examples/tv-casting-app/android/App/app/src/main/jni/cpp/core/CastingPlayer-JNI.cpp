@@ -63,20 +63,30 @@ JNI_METHOD(jobject, verifyOrEstablishConnection)
 
     ConnectCallback callback = [completableFutureObjGlobalRef](CHIP_ERROR err, CastingPlayer * playerPtr) {
         ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() ConnectCallback called");
+        
+        JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
+        VerifyOrReturn(env != nullptr, ChipLogError(AppServer, "ConnectCallback, env == nullptr"));
+
+        ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() before JniLocalReferenceManager manager(env)");
+        // Ensures proper cleanup of local references to Java objects.
+        JniLocalReferenceManager manager(env);
+        //ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() before JniGlobalRefWrapper globalRefWrapper");
+        // Ensures proper cleanup of global references to Java objects.
+        //JniGlobalRefWrapper globalRefWrapper(completableFutureObjGlobalRef);
+        //ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() after JniGlobalRefWrapper globalRefWrapper");
         VerifyOrReturn(completableFutureObjGlobalRef != nullptr,
                        ChipLogError(AppServer, "ConnectCallback, completableFutureObjGlobalRef == nullptr"));
 
-        JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
-        VerifyOrReturn(env != nullptr, ChipLogError(AppServer, "ConnectCallback, env == nullptr"));
-        // Ensures proper cleanup of local references to Java objects.
-        JniLocalReferenceManager manager(env);
-        // Ensures proper cleanup of global references to Java objects.
-        JniGlobalRefWrapper globalRefWrapper(completableFutureObjGlobalRef);
+        /*ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() before env->IsSameObject(completableFutureObjGlobalRef, nullptr)");
+        if (env->IsSameObject(completableFutureObjGlobalRef, nullptr))
+        {
+            ChipLogError(AppServer, "ConnectCallback, IsSameObject(completableFutureObjGlobalRef, nullptr)")
+        }
+        ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() after env->IsSameObject(completableFutureObjGlobalRef, nullptr)");*/
 
         jclass completableFutureClass = env->FindClass("java/util/concurrent/CompletableFuture");
         VerifyOrReturn(completableFutureClass != nullptr,
-                       ChipLogError(AppServer, "ConnectCallback, completableFutureClass == nullptr");
-                       env->DeleteGlobalRef(completableFutureObjGlobalRef););
+                       ChipLogError(AppServer, "ConnectCallback, completableFutureClass == nullptr"));
 
         if (err == CHIP_NO_ERROR)
         {
@@ -85,7 +95,10 @@ JNI_METHOD(jobject, verifyOrEstablishConnection)
             VerifyOrReturn(completeMethod != nullptr, ChipLogError(AppServer, "ConnectCallback, completeMethod == nullptr"));
 
             chip::DeviceLayer::StackUnlock unlock;
+            ChipLogProgress(AppServer, "ConnectCallback, before env->CallBooleanMethod");
             env->CallBooleanMethod(completableFutureObjGlobalRef, completeMethod, nullptr);
+            ChipLogProgress(AppServer, "ConnectCallback, after env->CallBooleanMethod");
+            //env->DeleteGlobalRef(completableFutureObjGlobalRef);
         }
         else
         {
@@ -108,6 +121,7 @@ JNI_METHOD(jobject, verifyOrEstablishConnection)
 
             chip::DeviceLayer::StackUnlock unlock;
             env->CallBooleanMethod(completableFutureObjGlobalRef, completeExceptionallyMethod, throwableObject);
+            //env->DeleteGlobalRef(completableFutureObjGlobalRef);
         }
     };
 
@@ -151,11 +165,30 @@ JNI_METHOD(jobject, verifyOrEstablishConnection)
                         "CastingPlayer-JNI::verifyOrEstablishConnection() calling "
                         "CastingPlayer::VerifyOrEstablishConnection() on Casting Player with device ID: %s",
                         castingPlayer->GetId());
-        castingPlayer->VerifyOrEstablishConnection(callback, static_cast<unsigned long long int>(commissioningWindowTimeoutSec),
-                                                   desiredEndpointFilter);
+        
+        CastingPlayerConnectionContext * context = new CastingPlayerConnectionContext();
+        context->castingPlayer = castingPlayer;
+        context->callback = callback;
+        context->commissioningWindowTimeoutSec = static_cast<unsigned long long int>(commissioningWindowTimeoutSec);
+        context->desiredEndpointFilter = desiredEndpointFilter;
+
+        chip::DeviceLayer::SystemLayer().ScheduleWork(CastingPlayerJNI::verifyOrEstablishConnectionTask, context);
+        //castingPlayer->VerifyOrEstablishConnection(callback, static_cast<unsigned long long int>(commissioningWindowTimeoutSec),
+        //                                           desiredEndpointFilter);
     }
 
+    ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnection() returning");
     return completableFutureObjGlobalRef;
+}
+
+void CastingPlayerJNI::verifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context)
+{
+    ChipLogProgress(AppServer, "CastingPlayer-JNI::verifyOrEstablishConnectionTask() called");
+    if(context != nullptr)
+    {
+        CastingPlayerConnectionContext * _context = static_cast<CastingPlayerConnectionContext *>(context);
+        _context->castingPlayer->VerifyOrEstablishConnection(_context->callback, _context->commissioningWindowTimeoutSec, _context->desiredEndpointFilter);
+    }
 }
 
 JNI_METHOD(jobject, getEndpoints)

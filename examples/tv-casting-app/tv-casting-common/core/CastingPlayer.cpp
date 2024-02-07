@@ -68,6 +68,9 @@ void CastingPlayer::VerifyOrEstablishConnection(ConnectCallback onCompleted, uns
                     AppServer,
                     "CastingPlayer::VerifyOrEstablishConnection() calling FindOrEstablishSession on cached CastingPlayer");
                 *this = cachedCastingPlayers[index];
+                mConnectionState               = CASTING_PLAYER_CONNECTING;
+                mOnCompleted                   = onCompleted;
+                mCommissioningWindowTimeoutSec = commissioningWindowTimeoutSec;
 
                 FindOrEstablishSession(
                     nullptr,

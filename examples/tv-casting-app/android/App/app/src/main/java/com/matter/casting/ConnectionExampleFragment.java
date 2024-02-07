@@ -27,9 +27,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.R;
 import com.matter.casting.core.CastingPlayer;
+import com.matter.casting.core.Endpoint;
 import com.matter.casting.support.DeviceTypeStruct;
 import com.matter.casting.support.EndpointFilter;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -105,6 +107,8 @@ public class ConnectionExampleFragment extends Fragment {
 
               Log.d(TAG, "onViewCreated() verifyOrEstablishConnection() called");
 
+              Log.d(TAG, "onViewCreated() verifyOrEstablishConnection() completableFuture == null? " + (completableFuture == null));
+
               completableFuture
                   .thenRun(
                       () -> {
@@ -118,6 +122,8 @@ public class ConnectionExampleFragment extends Fragment {
                                   connectionFragmentStatusTextView.setText(
                                       "Connected to Casting Player with device name: "
                                           + targetCastingPlayer.getDeviceName());
+                                  /*List<Endpoint> endpoints = targetCastingPlayer.getEndpoints();
+                                  Log.d(TAG, "CompletableFuture.thenRun() endpoints: " + endpoints);*/
                                   connectionFragmentNextButton.setEnabled(true);
                                 });
                       })

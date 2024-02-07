@@ -26,9 +26,19 @@ namespace matter {
 namespace casting {
 namespace core {
 
+class CastingPlayerConnectionContext
+{
+public:
+    CastingPlayer * castingPlayer;
+    ConnectCallback callback;
+    unsigned long long int commissioningWindowTimeoutSec;
+    EndpointFilter desiredEndpointFilter;
+};
+
 class CastingPlayerJNI
 {
 public:
+    static void verifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context);
     CastingPlayer * GetCastingPlayer(jobject jCastingPlayerObject);
 
 private:

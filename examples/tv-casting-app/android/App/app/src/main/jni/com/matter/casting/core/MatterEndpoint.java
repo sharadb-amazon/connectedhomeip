@@ -4,6 +4,7 @@ import com.matter.casting.support.DeviceTypeStruct;
 import com.matter.casting.support.UnsupportedClusterException;
 
 import java.util.List;
+import java.util.Objects;
 
 public class MatterEndpoint implements Endpoint {
     protected long _cppEndpoint;
@@ -31,5 +32,25 @@ public class MatterEndpoint implements Endpoint {
     @Override
     public boolean hasCluster(Class<? extends Cluster> clusterClass) {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return "MatterEndpoint{" +
+                "id=" + getId() +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MatterEndpoint that = (MatterEndpoint) o;
+        return getId() == that.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

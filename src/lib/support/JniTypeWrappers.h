@@ -187,6 +187,7 @@ public:
     explicit JniGlobalRefWrapper(jobject mGlobalRef) : mGlobalRef(mGlobalRef) {}
     ~JniGlobalRefWrapper()
     {
+        ChipLogProgress(DeviceLayer, "~JniGlobalRefWrapper() called");
         chip::JniReferences::GetInstance().GetEnvForCurrentThread()->DeleteGlobalRef(mGlobalRef);
         mGlobalRef = nullptr;
     }
