@@ -31,7 +31,7 @@ namespace support {
  *
  * @return pointer to the Cluster jobject if created successfully, nullptr otherwise.
  */
-jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster);
+jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster, const char * className);
 
 }; // namespace support
 }; // namespace casting

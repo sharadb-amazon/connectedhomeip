@@ -1,6 +1,6 @@
 package com.matter.casting.core;
 
-public class MatterCluster implements Cluster {
+public abstract class MatterCluster implements Cluster {
     protected long _cppCluster;
 
     @Override

@@ -122,8 +122,8 @@ public class ConnectionExampleFragment extends Fragment {
                                   connectionFragmentStatusTextView.setText(
                                       "Connected to Casting Player with device name: "
                                           + targetCastingPlayer.getDeviceName());
-                                  /*List<Endpoint> endpoints = targetCastingPlayer.getEndpoints();
-                                  Log.d(TAG, "CompletableFuture.thenRun() endpoints: " + endpoints);*/
+                                  List<Endpoint> endpoints = targetCastingPlayer.getEndpoints();
+                                  Log.d(TAG, "CompletableFuture.thenRun() endpoints: " + endpoints);
                                   connectionFragmentNextButton.setEnabled(true);
                                 });
                       })

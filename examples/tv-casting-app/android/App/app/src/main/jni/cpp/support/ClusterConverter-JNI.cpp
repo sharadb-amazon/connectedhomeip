@@ -25,39 +25,39 @@ namespace support {
 
 using namespace chip;
 
-jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster)
+jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster, const char * className)
 {
     ChipLogProgress(AppServer, "ClusterConverter-JNI.createJCluster() called");
     JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
 
-    // Get a reference to the MatterCluster Java class
-    jclass matterClusterJavaClass = env->FindClass("com/matter/casting/core/MatterCluster");
-    if (matterClusterJavaClass == nullptr)
+    // Get a reference to the cluster's Java class
+    jclass clusterJavaClass = env->FindClass(className);
+    if (clusterJavaClass == nullptr)
     {
         ChipLogError(AppServer,
-                     "ClusterConverter-JNI.createJCluster() could not locate MatterCluster Java class");
+                     "ClusterConverter-JNI.createJCluster() could not locate cluster's Java class");
         return nullptr;
     }
 
-    // Get the constructor for the com/matter/casting/core/MatterCluster Java class
+    // Get the constructor for the cluster's Java class
     jmethodID constructor =
-        env->GetMethodID(matterClusterJavaClass, "<init>", "()V");
+        env->GetMethodID(clusterJavaClass, "<init>", "()V");
     if (constructor == nullptr)
     {
-        ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster() could not locate MatterCluster Java class constructor");
+        ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster() could not locate cluster's Java class constructor");
         return nullptr;
     }
 
-    // Create a new instance of the MatterCluster Java class
+    // Create a new instance of the cluster's Java class
     jobject jMatterCluster = nullptr;
-    jMatterCluster = env->NewObject(matterClusterJavaClass, constructor);
+    jMatterCluster = env->NewObject(clusterJavaClass, constructor);
     if (jMatterCluster == nullptr)
     {
-        ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster(): Could not create MatterCluster Java object");
+        ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster(): Could not create cluster's Java object");
         return jMatterCluster;
     }
     // Set the value of the _cppEndpoint field in the Java object to the C++ Endpoint pointer.
-    jfieldID longFieldId = env->GetFieldID(matterClusterJavaClass, "_cppCluster", "J");
+    jfieldID longFieldId = env->GetFieldID(clusterJavaClass, "_cppCluster", "J");
     env->SetLongField(jMatterCluster, longFieldId, reinterpret_cast<jlong>(cluster.get()));
     return jMatterCluster;
 }

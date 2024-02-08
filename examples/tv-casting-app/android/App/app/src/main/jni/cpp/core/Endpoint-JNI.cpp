@@ -20,11 +20,14 @@
 
 #include "../JNIDACProvider.h"
 #include "../support/CastingPlayerConverter-JNI.h"
+#include "../support/ClusterConverter-JNI.h"
 #include "../support/ErrorConverter-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
 #include "core/CastingApp.h"             // from tv-casting-common
 #include "core/CastingPlayer.h"          // from tv-casting-common
 #include "core/CastingPlayerDiscovery.h" // from tv-casting-common
+#include "core/Endpoint.h"          // from tv-casting-common
+#include "clusters/Clusters.h" // from tv-casting-common
 
 #include <app/clusters/bindings/BindingManager.h>
 #include <app/server/Server.h>
@@ -79,6 +82,34 @@ JNI_METHOD(jobject, getCastingPlayer)
     Endpoint * endpoint = EndpointJNIMgr().GetEndpoint(thiz);
     VerifyOrReturnValue(endpoint != nullptr, 0, ChipLogError(AppServer, "Endpoint-JNI::getCastingPlayer() endpoint == nullptr"));
     return support::createJCastingPlayer(std::shared_ptr<CastingPlayer>(endpoint->GetCastingPlayer()));
+}
+
+JNI_METHOD(jobject, getCluster)
+(JNIEnv * env, jobject thiz, jclass clusterClass)
+{
+    chip::DeviceLayer::StackLock lock;
+    ChipLogProgress(AppServer, "Endpoint-JNI::getCluster() called");
+    Endpoint * endpoint = EndpointJNIMgr().GetEndpoint(thiz);
+    VerifyOrReturnValue(endpoint != nullptr, 0, ChipLogError(AppServer, "Endpoint-JNI::getCluster() endpoint == nullptr"));
+
+    jclass clsClass = env->GetObjectClass(clusterClass); // Class<Class>
+    jmethodID mid = env->GetMethodID(clsClass, "getName", "()Ljava/lang/String;");
+    jstring jClassName = (jstring)env->CallObjectMethod(clusterClass, mid);
+    const char* className = env->GetStringUTFChars(jClassName, nullptr);
+    if (strcmp(className, "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster") == 0)
+    {
+        matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster> 
+            contentLauncherCluster = endpoint->GetCluster<matter::casting::clusters::content_launcher::ContentLauncherCluster>();
+
+        jobject clusterJavaObject = support::createJCluster(
+                            contentLauncherCluster, 
+                            "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster");
+        env->ReleaseStringUTFChars(jClassName, className);
+        return clusterJavaObject;
+    }
+
+    env->ReleaseStringUTFChars(jClassName, className);
+    return nullptr;
 }
 
 /**
