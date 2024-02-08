@@ -19,8 +19,5 @@ public class MatterCommands {
     }
 
     public static class ContentLauncherClusterLaunchURLCommand extends MatterCommand<ContentLauncherClusterLaunchURLRequest, ContentLauncherClusterResponse>
-    {
-        @Override
-        public native CompletableFuture<ContentLauncherClusterResponse> invoke(ContentLauncherClusterLaunchURLRequest contentLauncherLaunchURLRequest, Object context, Integer timedInvokeTimeoutMs);
-    }
+    {}
 }

@@ -1,7 +1,6 @@
 package com.matter.casting.core;
 
 import com.matter.casting.support.DeviceTypeStruct;
-import com.matter.casting.support.UnsupportedClusterException;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,13 +24,11 @@ public class MatterEndpoint implements Endpoint {
     public native CastingPlayer getCastingPlayer();
 
     @Override
-    public <T extends Cluster> T getCluster(Class<T> clusterClass) throws UnsupportedClusterException {
-        return null;
-    }
+    public native <T extends Cluster> T getCluster(Class<T> clusterClass);
 
     @Override
     public boolean hasCluster(Class<? extends Cluster> clusterClass) {
-        return false;
+        return getCluster(clusterClass) != null;
     }
 
     @Override

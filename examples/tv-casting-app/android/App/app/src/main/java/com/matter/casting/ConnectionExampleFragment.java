@@ -26,12 +26,15 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.R;
+import com.matter.casting.clusters.MatterClusters;
+import com.matter.casting.clusters.MatterCommands;
 import com.matter.casting.core.CastingPlayer;
 import com.matter.casting.core.Endpoint;
 import com.matter.casting.support.DeviceTypeStruct;
 import com.matter.casting.support.EndpointFilter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 
@@ -124,6 +127,23 @@ public class ConnectionExampleFragment extends Fragment {
                                           + targetCastingPlayer.getDeviceName());
                                   List<Endpoint> endpoints = targetCastingPlayer.getEndpoints();
                                   Log.d(TAG, "CompletableFuture.thenRun() endpoints: " + endpoints);
+                                  for(Endpoint endpoint: endpoints)
+                                  {
+                                      MatterClusters.ContentLauncherCluster cluster = endpoint.getCluster(MatterClusters.ContentLauncherCluster.class);
+                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster: " + cluster);
+                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + cluster.getEndpoint());
+                                      MatterCommands.ContentLauncherClusterLaunchURLCommand command = cluster.getCommand(MatterCommands.ContentLauncherClusterLaunchURLCommand.class);
+                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + command);
+
+                                      MatterCommands.ContentLauncherClusterLaunchURLRequest request = new MatterCommands.ContentLauncherClusterLaunchURLRequest();
+                                      request.contentURL = "testurl";
+                                      request.displayString = Optional.of("test string");
+                                      CompletableFuture<MatterCommands.ContentLauncherClusterResponse> responseFuture = command.invoke(request, null, 5000);
+                                      /*responseFuture.thenAccept(response -> {
+                                          Log.d(TAG, "Command CompletableFuture.thenAccept() response " + response);
+                                      });*/
+                                  }
+
                                   connectionFragmentNextButton.setEnabled(true);
                                 });
                       })

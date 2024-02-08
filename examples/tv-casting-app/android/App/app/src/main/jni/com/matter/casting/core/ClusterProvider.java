@@ -17,10 +17,8 @@
 
 package com.matter.casting.core;
 
-import com.matter.casting.support.UnsupportedClusterException;
-
 public interface ClusterProvider {
-    <T extends Cluster> T getCluster(Class<T> clusterClass) throws UnsupportedClusterException;
+    <T extends Cluster> T getCluster(Class<T> clusterClass);
 
     boolean hasCluster(Class<? extends Cluster> clusterClass);
 }

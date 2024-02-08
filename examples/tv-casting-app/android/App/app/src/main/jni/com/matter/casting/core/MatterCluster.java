@@ -7,5 +7,5 @@ public abstract class MatterCluster implements Cluster {
     public native Endpoint getEndpoint();
 
     @Override
-    public native Object getCommand(int commandId);
+    public native <T extends Command<?, ?>> T getCommand(Class<T> commandClass);
 }

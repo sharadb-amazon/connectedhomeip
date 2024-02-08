@@ -22,6 +22,7 @@
 #include "../support/CastingPlayerConverter-JNI.h"
 #include "../support/ErrorConverter-JNI.h"
 #include "../support/EndpointConverter-JNI.h"
+#include "../support/CommandConverter-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
 #include "core/CastingApp.h"             // from tv-casting-common
 
@@ -48,6 +49,33 @@ JNI_METHOD(jobject, getEndpoint)
     BaseCluster * cluster = ClusterJNIMgr().GetCluster(thiz);
     VerifyOrReturnValue(cluster != nullptr, 0, ChipLogError(AppServer, "Cluster-JNI::getEndpoint() cluster == nullptr"));
     return support::createJEndpoint(std::shared_ptr<Endpoint>(cluster->GetEndpoint().lock()));
+}
+
+JNI_METHOD(jobject, getCommand)
+(JNIEnv * env, jobject thiz, jclass commandClass)
+{
+    chip::DeviceLayer::StackLock lock;
+    ChipLogProgress(AppServer, "Cluster-JNI::getCommand() called");
+
+    jclass clsClass = env->GetObjectClass(commandClass); // Class<Class>
+    jmethodID mid = env->GetMethodID(clsClass, "getName", "()Ljava/lang/String;");
+    jstring jClassName = (jstring)env->CallObjectMethod(commandClass, mid);
+    const char* className = env->GetStringUTFChars(jClassName, nullptr);
+    ChipLogProgress(AppServer, "Cluster-JNI::getCommand() className: %s", className);
+    if (strcmp(className, "com.matter.casting.clusters.MatterCommands$ContentLauncherClusterLaunchURLCommand") == 0)
+    {
+        BaseCluster * cluster = ClusterJNIMgr().GetCluster(thiz);
+        VerifyOrReturnValue(cluster != nullptr, 0, ChipLogError(AppServer, "Cluster-JNI::getCommand() cluster == nullptr"));
+        void * command = cluster->GetCommand(chip::app::Clusters::ContentLauncher::Commands::LaunchURL::Id);
+
+        jobject commandJavaObject = support::createJCommand(command, 
+                            "com/matter/casting/clusters/MatterCommands$ContentLauncherClusterLaunchURLCommand");
+        env->ReleaseStringUTFChars(jClassName, className);
+        return commandJavaObject;
+    }
+
+    env->ReleaseStringUTFChars(jClassName, className);
+    return nullptr;
 }
 
 /**

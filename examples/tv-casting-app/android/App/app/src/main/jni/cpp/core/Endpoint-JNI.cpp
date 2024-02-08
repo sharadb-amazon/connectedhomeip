@@ -96,7 +96,8 @@ JNI_METHOD(jobject, getCluster)
     jmethodID mid = env->GetMethodID(clsClass, "getName", "()Ljava/lang/String;");
     jstring jClassName = (jstring)env->CallObjectMethod(clusterClass, mid);
     const char* className = env->GetStringUTFChars(jClassName, nullptr);
-    if (strcmp(className, "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster") == 0)
+    ChipLogProgress(AppServer, "Endpoint-JNI::getCluster() className: %s", className);
+    if (strcmp(className, "com.matter.casting.clusters.MatterClusters$ContentLauncherCluster") == 0)
     {
         matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster> 
             contentLauncherCluster = endpoint->GetCluster<matter::casting::clusters::content_launcher::ContentLauncherCluster>();

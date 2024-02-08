@@ -18,7 +18,6 @@
 package com.matter.casting.core;
 
 import com.matter.casting.support.DeviceTypeStruct;
-import com.matter.casting.support.UnsupportedClusterException;
 
 import java.util.List;
 
@@ -33,7 +32,7 @@ public interface Endpoint {
 
     CastingPlayer getCastingPlayer();
 
-    <T extends Cluster> T getCluster(Class<T> clusterClass) throws UnsupportedClusterException;
+    <T extends Cluster> T getCluster(Class<T> clusterClass);
 
     boolean hasCluster(Class<? extends Cluster> clusterClass);
 }
