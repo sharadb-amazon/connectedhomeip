@@ -481,6 +481,9 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
     {
         return CHIP_ERROR_INVALID_ARGUMENT;
     }
+    int cacheIndex = GetCachedVideoPlayerIndex(&targetVideoPlayerInfo);
+    VerifyOrReturnError(cacheIndex >= 0, CHIP_ERROR_INVALID_ARGUMENT);
+
     mOnConnectionSuccessClientCallback = onConnectionSuccess;
     mOnConnectionFailureClientCallback = onConnectionFailure;
     mOnNewOrUpdatedEndpoint            = onNewOrUpdatedEndpoint;
@@ -493,12 +496,13 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
         prevDeviceProxy->Disconnect();
     }
 
-    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = targetVideoPlayerInfo;
+    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = mCachedTargetVideoPlayerInfo[cacheIndex];
     uint32_t delay                                             = 0;
-    if (targetVideoPlayerInfo.IsAsleep())
+    if (CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.IsAsleep())
     {
         ChipLogProgress(AppServer, "CastingServer::VerifyOrEstablishConnection(): Sending WoL to sleeping VideoPlayer and waiting");
-        ReturnErrorOnFailure(CastingServer::GetInstance()->SendWakeOnLan(targetVideoPlayerInfo));
+        ReturnErrorOnFailure(
+            CastingServer::GetInstance()->SendWakeOnLan(CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo));
 
 #ifdef CHIP_DEVICE_CONFIG_STR_WAKE_UP_DELAY_SEC
         delay = CHIP_DEVICE_CONFIG_STR_WAKE_UP_DELAY_SEC * 1000;
@@ -509,6 +513,21 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
     chip::DeviceLayer::SystemLayer().CancelTimer(VerifyOrEstablishConnectionTask, nullptr);
     return chip::DeviceLayer::SystemLayer().StartTimer(chip::System::Clock::Milliseconds32(delay), VerifyOrEstablishConnectionTask,
                                                        nullptr);
+}
+
+int CastingServer::GetCachedVideoPlayerIndex(TargetVideoPlayerInfo * targetVideoPlayerInfo)
+{
+    if (targetVideoPlayerInfo != nullptr)
+    {
+        for (size_t i = 0; i < kMaxCachedVideoPlayers && mCachedTargetVideoPlayerInfo[i].IsInitialized(); i++)
+        {
+            if (mCachedTargetVideoPlayerInfo[i] == *targetVideoPlayerInfo)
+            {
+                return static_cast<int>(i);
+            }
+        }
+    }
+    return -1;
 }
 
 void CastingServer::VerifyOrEstablishConnectionTask(chip::System::Layer * aSystemLayer, void * context)
