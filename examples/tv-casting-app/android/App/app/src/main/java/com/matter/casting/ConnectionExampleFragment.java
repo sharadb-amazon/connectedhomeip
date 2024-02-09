@@ -129,19 +129,25 @@ public class ConnectionExampleFragment extends Fragment {
                                   Log.d(TAG, "CompletableFuture.thenRun() endpoints: " + endpoints);
                                   for(Endpoint endpoint: endpoints)
                                   {
-                                      MatterClusters.ContentLauncherCluster cluster = endpoint.getCluster(MatterClusters.ContentLauncherCluster.class);
-                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster: " + cluster);
-                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + cluster.getEndpoint());
-                                      MatterCommands.ContentLauncherClusterLaunchURLCommand command = cluster.getCommand(MatterCommands.ContentLauncherClusterLaunchURLCommand.class);
-                                      Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + command);
+                                      if(endpoint.hasCluster(MatterClusters.ContentLauncherCluster.class))
+                                      {
+                                          MatterClusters.ContentLauncherCluster cluster = endpoint.getCluster(MatterClusters.ContentLauncherCluster.class);
+                                          Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster: " + cluster);
+                                          Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + cluster.getEndpoint());
+                                          MatterCommands.ContentLauncherClusterLaunchURLCommand command = cluster.getCommand(MatterCommands.ContentLauncherClusterLaunchURLCommand.class);
+                                          if(command != null)
+                                          {
+                                              Log.d(TAG, "CompletableFuture.thenRun() endpoint.cluster.getEndpoint: " + command);
 
-                                      MatterCommands.ContentLauncherClusterLaunchURLRequest request = new MatterCommands.ContentLauncherClusterLaunchURLRequest();
-                                      request.contentURL = "testurl";
-                                      request.displayString = Optional.of("test string");
-                                      CompletableFuture<MatterCommands.ContentLauncherClusterResponse> responseFuture = command.invoke(request, null, 5000);
-                                      /*responseFuture.thenAccept(response -> {
-                                          Log.d(TAG, "Command CompletableFuture.thenAccept() response " + response);
-                                      });*/
+                                              MatterCommands.ContentLauncherClusterLaunchURLRequest request = new MatterCommands.ContentLauncherClusterLaunchURLRequest();
+                                              request.contentURL = "testurl";
+                                              request.displayString = Optional.of("test string");
+                                              CompletableFuture<MatterCommands.ContentLauncherClusterResponse> responseFuture = command.invoke(request, null, 5000);
+                                          /*responseFuture.thenAccept(response -> {
+                                            Log.d(TAG, "Command CompletableFuture.thenAccept() response " + response);
+                                           });*/
+                                          }
+                                      }
                                   }
 
                                   connectionFragmentNextButton.setEnabled(true);

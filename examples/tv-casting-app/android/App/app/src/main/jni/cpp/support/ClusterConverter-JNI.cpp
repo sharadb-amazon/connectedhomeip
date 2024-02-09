@@ -28,6 +28,7 @@ using namespace chip;
 jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster, const char * className)
 {
     ChipLogProgress(AppServer, "ClusterConverter-JNI.createJCluster() called");
+    VerifyOrReturnValue(cluster.get() != nullptr, nullptr, ChipLogError(AppServer, "ClusterConverter-JNI::createJCluster() cluster.get() == nullptr"));
     JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
 
     // Get a reference to the cluster's Java class

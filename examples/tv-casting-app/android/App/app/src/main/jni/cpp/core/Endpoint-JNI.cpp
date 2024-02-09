@@ -101,7 +101,7 @@ JNI_METHOD(jobject, getCluster)
     {
         matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster> 
             contentLauncherCluster = endpoint->GetCluster<matter::casting::clusters::content_launcher::ContentLauncherCluster>();
-
+            
         jobject clusterJavaObject = support::createJCluster(
                             contentLauncherCluster, 
                             "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster");
