@@ -28,21 +28,20 @@ using namespace chip;
 jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluster, const char * className)
 {
     ChipLogProgress(AppServer, "ClusterConverter-JNI.createJCluster() called");
-    VerifyOrReturnValue(cluster.get() != nullptr, nullptr, ChipLogError(AppServer, "ClusterConverter-JNI::createJCluster() cluster.get() == nullptr"));
+    VerifyOrReturnValue(cluster.get() != nullptr, nullptr,
+                        ChipLogError(AppServer, "ClusterConverter-JNI::createJCluster() cluster.get() == nullptr"));
     JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
 
     // Get a reference to the cluster's Java class
     jclass clusterJavaClass = env->FindClass(className);
     if (clusterJavaClass == nullptr)
     {
-        ChipLogError(AppServer,
-                     "ClusterConverter-JNI.createJCluster() could not locate cluster's Java class");
+        ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster() could not locate cluster's Java class");
         return nullptr;
     }
 
     // Get the constructor for the cluster's Java class
-    jmethodID constructor =
-        env->GetMethodID(clusterJavaClass, "<init>", "()V");
+    jmethodID constructor = env->GetMethodID(clusterJavaClass, "<init>", "()V");
     if (constructor == nullptr)
     {
         ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster() could not locate cluster's Java class constructor");
@@ -51,7 +50,7 @@ jobject createJCluster(matter::casting::memory::Strong<core::BaseCluster> cluste
 
     // Create a new instance of the cluster's Java class
     jobject jMatterCluster = nullptr;
-    jMatterCluster = env->NewObject(clusterJavaClass, constructor);
+    jMatterCluster         = env->NewObject(clusterJavaClass, constructor);
     if (jMatterCluster == nullptr)
     {
         ChipLogError(AppServer, "ClusterConverter-JNI.createJCluster(): Could not create cluster's Java object");

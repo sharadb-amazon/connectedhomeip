@@ -18,7 +18,7 @@
 package com.matter.casting.core;
 
 public interface Cluster {
-    Endpoint getEndpoint();
+  Endpoint getEndpoint();
 
-    <T extends Command<?, ?>> T getCommand(Class<T> commandClass);
+  <T extends Command<?, ?>> T getCommand(Class<T> commandClass);
 }

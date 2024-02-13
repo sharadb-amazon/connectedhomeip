@@ -18,21 +18,20 @@
 package com.matter.casting.core;
 
 import com.matter.casting.support.DeviceTypeStruct;
-
 import java.util.List;
 
 public interface Endpoint {
-    int getId();
+  int getId();
 
-    int getVendorId();
+  int getVendorId();
 
-    int getProductId();
+  int getProductId();
 
-    List<DeviceTypeStruct> getDeviceTypeList();
+  List<DeviceTypeStruct> getDeviceTypeList();
 
-    CastingPlayer getCastingPlayer();
+  CastingPlayer getCastingPlayer();
 
-    <T extends Cluster> T getCluster(Class<T> clusterClass);
+  <T extends Cluster> T getCluster(Class<T> clusterClass);
 
-    boolean hasCluster(Class<? extends Cluster> clusterClass);
+  boolean hasCluster(Class<? extends Cluster> clusterClass);
 }

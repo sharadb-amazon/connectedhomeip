@@ -23,11 +23,11 @@
 #include "../support/ClusterConverter-JNI.h"
 #include "../support/ErrorConverter-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
+#include "clusters/Clusters.h"           // from tv-casting-common
 #include "core/CastingApp.h"             // from tv-casting-common
 #include "core/CastingPlayer.h"          // from tv-casting-common
 #include "core/CastingPlayerDiscovery.h" // from tv-casting-common
-#include "core/Endpoint.h"          // from tv-casting-common
-#include "clusters/Clusters.h" // from tv-casting-common
+#include "core/Endpoint.h"               // from tv-casting-common
 
 #include <app/clusters/bindings/BindingManager.h>
 #include <app/server/Server.h>
@@ -92,19 +92,18 @@ JNI_METHOD(jobject, getCluster)
     Endpoint * endpoint = EndpointJNIMgr().GetEndpoint(thiz);
     VerifyOrReturnValue(endpoint != nullptr, 0, ChipLogError(AppServer, "Endpoint-JNI::getCluster() endpoint == nullptr"));
 
-    jclass clsClass = env->GetObjectClass(clusterClass); // Class<Class>
-    jmethodID mid = env->GetMethodID(clsClass, "getName", "()Ljava/lang/String;");
-    jstring jClassName = (jstring)env->CallObjectMethod(clusterClass, mid);
-    const char* className = env->GetStringUTFChars(jClassName, nullptr);
+    jclass clsClass        = env->GetObjectClass(clusterClass); // Class<Class>
+    jmethodID mid          = env->GetMethodID(clsClass, "getName", "()Ljava/lang/String;");
+    jstring jClassName     = (jstring) env->CallObjectMethod(clusterClass, mid);
+    const char * className = env->GetStringUTFChars(jClassName, nullptr);
     ChipLogProgress(AppServer, "Endpoint-JNI::getCluster() className: %s", className);
     if (strcmp(className, "com.matter.casting.clusters.MatterClusters$ContentLauncherCluster") == 0)
     {
-        matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster> 
+        matter::casting::memory::Strong<matter::casting::clusters::content_launcher::ContentLauncherCluster>
             contentLauncherCluster = endpoint->GetCluster<matter::casting::clusters::content_launcher::ContentLauncherCluster>();
-            
-        jobject clusterJavaObject = support::createJCluster(
-                            contentLauncherCluster, 
-                            "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster");
+
+        jobject clusterJavaObject =
+            support::createJCluster(contentLauncherCluster, "com/matter/casting/clusters/MatterClusters$ContentLauncherCluster");
         env->ReleaseStringUTFChars(jClassName, className);
         return clusterJavaObject;
     }
@@ -118,11 +117,12 @@ JNI_METHOD(jobject, getCluster)
  */
 Endpoint * EndpointJNI::GetEndpoint(jobject jEndpointObject)
 {
-    JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+    JNIEnv * env                 = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
     jclass endpointClass         = env->GetObjectClass(jEndpointObject);
     jfieldID _cppEndpointFieldId = env->GetFieldID(endpointClass, "_cppEndpoint", "J");
-    VerifyOrReturnValue(_cppEndpointFieldId != nullptr, nullptr, ChipLogError(AppServer, "Endpoint-JNI::GetEndpoint() _cppEndpointFieldId == nullptr"));
-    jlong _cppEndpointValue  = env->GetLongField(jEndpointObject, _cppEndpointFieldId);
+    VerifyOrReturnValue(_cppEndpointFieldId != nullptr, nullptr,
+                        ChipLogError(AppServer, "Endpoint-JNI::GetEndpoint() _cppEndpointFieldId == nullptr"));
+    jlong _cppEndpointValue = env->GetLongField(jEndpointObject, _cppEndpointFieldId);
     return reinterpret_cast<Endpoint *>(_cppEndpointValue);
 }
 

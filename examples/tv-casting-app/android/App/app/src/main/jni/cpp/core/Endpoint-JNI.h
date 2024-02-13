@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/Endpoint.h"          // from tv-casting-common
+#include "core/Endpoint.h" // from tv-casting-common
 
 #include <jni.h>
 

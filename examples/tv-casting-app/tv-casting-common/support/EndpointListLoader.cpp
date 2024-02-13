@@ -78,7 +78,7 @@ CHIP_ERROR EndpointListLoader::Load()
 
     VerifyOrReturnError(CastingPlayer::GetTargetCastingPlayer() != nullptr, CHIP_ERROR_INCORRECT_STATE);
 
-    int endpointIndex = -1;
+    int endpointIndex      = -1;
     bool isLoadingRequired = false;
     for (const auto & binding : chip::BindingTable::GetInstance())
     {
@@ -98,7 +98,7 @@ CHIP_ERROR EndpointListLoader::Load()
             {
                 // Read attributes and mEndpointAttributesList for (endpointIndex + 1)
                 ChipLogProgress(AppServer, "EndpointListLoader::Load Reading attributes for endpointId %d", endpointId);
-                isLoadingRequired = true;
+                isLoadingRequired                            = true;
                 mEndpointAttributesList[++endpointIndex].mId = endpointId;
                 ReadVendorId(&mEndpointAttributesList[endpointIndex]);
                 ReadProductId(&mEndpointAttributesList[endpointIndex]);
@@ -108,7 +108,7 @@ CHIP_ERROR EndpointListLoader::Load()
         }
     }
 
-    if(!isLoadingRequired)
+    if (!isLoadingRequired)
     {
         ChipLogProgress(AppServer, "EndpointListLoader::Load found no new endpoints to load");
         mPendingAttributeReads = 0;
@@ -121,7 +121,7 @@ CHIP_ERROR EndpointListLoader::Load()
 void EndpointListLoader::Complete()
 {
     ChipLogProgress(AppServer, "EndpointListLoader::Complete called with mPendingAttributeReads %lu", mPendingAttributeReads);
-    if(mPendingAttributeReads > 0)
+    if (mPendingAttributeReads > 0)
     {
         mPendingAttributeReads--;
     }
@@ -157,7 +157,8 @@ void EndpointListLoader::Complete()
         }
 
         // callback client OnCompleted
-        VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted, ChipLogError(AppServer, "EndpointListLoader::Complete mOnCompleted() not found"));
+        VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted,
+                       ChipLogError(AppServer, "EndpointListLoader::Complete mOnCompleted() not found"));
         CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(CHIP_NO_ERROR, CastingPlayer::GetTargetCastingPlayer());
     }
 }

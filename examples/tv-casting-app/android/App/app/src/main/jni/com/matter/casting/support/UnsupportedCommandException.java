@@ -17,15 +17,14 @@
 
 package com.matter.casting.support;
 
-public class UnsupportedCommandException extends Exception
-{
-    private static final long serialVersionUID = 1L;
+public class UnsupportedCommandException extends Exception {
+  private static final long serialVersionUID = 1L;
 
-    public UnsupportedCommandException() {
-        super();
-    }
+  public UnsupportedCommandException() {
+    super();
+  }
 
-    public UnsupportedCommandException(String message) {
-        super(message);
-    }
+  public UnsupportedCommandException(String message) {
+    super(message);
+  }
 }

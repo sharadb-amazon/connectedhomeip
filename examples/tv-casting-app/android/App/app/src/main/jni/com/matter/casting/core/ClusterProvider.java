@@ -18,7 +18,7 @@
 package com.matter.casting.core;
 
 public interface ClusterProvider {
-    <T extends Cluster> T getCluster(Class<T> clusterClass);
+  <T extends Cluster> T getCluster(Class<T> clusterClass);
 
-    boolean hasCluster(Class<? extends Cluster> clusterClass);
+  boolean hasCluster(Class<? extends Cluster> clusterClass);
 }

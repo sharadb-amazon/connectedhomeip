@@ -28,15 +28,15 @@ using namespace chip;
 jobject createJCommand(void * command, const char * className)
 {
     ChipLogProgress(AppServer, "CommandConverter-JNI.createJCommand() called");
-    VerifyOrReturnValue(command != nullptr, nullptr, ChipLogError(AppServer, "CommandConverter-JNI::createJCommand() command == nullptr"));
+    VerifyOrReturnValue(command != nullptr, nullptr,
+                        ChipLogError(AppServer, "CommandConverter-JNI::createJCommand() command == nullptr"));
     JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
 
     // Get a reference to the command's Java class
     jclass commandJavaClass = env->FindClass(className);
     if (commandJavaClass == nullptr)
     {
-        ChipLogError(AppServer,
-                     "CommandConverter-JNI.createJCommand() could not locate command's Java class");
+        ChipLogError(AppServer, "CommandConverter-JNI.createJCommand() could not locate command's Java class");
         return nullptr;
     }
 

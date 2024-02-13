@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/Command.h"          // from tv-casting-common
+#include "core/Command.h" // from tv-casting-common
 
 #include <jni.h>
 

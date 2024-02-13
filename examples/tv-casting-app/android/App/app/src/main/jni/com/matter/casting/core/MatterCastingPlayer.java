@@ -189,4 +189,8 @@ public class MatterCastingPlayer implements CastingPlayer {
   public CompletableFuture<Void> verifyOrEstablishConnection() {
     return verifyOrEstablishConnection(MIN_CONNECTION_TIMEOUT_SEC, null);
   }
+
+  /** Sets the internal connection state of this CastingPlayer to "disconnected" */
+  @Override
+  public native void disconnect();
 }

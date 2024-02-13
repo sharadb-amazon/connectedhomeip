@@ -1042,10 +1042,8 @@ vendorIDAttribute!.read(nil) { context, before, after, err in
 
 ### Subscriptions
 
-_{Complete Attribute subscription examples:
-[Linux](linux/simple-app-helper.cpp)}_
-
-_{Complete Attribute Read examples: [Linux](linux/simple-app-helper.cpp) |
+_{Complete Attribute subscription examples: [Linux](linux/simple-app-helper.cpp)
+|
 [iOS](darwin/TvCasting/TvCasting/MCMediaPlaybackSubscribeToCurrentStateExampleViewModel.swift)}_
 
 A Casting Client may subscribe to an attribute on an `Endpoint` of the

@@ -34,14 +34,12 @@ jobject createJEndpoint(matter::casting::memory::Strong<core::Endpoint> endpoint
     jclass matterEndpointJavaClass = env->FindClass("com/matter/casting/core/MatterEndpoint");
     if (matterEndpointJavaClass == nullptr)
     {
-        ChipLogError(AppServer,
-                     "EndpointConverter-JNI.createJEndpoint() could not locate MatterEndpoint Java class");
+        ChipLogError(AppServer, "EndpointConverter-JNI.createJEndpoint() could not locate MatterEndpoint Java class");
         return nullptr;
     }
 
     // Get the constructor for the com/matter/casting/core/MatterEndpoint Java class
-    jmethodID constructor =
-        env->GetMethodID(matterEndpointJavaClass, "<init>", "()V");
+    jmethodID constructor = env->GetMethodID(matterEndpointJavaClass, "<init>", "()V");
     if (constructor == nullptr)
     {
         ChipLogError(AppServer, "EndpointConverter-JNI.createJEndpoint() could not locate MatterEndpoint Java class constructor");
@@ -50,7 +48,7 @@ jobject createJEndpoint(matter::casting::memory::Strong<core::Endpoint> endpoint
 
     // Create a new instance of the MatterEndpoint Java class
     jobject jMatterEndpoint = nullptr;
-    jMatterEndpoint = env->NewObject(matterEndpointJavaClass, constructor);
+    jMatterEndpoint         = env->NewObject(matterEndpointJavaClass, constructor);
     if (jMatterEndpoint == nullptr)
     {
         ChipLogError(AppServer, "EndpointConverter-JNI.createJEndpoint(): Could not create MatterEndpoint Java object");

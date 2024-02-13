@@ -24,6 +24,15 @@ namespace matter {
 namespace casting {
 namespace core {
 
+/*class CommandContext
+{
+public:
+    jobject completableFuture;
+    ConnectCallback callback;
+    unsigned long long int commissioningWindowTimeoutSec;
+    EndpointFilter desiredEndpointFilter;
+};*/
+
 class CommandJNI
 {
 public:

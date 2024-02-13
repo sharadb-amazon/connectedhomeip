@@ -18,7 +18,7 @@
 
 #pragma once
 
-#include "core/BaseCluster.h"          // from tv-casting-common
+#include "core/BaseCluster.h" // from tv-casting-common
 
 #include <jni.h>
 

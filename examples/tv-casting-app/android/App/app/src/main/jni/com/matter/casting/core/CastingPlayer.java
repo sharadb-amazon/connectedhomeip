@@ -93,4 +93,6 @@ public interface CastingPlayer {
    *     CastingException will contain the error code and message from the CastingApp.
    */
   CompletableFuture<Void> verifyOrEstablishConnection();
+
+  void disconnect();
 }

@@ -20,10 +20,10 @@
 
 #include "../JNIDACProvider.h"
 #include "../support/CastingPlayerConverter-JNI.h"
-#include "../support/ErrorConverter-JNI.h"
 #include "../support/EndpointConverter-JNI.h"
+#include "../support/ErrorConverter-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
-#include "core/CastingApp.h"             // from tv-casting-common
+#include "core/CastingApp.h" // from tv-casting-common
 
 #include <app/clusters/bindings/BindingManager.h>
 #include <app/server/Server.h>
@@ -34,7 +34,8 @@
 using namespace chip;
 
 #define JNI_METHOD(RETURN, METHOD_NAME)                                                                                            \
-    extern "C" JNIEXPORT RETURN JNICALL Java_com_matter_casting_clusters_MatterCommands_ContentLauncherClusterLaunchURLCommand_##METHOD_NAME
+    extern "C" JNIEXPORT RETURN JNICALL                                                                                            \
+        Java_com_matter_casting_clusters_MatterCommands_ContentLauncherClusterLaunchURLCommand_##METHOD_NAME
 
 namespace matter {
 namespace casting {
@@ -55,11 +56,12 @@ JNI_METHOD(jobject, invoke)
  */
 void * CommandsJNI::GetCommand(jobject jCommandObject)
 {
-    JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+    JNIEnv * env                = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
     jclass commandClass         = env->GetObjectClass(jCommandObject);
     jfieldID _cppCommandFieldId = env->GetFieldID(commandClass, "_cppCommand", "J");
-    VerifyOrReturnValue(_cppCommandFieldId != nullptr, nullptr, ChipLogError(AppServer, "Commands-JNI::GetCommand() _cppCommand == nullptr"));
-    jlong _cppCommandValue  = env->GetLongField(jCommandObject, _cppCommandFieldId);
+    VerifyOrReturnValue(_cppCommandFieldId != nullptr, nullptr,
+                        ChipLogError(AppServer, "Commands-JNI::GetCommand() _cppCommand == nullptr"));
+    jlong _cppCommandValue = env->GetLongField(jCommandObject, _cppCommandFieldId);
     return reinterpret_cast<void *>(_cppCommandValue);
 }
 
