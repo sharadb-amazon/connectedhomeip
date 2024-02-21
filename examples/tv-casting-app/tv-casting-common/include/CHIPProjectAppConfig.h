@@ -79,6 +79,8 @@
 // delay (in sec) before which we assume undiscovered cached players may be in STR mode
 #define CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC 5
 
+#define CHIP_DEVICE_CONFIG_DYNAMIC_SERVER 0
+
 // Include the CHIPProjectConfig from config/standalone
 // Add this at the end so that we can hit our #defines first
 #include <CHIPProjectConfig.h>
