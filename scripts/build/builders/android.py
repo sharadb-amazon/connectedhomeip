@@ -95,6 +95,7 @@ class AndroidApp(Enum):
             gn_args["chip_config_network_layer_ble"] = False
         elif self == AndroidApp.TV_CASTING_APP:
             gn_args["chip_config_network_layer_ble"] = False
+            gn_args["chip_build_controller_dynamic_server"] = False
         elif self == AndroidApp.VIRTUAL_DEVICE_APP:
             gn_args["chip_config_network_layer_ble"] = True
         elif self == AndroidApp.CHIP_TOOL:
@@ -465,11 +466,12 @@ class AndroidBuilder(Builder):
                     self.root, "examples/", self.app.ExampleName(), "android/App/app/libs"
                 )
 
-                libs = ["libc++_shared.so", "libTvCastingApp.so"]
+                libs = ["libc++_shared.so", "libCHIPController.so", "libTvCastingApp.so"]
 
                 jars = {
                     "AndroidPlatform.jar": "third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar",
                     "CHIPAppServer.jar": "third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar",
+                    "CHIPController.jar": "third_party/connectedhomeip/src/controller/java/CHIPController.jar",
                     "TvCastingApp.jar": "TvCastingApp.jar",
                 }
 
@@ -546,6 +548,15 @@ class AndroidBuilder(Builder):
                     ),
                     "tv-sever-content-app-debug.apk": os.path.join(
                         self.output_dir, "content-app", "outputs", "apk", "debug", "content-app-debug.apk"
+                    )
+                }
+            elif self.app == AndroidApp.TV_CASTING_APP:
+                outputs = {
+                    self.app.AppName() + "app-debug.apk": os.path.join(
+                        self.output_dir, "tv-casting-app", "app", "outputs", "apk", "debug", "app-debug.apk"
+                    ),
+                    "CHIPController.jar": os.path.join(
+                        self.output_dir, "lib", "src/controller/java/CHIPController.jar"
                     )
                 }
             elif self.app == AndroidApp.VIRTUAL_DEVICE_APP:
