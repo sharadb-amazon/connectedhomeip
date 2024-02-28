@@ -22,10 +22,10 @@
 #include <lib/support/JniReferences.h>
 #include <lib/support/JniTypeWrappers.h>
 
-class CallbackBaseJNI
+class MatterCallbackBaseJNI
 {
 public:
-    CallbackBaseJNI(const char * methodSignature) { mMethodSignature = methodSignature; }
+    MatterCallbackBaseJNI(const char * methodSignature) { mMethodSignature = methodSignature; }
     CHIP_ERROR SetUp(JNIEnv * env, jobject inHandler);
 
 protected:
@@ -36,26 +36,26 @@ protected:
     const char * mMethodSignature = nullptr;
 };
 
-class FailureHandlerJNI : public CallbackBaseJNI
+class MatterFailureHandlerJNI : public MatterCallbackBaseJNI
 {
 public:
-    FailureHandlerJNI() : CallbackBaseJNI("(ILjava/lang/String;)V") {}
+    MatterFailureHandlerJNI() : MatterCallbackBaseJNI("(ILjava/lang/String;)V") {}
     void Handle(CHIP_ERROR err);
 };
 
 template <typename T>
-class SuccessHandlerJNI : public CallbackBaseJNI
+class MatterSuccessHandlerJNI : public MatterCallbackBaseJNI
 {
 public:
-    SuccessHandlerJNI(const char * methodSignature) : CallbackBaseJNI(methodSignature) {}
+    MatterSuccessHandlerJNI(const char * methodSignature) : MatterCallbackBaseJNI(methodSignature) {}
 
-    virtual ~SuccessHandlerJNI() = 0;
+    virtual ~MatterSuccessHandlerJNI() = 0;
 
     virtual jobject ConvertToJObject(T responseData) = 0;
 
     void Handle(T responseData)
     {
-        ChipLogProgress(AppServer, "SuccessHandlerJNI::Handle called");
+        ChipLogProgress(AppServer, "MatterSuccessHandlerJNI::Handle called");
 
         JNIEnv * env          = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
         jobject jResponseData = ConvertToJObject(responseData);
@@ -68,18 +68,18 @@ public:
     exit:
         if (err != CHIP_NO_ERROR)
         {
-            ChipLogError(AppServer, "SuccessHandlerJNI::Handle status error: %s", err.AsString());
+            ChipLogError(AppServer, "MatterSuccessHandlerJNI::Handle status error: %s", err.AsString());
         }
     }
 };
 
 template <typename T>
-SuccessHandlerJNI<T>::~SuccessHandlerJNI(){};
+MatterSuccessHandlerJNI<T>::~MatterSuccessHandlerJNI(){};
 
-class DeviceProxySuccessHandlerJNI
-    : public SuccessHandlerJNI<chip::app::Clusters::MediaPlayback::Attributes::Duration::TypeInfo::DecodableArgType>
+class DeviceProxyMatterSuccessHandlerJNI
+    : public MatterSuccessHandlerJNI<jlong>
 {
 public:
-    DeviceProxySuccessHandlerJNI() : SuccessHandlerJNI("(Ljava/lang/Long;)V") {}
-    jobject ConvertToJObject(chip::app::Clusters::MediaPlayback::Attributes::Duration::TypeInfo::DecodableArgType responseData);
+    DeviceProxyMatterSuccessHandlerJNI() : MatterSuccessHandlerJNI("(Ljava/lang/Long;)V") {}
+    jobject ConvertToJObject(jlong responseData);
 };

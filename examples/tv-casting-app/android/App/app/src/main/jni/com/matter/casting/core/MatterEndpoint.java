@@ -20,17 +20,14 @@ import android.util.Log;
 
 import com.chip.casting.MatterError;
 import com.matter.casting.support.DeviceTypeStruct;
-//import com.matter.casting.support.FailureCallback;
-//import com.matter.casting.support.SuccessCallback;
-
+import com.matter.casting.support.FailureCallback;
+import com.matter.casting.support.SuccessCallback;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-//import chip.devicecontroller.GetConnectedDeviceCallbackJni;
 
 public class MatterEndpoint implements Endpoint {
   private static final String TAG = MatterEndpoint.class.getSimpleName();
@@ -51,23 +48,11 @@ public class MatterEndpoint implements Endpoint {
   @Override
   public native CastingPlayer getCastingPlayer();
 
-  /*protected native void getDeviceProxy(GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback callback);
+  protected native void getDeviceProxy(SuccessCallback<Long> successCallback, FailureCallback failureCallback);
 
   protected CompletableFuture<Long> getDeviceProxy()
   {
     CompletableFuture<Long> future = new CompletableFuture<>();
-    getDeviceProxy(new GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback() {
-      @Override
-      public void onDeviceConnected(long deviceProxyPtr) {
-        future.complete(deviceProxyPtr);
-      }
-
-      @Override
-      public void onConnectionFailure(long nodeId, Exception error) {
-        future.completeExceptionally(error);
-      }
-    });
-
     getDeviceProxy(new SuccessCallback<Long>() {
       @Override
       public void handle(Long deviceProxyPtr) {
@@ -80,6 +65,17 @@ public class MatterEndpoint implements Endpoint {
       }
     });
 
+/*    getDeviceProxy(new GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback() {
+      @Override
+      public void onDeviceConnected(long deviceProxyPtr) {
+        future.complete(deviceProxyPtr);
+      }
+
+      @Override
+      public void onConnectionFailure(long nodeId, Exception error) {
+        future.completeExceptionally(error);
+      }
+    });*/
     return future;
   }
 
@@ -94,7 +90,7 @@ public class MatterEndpoint implements Endpoint {
       Log.e(TAG, "getDeviceProxy exception" + e);
     }
     Log.d(TAG, "getDeviceProxy ending");
-  }*/
+  }
 
   @Override
   public native <T extends Cluster> T getCluster(Class<T> clusterClass);

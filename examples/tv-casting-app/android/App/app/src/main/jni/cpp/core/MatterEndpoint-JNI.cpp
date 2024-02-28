@@ -19,7 +19,7 @@
 #include "MatterEndpoint-JNI.h"
 
 #include "../JNIDACProvider.h"
-#include "../support/Callback-JNI.h"
+#include "../support/MatterCallback-JNI.h"
 #include "../support/Converters-JNI.h"
 #include "../support/RotatingDeviceIdUniqueIdProvider-JNI.h"
 #include "clusters/Clusters.h"           // from tv-casting-common
@@ -30,8 +30,6 @@
 
 #include <app/clusters/bindings/BindingManager.h>
 #include <app/server/Server.h>
-#include <controller/java/AndroidCallbacks.h>
-//#include "AndroidCallbacks.h"
 #include <jni.h>
 #include <lib/support/JniReferences.h>
 #include <lib/support/JniTypeWrappers.h>
@@ -96,12 +94,12 @@ JNI_METHOD(void, getDeviceProxy)
     Endpoint * endpoint = support::convertEndpointFromJavaToCpp(thiz);
     VerifyOrReturn(endpoint != nullptr, ChipLogError(AppServer, "MatterEndpoint-JNI::getDeviceProxy() endpoint == nullptr"));
 
-    chip::Controller::GetConnectedDeviceCallback * connectedDeviceCallback = reinterpret_cast<chip::Controller::GetConnectedDeviceCallback *>(callbackHandle);
+    /*chip::Controller::GetConnectedDeviceCallback * connectedDeviceCallback = reinterpret_cast<chip::Controller::GetConnectedDeviceCallback *>(callbackHandle);
 
     chip::NodeId nodeId = endpoint->GetCastingPlayer()->GetNodeId();
 
     chip::Server::GetInstance().GetCASESessionManager()->FindOrEstablishSession(
-        chip::ScopedNodeId(endpoint->GetCastingPlayer()->GetNodeId(), endpoint->GetCastingPlayer()->GetFabricIndex()), &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);
+        chip::ScopedNodeId(endpoint->GetCastingPlayer()->GetNodeId(), endpoint->GetCastingPlayer()->GetFabricIndex()), &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);*/
 
     //endpoint->GetCastingPlayer()->FindOrEstablishSession(&nodeId, &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);
 /*                    

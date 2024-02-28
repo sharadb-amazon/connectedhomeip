@@ -16,8 +16,12 @@
  */
 package com.matter.casting.core;
 
+import android.util.Log;
+
 import com.matter.casting.support.MatterError;
 import java.util.List;
+
+import chip.devicecontroller.ChipDeviceController;
 
 /**
  * MatterCastingPlayerDiscovery provides an API to control Matter Casting Player discovery over
@@ -34,6 +38,16 @@ public final class MatterCastingPlayerDiscovery implements CastingPlayerDiscover
     if (matterCastingPlayerDiscoveryInstance == null) {
       matterCastingPlayerDiscoveryInstance = new MatterCastingPlayerDiscovery();
     }
+
+    try
+    {
+      ChipDeviceController c = new ChipDeviceController(null);
+    }
+    catch(Throwable t)
+    {
+      Log.d(TAG, "Caught: " + t);
+    }
+
     return matterCastingPlayerDiscoveryInstance;
   };
 

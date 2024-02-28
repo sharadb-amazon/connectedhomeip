@@ -16,11 +16,11 @@
  *
  */
 
-#include "Callback-JNI.h"
+#include "MatterCallback-JNI.h"
 
-CHIP_ERROR CallbackBaseJNI::SetUp(JNIEnv * env, jobject inHandler)
+CHIP_ERROR MatterCallbackBaseJNI::SetUp(JNIEnv * env, jobject inHandler)
 {
-    ChipLogProgress(AppServer, "CallbackBaseJNI::SetUp called");
+    ChipLogProgress(AppServer, "MatterCallbackBaseJNI::SetUp called");
     CHIP_ERROR err = CHIP_NO_ERROR;
 
     mObject = env->NewGlobalRef(inHandler);
@@ -42,16 +42,16 @@ CHIP_ERROR CallbackBaseJNI::SetUp(JNIEnv * env, jobject inHandler)
 exit:
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogError(AppServer, "CallbackBaseJNI::SetUp error: %s", err.AsString());
+        ChipLogError(AppServer, "MatterCallbackBaseJNI::SetUp error: %s", err.AsString());
         return err;
     }
 
     return err;
 }
 
-void FailureHandlerJNI::Handle(CHIP_ERROR callbackErr)
+void MatterFailureHandlerJNI::Handle(CHIP_ERROR callbackErr)
 {
-    ChipLogProgress(AppServer, "FailureHandlerJNI called with %" CHIP_ERROR_FORMAT, callbackErr.Format());
+    ChipLogProgress(AppServer, "MatterFailureHandlerJNI called with %" CHIP_ERROR_FORMAT, callbackErr.Format());
 
     JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
     chip::UtfString jniCallbackErrString(env, callbackErr.AsString());
@@ -64,6 +64,27 @@ void FailureHandlerJNI::Handle(CHIP_ERROR callbackErr)
 exit:
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogError(AppServer, "FailureHandlerJNI status error: %s", err.AsString());
+        ChipLogError(AppServer, "MatterFailureHandlerJNI status error: %s", err.AsString());
     }
+}
+
+jobject ConvertToLongJObject(jlong responseData)
+{
+    JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+
+    jclass responseTypeClass = env->FindClass("java/lang/Long");
+    if (responseTypeClass == nullptr)
+    {
+        ChipLogError(AppServer, "ConvertToJObject: Class for Response Type not found!");
+        return nullptr;
+    }
+
+    jmethodID constructor = env->GetMethodID(responseTypeClass, "<init>", "(J)V");
+    return env->NewObject(responseTypeClass, constructor, responseData);
+}
+
+jobject DeviceProxyMatterSuccessHandlerJNI::ConvertToJObject(jlong responseData)
+{
+    ChipLogProgress(AppServer, "DeviceProxyMatterSuccessHandlerJNI::ConvertToJObject called");
+    return ConvertToLongJObject(responseData);
 }
