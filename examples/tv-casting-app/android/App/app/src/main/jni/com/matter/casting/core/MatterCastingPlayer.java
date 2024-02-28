@@ -16,8 +16,6 @@
  */
 package com.matter.casting.core;
 
-import android.util.Log;
-
 import com.matter.casting.support.EndpointFilter;
 import java.net.InetAddress;
 import java.util.List;

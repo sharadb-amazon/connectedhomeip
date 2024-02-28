@@ -47,7 +47,7 @@ public final class MatterCastingPlayerDiscovery implements CastingPlayerDiscover
     {
       Log.d(TAG, "Caught: " + t);
     }
-    
+
     return matterCastingPlayerDiscoveryInstance;
   };
 

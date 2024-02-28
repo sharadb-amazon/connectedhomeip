@@ -465,7 +465,7 @@ class AndroidBuilder(Builder):
                     self.root, "examples/", self.app.ExampleName(), "android/App/app/libs"
                 )
 
-                libs = ["libc++_shared.so", "libTvCastingApp.so"]
+                libs = ["libc++_shared.so", "libCHIPController.so", "libTvCastingApp.so"]
 
                 jars = {
                     "AndroidPlatform.jar": "third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar",
