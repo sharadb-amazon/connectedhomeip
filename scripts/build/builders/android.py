@@ -470,6 +470,9 @@ class AndroidBuilder(Builder):
                 jars = {
                     "AndroidPlatform.jar": "third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar",
                     "CHIPAppServer.jar": "third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar",
+                    "CHIPController.jar": "third_party/connectedhomeip/src/controller/java/CHIPController.jar",
+                    "CHIPClusters.jar": "third_party/connectedhomeip/src/controller/java/CHIPClusters.jar",
+                    "CHIPClusterID.jar": "third_party/connectedhomeip/src/controller/java/CHIPClusterID.jar",
                     "TvCastingApp.jar": "TvCastingApp.jar",
                 }
 
