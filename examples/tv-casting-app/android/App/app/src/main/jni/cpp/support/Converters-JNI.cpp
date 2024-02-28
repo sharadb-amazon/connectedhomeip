@@ -263,6 +263,20 @@ void * convertCommandFromJavaToCpp(jobject jCommandObject)
     return reinterpret_cast<void *>(_cppCommandValue);
 }
 
+jobject convertLongFromCppToJava(uint64_t responseData)
+{
+    JNIEnv * env = JniReferences::GetInstance().GetEnvForCurrentThread();
+
+    jclass responseTypeClass = env->FindClass("java/lang/Long");
+    if (responseTypeClass == nullptr)
+    {
+        ChipLogError(AppServer, "convertLongFromCppToJava: Class for Response Type not found!");
+        return nullptr;
+    }
+
+    jmethodID constructor = env->GetMethodID(responseTypeClass, "<init>", "(J)V");
+    return env->NewObject(responseTypeClass, constructor, responseData);
+}
 }; // namespace support
 }; // namespace casting
 }; // namespace matter

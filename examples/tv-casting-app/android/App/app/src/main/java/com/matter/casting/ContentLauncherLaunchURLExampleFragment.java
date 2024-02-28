@@ -117,7 +117,7 @@ public class ContentLauncherLaunchURLExampleFragment extends Fragment {
               ((EditText) getView().findViewById(R.id.contentDisplayStringEditText))
                   .getText()
                   .toString();
-          CompletableFuture<MatterCommands.ContentLauncherClusterResponse> responseFuture =
+          /*CompletableFuture<MatterCommands.ContentLauncherClusterResponse> responseFuture =
               command.invoke(request, 5000);
           responseFuture
               .thenAccept(
@@ -138,7 +138,9 @@ public class ContentLauncherLaunchURLExampleFragment extends Fragment {
                         .runOnUiThread(
                             () -> launchUrlStatus.setText("Command failure: " + exc.getMessage()));
                     return null;
-                  });
+                  });*/
+
+            endpoint.testGetCluster();
         };
 
     return inflater.inflate(R.layout.fragment_content_launcher, container, false);

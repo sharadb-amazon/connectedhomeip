@@ -1,5 +1,5 @@
 /*
- *   Copyright (c) 2020-24 Project CHIP Authors
+ *   Copyright (c) 2022 Project CHIP Authors
  *   All rights reserved.
  *
  *   Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,28 +13,24 @@
  *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
+ *
  */
+package com.matter.casting.support;
 
-package com.matter.casting.core;
+import android.util.Log;
 
-import com.matter.casting.support.DeviceTypeStruct;
-import java.util.List;
+import com.chip.casting.MatterError;
 
-public interface Endpoint {
-  int getId();
+public abstract class FailureCallback {
+  private static final String TAG = FailureCallback.class.getSimpleName();
 
-  int getVendorId();
+  public abstract void handle(com.chip.casting.MatterError err);
 
-  int getProductId();
-
-  List<DeviceTypeStruct> getDeviceTypeList();
-
-  CastingPlayer getCastingPlayer();
-
-  <T extends Cluster> T getCluster(Class<T> clusterClass);
-
-  boolean hasCluster(Class<? extends Cluster> clusterClass);
-
-  void testGetCluster();
-
+  protected final void handleInternal(int errorCode, String errorMessage) {
+    try {
+      handle(new MatterError(errorCode, errorMessage));
+    } catch (Throwable t) {
+      Log.e(TAG, "FailureCallback::Caught an unhandled Throwable from the client: " + t);
+    }
+  }
 }

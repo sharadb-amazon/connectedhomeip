@@ -70,6 +70,8 @@ jobject convertCommandFromCppToJava(void * command, const char * className);
 
 void * convertCommandFromJavaToCpp(jobject jCommandObject);
 
+jobject convertLongFromCppToJava(uint64_t responseData);
+
 }; // namespace support
 }; // namespace casting
 }; // namespace matter

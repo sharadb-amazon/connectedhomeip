@@ -557,7 +557,15 @@ class AndroidBuilder(Builder):
                     ),
                     "CHIPController.jar": os.path.join(
                         self.output_dir, "lib", "src/controller/java/CHIPController.jar"
-                    )
+                    ),
+                    "jni/%s/libCHIPController.so"
+                    % self.board.AbiName(): os.path.join(
+                        self.output_dir,
+                        "lib",
+                        "jni",
+                        self.board.AbiName(),
+                        "libCHIPController.so",
+                    ),
                 }
             elif self.app == AndroidApp.VIRTUAL_DEVICE_APP:
                 outputs = {
