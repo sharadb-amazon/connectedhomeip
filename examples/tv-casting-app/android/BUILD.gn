@@ -53,7 +53,8 @@ shared_library("jni") {
   deps = [
     "${chip_root}/examples/tv-casting-app/tv-casting-common",
     "${chip_root}/src/app/server/java:jni",
-    "${chip_root}/src/controller/java:jni",
+
+    #"${chip_root}/src/controller/java:jni",
     "${chip_root}/src/lib",
     "${chip_root}/third_party/inipp",
   ]
@@ -135,7 +136,8 @@ group("default") {
     ":jni",
     "${chip_root}/src/app/server/java",
     "${chip_root}/src/controller/java:java",
-    "${chip_root}/src/controller/java:jni",
+
+    #"${chip_root}/src/controller/java:jni",
     "${chip_root}/src/platform/android:java",
   ]
 }

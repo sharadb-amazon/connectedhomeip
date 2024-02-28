@@ -20,6 +20,8 @@ package com.matter.casting.core;
 import android.content.Context;
 import android.util.Log;
 import chip.appserver.ChipAppServer;
+import chip.devicecontroller.ChipDeviceController;
+import chip.devicecontroller.ChipStructs;
 import chip.platform.AndroidBleManager;
 import chip.platform.AndroidChipPlatform;
 import chip.platform.ChipMdnsCallbackImpl;
@@ -63,6 +65,15 @@ public final class CastingApp {
     Log.i(TAG, "CastingApp.initialize called");
     if (mState != CastingAppState.UNINITIALIZED) {
       return MatterError.CHIP_ERROR_INCORRECT_STATE;
+    }
+
+    try
+    {
+      ChipDeviceController c = new ChipDeviceController(null);
+    }
+    catch(Throwable t)
+    {
+      Log.d(TAG, "Caught: " + t);
     }
 
     this.appParameters = appParameters;
