@@ -466,7 +466,8 @@ class AndroidBuilder(Builder):
                     self.root, "examples/", self.app.ExampleName(), "android/App/app/libs"
                 )
 
-                libs = ["libc++_shared.so", "libCHIPController.so", "libTvCastingApp.so"]
+                #libs = ["libc++_shared.so", "libCHIPController.so", "libTvCastingApp.so"]
+                libs = ["libc++_shared.so", "libTvCastingApp.so"]
 
                 jars = {
                     "AndroidPlatform.jar": "third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar",
@@ -555,17 +556,17 @@ class AndroidBuilder(Builder):
                     self.app.AppName() + "app-debug.apk": os.path.join(
                         self.output_dir, "tv-casting-app", "app", "outputs", "apk", "debug", "app-debug.apk"
                     ),
-                    "CHIPController.jar": os.path.join(
-                        self.output_dir, "lib", "src/controller/java/CHIPController.jar"
-                    ),
-                    "jni/%s/libCHIPController.so"
-                    % self.board.AbiName(): os.path.join(
-                        self.output_dir,
-                        "lib",
-                        "jni",
-                        self.board.AbiName(),
-                        "libCHIPController.so",
-                    ),
+                    #"CHIPController.jar": os.path.join(
+                    #    self.output_dir, "lib", "third_party/connectedhomeip/src/controller/java/CHIPController.jar"
+                    #),
+                    #"lib/jni/%s/libCHIPController.so"
+                    #% self.board.AbiName(): os.path.join(
+                    #    self.output_dir,
+                    #    "lib",
+                    #    "jni",
+                    #    self.board.AbiName(),
+                    #    "libCHIPController.so",
+                    #),
                 }
             elif self.app == AndroidApp.VIRTUAL_DEVICE_APP:
                 outputs = {

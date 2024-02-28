@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import chip.devicecontroller.GetConnectedDeviceCallbackJni;
+//import chip.devicecontroller.GetConnectedDeviceCallbackJni;
 
 public class MatterEndpoint implements Endpoint {
   private static final String TAG = MatterEndpoint.class.getSimpleName();
@@ -51,7 +51,7 @@ public class MatterEndpoint implements Endpoint {
   @Override
   public native CastingPlayer getCastingPlayer();
 
-  protected native void getDeviceProxy(GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback callback);
+  /*protected native void getDeviceProxy(GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback callback);
 
   protected CompletableFuture<Long> getDeviceProxy()
   {
@@ -68,7 +68,7 @@ public class MatterEndpoint implements Endpoint {
       }
     });
 
-    /*getDeviceProxy(new SuccessCallback<Long>() {
+    getDeviceProxy(new SuccessCallback<Long>() {
       @Override
       public void handle(Long deviceProxyPtr) {
         future.complete(deviceProxyPtr);
@@ -78,7 +78,7 @@ public class MatterEndpoint implements Endpoint {
       public void handle(MatterError err) {
         future.completeExceptionally(new RuntimeException("Could not get CastingPlayer device proxy ptr: " + err));
       }
-    });*/
+    });
 
     return future;
   }
@@ -94,7 +94,7 @@ public class MatterEndpoint implements Endpoint {
       Log.e(TAG, "getDeviceProxy exception" + e);
     }
     Log.d(TAG, "getDeviceProxy ending");
-  }
+  }*/
 
   @Override
   public native <T extends Cluster> T getCluster(Class<T> clusterClass);
@@ -120,9 +120,5 @@ public class MatterEndpoint implements Endpoint {
   @Override
   public int hashCode() {
     return Objects.hash(getId());
-  }
-
-  static {
-    System.loadLibrary("CHIPController");
   }
 }
