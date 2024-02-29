@@ -91,7 +91,13 @@ public class MatterEndpoint implements Endpoint {
     try {
       Long deviceProxy = deviceProxyFuture.get(5, TimeUnit.SECONDS);
       Log.d(TAG, "getDeviceProxy returned value " + deviceProxy);
+
+      System.out.println("CHIPController loading");
+      System.loadLibrary("CHIPController");
+      System.out.println("CHIPController loaded");
+
       ChipClusters.ContentLauncherCluster cluster = new ChipClusters.ContentLauncherCluster(deviceProxy, getId());
+      Log.d(TAG, "Content launcher cluster created " + cluster);
       cluster.launchURL(new ChipClusters.ContentLauncherCluster.LauncherResponseCallback() {
         @Override
         public void onSuccess(Integer status, Optional<String> data) {

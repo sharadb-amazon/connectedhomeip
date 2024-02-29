@@ -81,6 +81,7 @@ android_library("java") {
     ":android",
     "${chip_root}/src/app/server/java",
     "${chip_root}/src/controller/java",
+    "${chip_root}/src/controller/java:java",
     "${chip_root}/src/platform/android:java",
     "${chip_root}/third_party/android_deps:annotation",
   ]
@@ -153,6 +154,7 @@ group("default") {
     ":jni",
     "${chip_root}/src/app/server/java",
     "${chip_root}/src/controller/java",
+    "${chip_root}/src/controller/java:java",
     "${chip_root}/src/platform/android:java",
   ]
 }

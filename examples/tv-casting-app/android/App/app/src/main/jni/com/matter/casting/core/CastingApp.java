@@ -158,8 +158,6 @@ public final class CastingApp {
   private native MatterError finishStartup();
 
   static {
-    //System.loadLibrary("CHIPController");
-    //System.out.println("CHIPController loaded");
     System.loadLibrary("TvCastingApp");
     System.out.println("TvCastingApp loaded");
   }
