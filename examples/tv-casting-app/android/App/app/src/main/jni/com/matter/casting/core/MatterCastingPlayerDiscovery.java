@@ -33,21 +33,10 @@ public final class MatterCastingPlayerDiscovery implements CastingPlayerDiscover
   private static final String TAG = MatterCastingPlayerDiscovery.class.getSimpleName();
   private static MatterCastingPlayerDiscovery matterCastingPlayerDiscoveryInstance;
 
-  // Methods:
   public static MatterCastingPlayerDiscovery getInstance() {
     if (matterCastingPlayerDiscoveryInstance == null) {
       matterCastingPlayerDiscoveryInstance = new MatterCastingPlayerDiscovery();
     }
-
-    try
-    {
-      ChipDeviceController c = new ChipDeviceController(null);
-    }
-    catch(Throwable t)
-    {
-      Log.d(TAG, "Caught: " + t);
-    }
-
     return matterCastingPlayerDiscoveryInstance;
   };
 

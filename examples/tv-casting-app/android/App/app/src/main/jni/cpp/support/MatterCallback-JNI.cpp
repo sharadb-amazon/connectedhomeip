@@ -26,13 +26,13 @@ CHIP_ERROR MatterCallbackBaseJNI::SetUp(JNIEnv * env, jobject inHandler)
     mObject = env->NewGlobalRef(inHandler);
     VerifyOrExit(mObject != nullptr, ChipLogError(AppServer, "Failed to NewGlobalRef for handler object"));
 
-    mClazz = env->GetObjectClass(mObject);
+    mClazz = env->GetObjectClass(inHandler);
     VerifyOrExit(mClazz != nullptr, ChipLogError(AppServer, "Failed to get handler Java class"));
 
     mSuperClazz = env->GetSuperclass(mClazz);
     VerifyOrExit(mSuperClazz != nullptr, ChipLogError(AppServer, "Failed to get handler's parent's Java class"));
 
-    mMethod = env->GetMethodID(mSuperClazz, "handleInternal", mMethodSignature);
+    mMethod = env->GetMethodID(mClazz, "handleInternal", mMethodSignature);
     if (mMethod == nullptr)
     {
         ChipLogError(AppServer, "Failed to access 'handleInternal' method with signature %s", mMethodSignature);

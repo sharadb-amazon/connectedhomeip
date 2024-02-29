@@ -31,8 +31,8 @@ namespace core {
 struct SessionContextJNI
 {
 public:
-    Endpoint *endpoint;
-    jobject completableFuture;
+    jobject successHandler;
+    jobject failureHandler;
 };
 
 class MatterEndpointJNI

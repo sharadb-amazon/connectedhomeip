@@ -87,12 +87,19 @@ JNI_METHOD(jobject, getCastingPlayer)
 }
 
 JNI_METHOD(void, getDeviceProxy)
-(JNIEnv * env, jobject thiz, jobject callbackHandle)
+(JNIEnv * env, jobject thiz, jobject jSuccessHandler, jobject jFailureHandler)
 {
     chip::DeviceLayer::StackLock lock;
     ChipLogProgress(AppServer, "MatterEndpoint-JNI::getDeviceProxy() called");
     Endpoint * endpoint = support::convertEndpointFromJavaToCpp(thiz);
     VerifyOrReturn(endpoint != nullptr, ChipLogError(AppServer, "MatterEndpoint-JNI::getDeviceProxy() endpoint == nullptr"));
+
+    SessionContextJNI * context         = new SessionContextJNI();
+    context->successHandler = jSuccessHandler;
+    context->failureHandler = jFailureHandler;
+
+    DeviceProxyMatterSuccessHandlerJNI successHandler;
+    successHandler.SetUp(env, jSuccessHandler);
 
     /*chip::Controller::GetConnectedDeviceCallback * connectedDeviceCallback = reinterpret_cast<chip::Controller::GetConnectedDeviceCallback *>(callbackHandle);
 
@@ -102,39 +109,30 @@ JNI_METHOD(void, getDeviceProxy)
         chip::ScopedNodeId(endpoint->GetCastingPlayer()->GetNodeId(), endpoint->GetCastingPlayer()->GetFabricIndex()), &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);*/
 
     //endpoint->GetCastingPlayer()->FindOrEstablishSession(&nodeId, &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);
-/*                    
+    endpoint->GetCastingPlayer()->FindOrEstablishSession(context,
                     [](void * context, chip::Messaging::ExchangeManager & exchangeMgr, const chip::SessionHandle & sessionHandle) {
                         ChipLogProgress(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() success");
-                        GetConnectedDeviceCallback * connectedDeviceCallback = static_cast<GetConnectedDeviceCallback *>(context);
-    
-                        SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
-
                         JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
-                        //chip::DeviceLayer::StackUnlock unlock;
                         OperationalDeviceProxy * device = new OperationalDeviceProxy(&exchangeMgr, sessionHandle);
-                        ChipLogProgress(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() before CallBooleanMethod");
-                        jclass completableFutureClass = env->GetObjectClass(__context->completableFuture);
-                        jmethodID getMethod = env->GetMethodID(completableFutureClass, "complete", "(Ljava/lang/Object;)Z");
+                        SessionContextJNI * _context = static_cast<SessionContextJNI *>(context);                
 
-                        env->CallBooleanMethod(__context->completableFuture, getMethod, device);     
-                        ChipLogProgress(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() after CallBooleanMethod");
+                        DeviceProxyMatterSuccessHandlerJNI successHandler;
+                        successHandler.SetUp(env, _context->successHandler);
+                        successHandler.Handle(reinterpret_cast<jlong>(device));
                     },
                     [](void * context, const chip::ScopedNodeId & peerId, CHIP_ERROR error) {
                         ChipLogError(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() failure");
-                        SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
-
                         JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
                         jstring errorMessage = env->NewStringUTF(error.Format());
                         VerifyOrReturn(errorMessage != nullptr,
                                ChipLogError(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() Could not create errorMessage"));
                         jobject throwableObject = env->NewObject(MatterEndpointJNIMgr().mThrowableClass, MatterEndpointJNIMgr().mThrowableConstructor, errorMessage);
                         VerifyOrReturn(throwableObject != nullptr,
-                               ChipLogError(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() Could not create throwableObject"));*/
+                               ChipLogError(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() Could not create throwableObject"));
 
-                        //chip::DeviceLayer::StackUnlock unlock;
- /*                       env->CallBooleanMethod(__context->completableFuture, MatterEndpointJNIMgr().mCompleteExceptionallyMethod, throwableObject);
+                        SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
                     });
-*/
+
     /*MatterEndpointJNIMgr().Init();
     // Setup completableFuture
     jobject completableFuture = env->NewGlobalRef(env->NewObject(MatterEndpointJNIMgr().mCompletableFutureClass, MatterEndpointJNIMgr().mCompletableFutureConstructor));

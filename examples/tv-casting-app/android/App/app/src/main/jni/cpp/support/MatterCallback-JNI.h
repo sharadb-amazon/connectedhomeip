@@ -47,7 +47,7 @@ template <typename T>
 class MatterSuccessHandlerJNI : public MatterCallbackBaseJNI
 {
 public:
-    MatterSuccessHandlerJNI(const char * methodSignature) : MatterCallbackBaseJNI(methodSignature) {}
+    MatterSuccessHandlerJNI() : MatterCallbackBaseJNI("(Ljava/lang/Object;)V") {}
 
     virtual ~MatterSuccessHandlerJNI() = 0;
 
@@ -76,10 +76,8 @@ public:
 template <typename T>
 MatterSuccessHandlerJNI<T>::~MatterSuccessHandlerJNI(){};
 
-class DeviceProxyMatterSuccessHandlerJNI
-    : public MatterSuccessHandlerJNI<jlong>
+class DeviceProxyMatterSuccessHandlerJNI: public MatterSuccessHandlerJNI<jlong>
 {
 public:
-    DeviceProxyMatterSuccessHandlerJNI() : MatterSuccessHandlerJNI("(Ljava/lang/Long;)V") {}
     jobject ConvertToJObject(jlong responseData);
 };

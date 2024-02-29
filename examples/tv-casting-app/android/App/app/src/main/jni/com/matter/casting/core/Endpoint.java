@@ -35,6 +35,6 @@ public interface Endpoint {
 
   boolean hasCluster(Class<? extends Cluster> clusterClass);
 
-  //void testGetCluster();
+  void testGetCluster();
 
 }

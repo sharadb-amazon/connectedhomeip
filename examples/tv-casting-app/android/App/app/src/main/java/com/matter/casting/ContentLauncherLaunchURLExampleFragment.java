@@ -140,7 +140,7 @@ public class ContentLauncherLaunchURLExampleFragment extends Fragment {
                     return null;
                   });*/
 
-            //endpoint.testGetCluster();
+            endpoint.testGetCluster();
         };
 
     return inflater.inflate(R.layout.fragment_content_launcher, container, false);

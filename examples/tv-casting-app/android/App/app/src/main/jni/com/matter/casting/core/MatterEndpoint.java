@@ -24,10 +24,14 @@ import com.matter.casting.support.FailureCallback;
 import com.matter.casting.support.SuccessCallback;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import chip.devicecontroller.ChipClusters;
+import chip.devicecontroller.ChipStructs;
 
 public class MatterEndpoint implements Endpoint {
   private static final String TAG = MatterEndpoint.class.getSimpleName();
@@ -53,6 +57,7 @@ public class MatterEndpoint implements Endpoint {
   protected CompletableFuture<Long> getDeviceProxy()
   {
     CompletableFuture<Long> future = new CompletableFuture<>();
+
     getDeviceProxy(new SuccessCallback<Long>() {
       @Override
       public void handle(Long deviceProxyPtr) {
@@ -86,6 +91,23 @@ public class MatterEndpoint implements Endpoint {
     try {
       Long deviceProxy = deviceProxyFuture.get(5, TimeUnit.SECONDS);
       Log.d(TAG, "getDeviceProxy returned value " + deviceProxy);
+      ChipClusters.ContentLauncherCluster cluster = new ChipClusters.ContentLauncherCluster(deviceProxy, getId());
+      cluster.launchURL(new ChipClusters.ContentLauncherCluster.LauncherResponseCallback() {
+        @Override
+        public void onSuccess(Integer status, Optional<String> data) {
+          Log.d(TAG, "Content launcher success " + status + data);
+        }
+
+        @Override
+        public void onError(Exception error) {
+          Log.e(TAG, "Content launcher failure " + error);
+        }
+      }
+      ,"my test url",
+              Optional.of("my display str"),
+              Optional.empty()
+      );
+
     } catch (ExecutionException | InterruptedException | TimeoutException e) {
       Log.e(TAG, "getDeviceProxy exception" + e);
     }
