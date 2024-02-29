@@ -78,13 +78,19 @@ CHIP_ERROR GenericPlatformManagerImpl_POSIX<ImplClass>::_InitChipStack()
 template <class ImplClass>
 void GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack()
 {
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack()");
     int err = pthread_mutex_lock(&mChipStackLock);
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack() before assert");
     assert(err == 0);
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack() after assert");
 
 #if CHIP_STACK_LOCK_TRACKING_ENABLED
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack() setting mChipStackIsLocked = true");
     mChipStackIsLocked        = true;
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack() setting mChipStackLockOwnerThread = self");
     mChipStackLockOwnerThread = pthread_self();
 #endif
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_LockChipStack() ending");
 }
 
 template <class ImplClass>
@@ -104,6 +110,7 @@ bool GenericPlatformManagerImpl_POSIX<ImplClass>::_TryLockChipStack()
 template <class ImplClass>
 void GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack()
 {
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack()");
 #if CHIP_STACK_LOCK_TRACKING_ENABLED
     if (!mChipStackIsLocked)
     {
@@ -112,11 +119,15 @@ void GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack()
         chipDie();
 #endif
     }
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack() setting mChipStackIsLocked = false");
     mChipStackIsLocked = false;
 #endif
 
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack() before pthread_mutex_unlock");
     int err = pthread_mutex_unlock(&mChipStackLock);
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack() before assert");
     assert(err == 0);
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_UnlockChipStack() ending");
 }
 
 #if CHIP_STACK_LOCK_TRACKING_ENABLED
