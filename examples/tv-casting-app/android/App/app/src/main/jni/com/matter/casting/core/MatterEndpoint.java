@@ -86,37 +86,50 @@ public class MatterEndpoint implements Endpoint {
 
   public void testGetCluster()
   {
-    CompletableFuture<Long> deviceProxyFuture = getDeviceProxy();
+    System.out.println("CHIPController loading");
+    System.loadLibrary("CHIPController");
+    System.out.println("CHIPController loaded");
+
+    getDeviceProxy(new SuccessCallback<Long>() {
+      @Override
+      public void handle(Long deviceProxyPtr) {
+
+        ChipClusters.ContentLauncherCluster cluster = new ChipClusters.ContentLauncherCluster(deviceProxyPtr, getId());
+        Log.d(TAG, "Content launcher cluster created " + cluster);
+        cluster.launchURL(new ChipClusters.ContentLauncherCluster.LauncherResponseCallback() {
+                            @Override
+                            public void onSuccess(Integer status, Optional<String> data) {
+                              Log.d(TAG, "Content launcher success " + status + data);
+                            }
+
+                            @Override
+                            public void onError(Exception error) {
+                              Log.e(TAG, "Content launcher failure " + error);
+                            }
+                          }
+                ,"my test url",
+                Optional.of("my display str"),
+                Optional.empty()
+        );
+      }
+    }, new FailureCallback() {
+      @Override
+      public void handle(MatterError err) {
+        Log.e(TAG, "getDeviceProxy err" + err);
+      }
+    });
+
+/*    CompletableFuture<Long> deviceProxyFuture = getDeviceProxy();
     Log.d(TAG, "getDeviceProxy returned CompletableFuture");
     try {
       Long deviceProxy = deviceProxyFuture.get(5, TimeUnit.SECONDS);
       Log.d(TAG, "getDeviceProxy returned value " + deviceProxy);
 
-      System.out.println("CHIPController loading");
-      System.loadLibrary("CHIPController");
-      System.out.println("CHIPController loaded");
 
-      ChipClusters.ContentLauncherCluster cluster = new ChipClusters.ContentLauncherCluster(deviceProxy, getId());
-      Log.d(TAG, "Content launcher cluster created " + cluster);
-      cluster.launchURL(new ChipClusters.ContentLauncherCluster.LauncherResponseCallback() {
-        @Override
-        public void onSuccess(Integer status, Optional<String> data) {
-          Log.d(TAG, "Content launcher success " + status + data);
-        }
-
-        @Override
-        public void onError(Exception error) {
-          Log.e(TAG, "Content launcher failure " + error);
-        }
-      }
-      ,"my test url",
-              Optional.of("my display str"),
-              Optional.empty()
-      );
 
     } catch (ExecutionException | InterruptedException | TimeoutException e) {
       Log.e(TAG, "getDeviceProxy exception" + e);
-    }
+    }*/
     Log.d(TAG, "getDeviceProxy ending");
   }
 

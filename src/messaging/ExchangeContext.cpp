@@ -95,9 +95,12 @@ void ExchangeContext::SetResponseTimeout(Timeout timeout)
 CHIP_ERROR ExchangeContext::SendMessage(Protocols::Id protocolId, uint8_t msgType, PacketBufferHandle && msgBuf,
                                         const SendFlags & sendFlags)
 {
+
+    ChipLogProgress(Controller, "ExchangeContext::SendMessage");
     // This is the first point all outgoing messages funnel through.  Ensure
     // that our message sends are all synchronized correctly.
     assertChipStackLockedByCurrentThread();
+    ChipLogProgress(Controller, "ExchangeContext::SendMessage after assert");
 
     bool isStandaloneAck =
         (protocolId == Protocols::SecureChannel::Id) && msgType == to_underlying(Protocols::SecureChannel::MsgType::StandaloneAck);
@@ -107,16 +110,19 @@ CHIP_ERROR ExchangeContext::SendMessage(Protocols::Id protocolId, uint8_t msgTyp
 
     // Don't let method get called on a freed object.
     VerifyOrDie(mExchangeMgr != nullptr && GetReferenceCount() > 0);
+    ChipLogProgress(Controller, "ExchangeContext::SendMessage after mExchangeMgr != nullptr && GetReferenceCount() > 0");
 
     // we hold the exchange context here in case the entity that
     // originally generated it tries to close it as a result of
     // an error arising below. at the end, we have to close it.
     ExchangeHandle ref(*this);
+    ChipLogProgress(Controller, "ExchangeContext::SendMessage after ExchangeHandle ref(*this)");
 
     // If session requires MRP, NoAutoRequestAck send flag is not specified and is not a group exchange context, request reliable
     // transmission.
     bool reliableTransmissionRequested =
         GetSessionHandle()->AllowsMRP() && !sendFlags.Has(SendMessageFlags::kNoAutoRequestAck) && !IsGroupExchangeContext();
+    ChipLogProgress(Controller, "ExchangeContext::SendMessage after reliableTransmissionRequested");
 
     bool currentMessageExpectResponse = false;
     // If a response message is expected...
@@ -134,7 +140,9 @@ CHIP_ERROR ExchangeContext::SendMessage(Protocols::Id protocolId, uint8_t msgTyp
         // Arm the response timer if a timeout has been specified.
         if (mResponseTimeout > System::Clock::kZero)
         {
+            ChipLogProgress(Controller, "ExchangeContext::SendMessage before StartResponseTimer");
             CHIP_ERROR err = StartResponseTimer();
+            ChipLogProgress(Controller, "ExchangeContext::SendMessage after StartResponseTimer");
             if (err != CHIP_NO_ERROR)
             {
                 SetResponseExpected(false);
@@ -216,6 +224,8 @@ CHIP_ERROR ExchangeContext::SendMessage(Protocols::Id protocolId, uint8_t msgTyp
                 MessageHandled();
             }
         }
+
+        ChipLogProgress(Controller, "ExchangeContext::SendMessage before return err");
 
         return err;
     }

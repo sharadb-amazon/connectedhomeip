@@ -31,6 +31,7 @@ namespace core {
 struct SessionContextJNI
 {
 public:
+    Endpoint *endpoint;
     jobject successHandler;
     jobject failureHandler;
 };

@@ -86,32 +86,16 @@ JNI_METHOD(jobject, getCastingPlayer)
     return support::convertCastingPlayerFromCppToJava(std::shared_ptr<CastingPlayer>(endpoint->GetCastingPlayer()));
 }
 
-JNI_METHOD(void, getDeviceProxy)
-(JNIEnv * env, jobject thiz, jobject jSuccessHandler, jobject jFailureHandler)
+static void FindOrEstablishConnectionTask(intptr_t context)
 {
-    chip::DeviceLayer::StackLock lock;
-    ChipLogProgress(AppServer, "MatterEndpoint-JNI::getDeviceProxy() called");
-    Endpoint * endpoint = support::convertEndpointFromJavaToCpp(thiz);
-    VerifyOrReturn(endpoint != nullptr, ChipLogError(AppServer, "MatterEndpoint-JNI::getDeviceProxy() endpoint == nullptr"));
-
-    SessionContextJNI * context         = new SessionContextJNI();
-    context->successHandler = jSuccessHandler;
-    context->failureHandler = jFailureHandler;
-
-    DeviceProxyMatterSuccessHandlerJNI successHandler;
-    successHandler.SetUp(env, jSuccessHandler);
-
-    /*chip::Controller::GetConnectedDeviceCallback * connectedDeviceCallback = reinterpret_cast<chip::Controller::GetConnectedDeviceCallback *>(callbackHandle);
-
-    chip::NodeId nodeId = endpoint->GetCastingPlayer()->GetNodeId();
-
-    chip::Server::GetInstance().GetCASESessionManager()->FindOrEstablishSession(
-        chip::ScopedNodeId(endpoint->GetCastingPlayer()->GetNodeId(), endpoint->GetCastingPlayer()->GetFabricIndex()), &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);*/
-
-    //endpoint->GetCastingPlayer()->FindOrEstablishSession(&nodeId, &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);
-    endpoint->GetCastingPlayer()->FindOrEstablishSession(context,
+    ChipLogProgress(AppServer, "FindOrEstablishConnectionTask called");
+    if (context != 0)
+    {
+        SessionContextJNI * __context = reinterpret_cast<SessionContextJNI *>(context);   
+        __context->endpoint->GetCastingPlayer()->FindOrEstablishSession(__context,
                     [](void * context, chip::Messaging::ExchangeManager & exchangeMgr, const chip::SessionHandle & sessionHandle) {
                         ChipLogProgress(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() success");
+                        //chip::DeviceLayer::StackLock lock;
                         JNIEnv * env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
                         OperationalDeviceProxy * device = new OperationalDeviceProxy(&exchangeMgr, sessionHandle);
                         SessionContextJNI * _context = static_cast<SessionContextJNI *>(context);                
@@ -132,6 +116,37 @@ JNI_METHOD(void, getDeviceProxy)
 
                         SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
                     });
+                    
+    }
+}
+
+JNI_METHOD(void, getDeviceProxy)
+(JNIEnv * env, jobject thiz, jobject jSuccessHandler, jobject jFailureHandler)
+{
+    chip::DeviceLayer::StackLock lock;
+    ChipLogProgress(AppServer, "MatterEndpoint-JNI::getDeviceProxy() called");
+    Endpoint * endpoint = support::convertEndpointFromJavaToCpp(thiz);
+    VerifyOrReturn(endpoint != nullptr, ChipLogError(AppServer, "MatterEndpoint-JNI::getDeviceProxy() endpoint == nullptr"));
+
+    SessionContextJNI * context         = new SessionContextJNI();
+    context->endpoint = endpoint;
+    context->successHandler = env->NewGlobalRef(jSuccessHandler);
+    context->failureHandler = env->NewGlobalRef(jFailureHandler);
+
+    DeviceProxyMatterSuccessHandlerJNI successHandler;
+    successHandler.SetUp(env, jSuccessHandler);
+
+    /*chip::Controller::GetConnectedDeviceCallback * connectedDeviceCallback = reinterpret_cast<chip::Controller::GetConnectedDeviceCallback *>(callbackHandle);
+
+    chip::NodeId nodeId = endpoint->GetCastingPlayer()->GetNodeId();
+
+    chip::Server::GetInstance().GetCASESessionManager()->FindOrEstablishSession(
+        chip::ScopedNodeId(endpoint->GetCastingPlayer()->GetNodeId(), endpoint->GetCastingPlayer()->GetFabricIndex()), &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);*/
+
+    //endpoint->GetCastingPlayer()->FindOrEstablishSession(&nodeId, &connectedDeviceCallback->mOnSuccess, &connectedDeviceCallback->mOnFailure);
+    chip::DeviceLayer::PlatformMgr().ScheduleWork(FindOrEstablishConnectionTask, reinterpret_cast<intptr_t>(context));
+
+    
 
     /*MatterEndpointJNIMgr().Init();
     // Setup completableFuture

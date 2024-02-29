@@ -157,6 +157,7 @@ bool GenericPlatformManagerImpl_FreeRTOS<ImplClass>::_IsChipStackLockedByCurrent
 #if INCLUDE_xSemaphoreGetMutexHolder != 1
 #error Must either set INCLUDE_xSemaphoreGetMutexHolder = 1 in FreeRTOSConfig.h or set chip_stack_lock_tracking = "none" in Matter gn configuration.
 #endif
+    ChipLogProgress(NotSpecified, "GenericPlatformManagerImpl_FreeRTOS<ImplClass>::_IsChipStackLockedByCurrentThread()");
     // If we have not started our event loop yet, return true because in that
     // case we can't be racing against the (not yet started) event loop.
     //

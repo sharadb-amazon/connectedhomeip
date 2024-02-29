@@ -2752,12 +2752,14 @@ JNI_METHOD(void, invoke)
                                                          ? Optional<uint16_t>(convertedTimedRequestTimeoutMs)
                                                          : Optional<uint16_t>::Missing()));
 
+    ChipLogProgress(Controller, "Before commandSender->SendCommandRequest");
     SuccessOrExit(err = device->GetSecureSession().Value()->IsGroupSession()
                       ? commandSender->SendGroupCommandRequest(device->GetSecureSession().Value())
                       : commandSender->SendCommandRequest(device->GetSecureSession().Value(),
                                                           imTimeoutMs != 0
                                                               ? MakeOptional(System::Clock::Milliseconds32(imTimeoutMs))
                                                               : Optional<System::Clock::Timeout>::Missing()));
+    ChipLogProgress(Controller, "After commandSender->SendCommandRequest");
 
     callback->mCommandSender = commandSender;
 

@@ -125,8 +125,10 @@ bool GenericPlatformManagerImpl_POSIX<ImplClass>::_IsChipStackLockedByCurrentThr
 {
     // If no Matter thread is currently running we do not have to worry about
     // locking. Hence, this function always returns true in that case.
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_IsChipStackLockedByCurrentThread()");
     if (mState.load(std::memory_order_relaxed) == State::kStopped)
         return true;
+    ChipLogProgress(DeviceLayer, "GenericPlatformManagerImpl_POSIX<ImplClass>::_IsChipStackLockedByCurrentThread() mChipStackIsLocked: %d", mChipStackIsLocked);
     return mChipStackIsLocked && (pthread_equal(pthread_self(), mChipStackLockOwnerThread));
 }
 #endif

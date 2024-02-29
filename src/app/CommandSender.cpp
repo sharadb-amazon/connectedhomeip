@@ -65,6 +65,7 @@ CommandSender::CommandSender(Callback * apCallback, Messaging::ExchangeManager *
     mExchangeCtx(*this),
     mCallbackHandle(apCallback), mpExchangeMgr(apExchangeMgr), mSuppressResponse(aSuppressResponse), mTimedRequest(aIsTimedRequest)
 {
+    ChipLogProgress(Controller, "CommandSender::CommandSender 1");
     assertChipStackLockedByCurrentThread();
 }
 
@@ -74,11 +75,13 @@ CommandSender::CommandSender(ExtendableCallback * apExtendableCallback, Messagin
     mCallbackHandle(apExtendableCallback), mpExchangeMgr(apExchangeMgr), mSuppressResponse(aSuppressResponse),
     mTimedRequest(aIsTimedRequest), mUseExtendableCallback(true)
 {
+    ChipLogProgress(Controller, "CommandSender::CommandSender 2");
     assertChipStackLockedByCurrentThread();
 }
 
 CommandSender::~CommandSender()
 {
+    ChipLogProgress(Controller, "CommandSender::CommandSender 3");
     assertChipStackLockedByCurrentThread();
 }
 
@@ -108,6 +111,7 @@ CHIP_ERROR CommandSender::AllocateBuffer()
 
 CHIP_ERROR CommandSender::SendCommandRequestInternal(const SessionHandle & session, Optional<System::Clock::Timeout> timeout)
 {
+    ChipLogProgress(Controller, "CommandSender::SendCommandRequestInternal");
     VerifyOrReturnError(mState == State::AddedCommand, CHIP_ERROR_INCORRECT_STATE);
 
     ReturnErrorOnFailure(Finalize(mPendingInvokeData));
@@ -115,9 +119,11 @@ CHIP_ERROR CommandSender::SendCommandRequestInternal(const SessionHandle & sessi
     // Create a new exchange context.
     auto exchange = mpExchangeMgr->NewContext(session, this);
     VerifyOrReturnError(exchange != nullptr, CHIP_ERROR_NO_MEMORY);
+    ChipLogProgress(Controller, "CommandSender::SendCommandRequestInternal after mpExchangeMgr->NewContext");
 
     mExchangeCtx.Grab(exchange);
     VerifyOrReturnError(!mExchangeCtx->IsGroupExchangeContext(), CHIP_ERROR_INVALID_MESSAGE_TYPE);
+    ChipLogProgress(Controller, "CommandSender::SendCommandRequestInternal after mpExchangeMgr->Grab");
 
     mExchangeCtx->SetResponseTimeout(timeout.ValueOr(session->ComputeRoundTripTimeout(app::kExpectedIMProcessingTime)));
 
@@ -128,6 +134,7 @@ CHIP_ERROR CommandSender::SendCommandRequestInternal(const SessionHandle & sessi
         return CHIP_NO_ERROR;
     }
 
+    ChipLogProgress(Controller, "CommandSender::SendCommandRequestInternal before SendInvokeRequest");
     return SendInvokeRequest();
 }
 
@@ -178,9 +185,13 @@ CHIP_ERROR CommandSender::SendInvokeRequest()
     using namespace Protocols::InteractionModel;
     using namespace Messaging;
 
+    ChipLogProgress(Controller, "CommandSender::SendInvokeRequest before sendMessage");
+
     ReturnErrorOnFailure(
         mExchangeCtx->SendMessage(MsgType::InvokeCommandRequest, std::move(mPendingInvokeData), SendMessageFlags::kExpectResponse));
+    ChipLogProgress(Controller, "CommandSender::SendInvokeRequest after sendMessage");
     MoveToState(State::AwaitingResponse);
+    ChipLogProgress(Controller, "CommandSender::SendInvokeRequest after MoveToState");
 
     return CHIP_NO_ERROR;
 }
