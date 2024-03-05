@@ -155,7 +155,9 @@ void LayerImplSelect::Signal()
 
 CHIP_ERROR LayerImplSelect::StartTimer(Clock::Timeout delay, TimerCompleteCallback onComplete, void * appState)
 {
+    ChipLogProgress(Controller, "LayerImplSelect::StartTimer");
     assertChipStackLockedByCurrentThread();
+    ChipLogProgress(Controller, "LayerImplSelect::StartTimer after assert");
 
     VerifyOrReturnError(mLayerState.IsInitialized(), CHIP_ERROR_INCORRECT_STATE);
 

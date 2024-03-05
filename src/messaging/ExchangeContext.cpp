@@ -50,6 +50,10 @@
 #include <protocols/Protocols.h>
 #include <protocols/secure_channel/Constants.h>
 
+#if CONFIG_DEVICE_LAYER
+#include <platform/CHIPDeviceLayer.h>
+#endif
+
 using namespace chip::Encoding;
 using namespace chip::Inet;
 using namespace chip::System;
@@ -443,12 +447,21 @@ void ExchangeContext::OnSessionReleased()
 
 CHIP_ERROR ExchangeContext::StartResponseTimer()
 {
+    ChipLogProgress(Controller, "ExchangeContext::StartResponseTimer()");
+    assertChipStackLockedByCurrentThread();
+    ChipLogProgress(Controller, "ExchangeContext::StartResponseTimer() after assert");
+
     System::Layer * lSystemLayer = mExchangeMgr->GetSessionManager()->SystemLayer();
+    //System::Layer * lSystemLayer = &chip::DeviceLayer::SystemLayer();
     if (lSystemLayer == nullptr)
     {
         // this is an assertion error, which shall never happen
         return CHIP_ERROR_INTERNAL;
     }
+
+    ChipLogProgress(Controller, "ExchangeContext::StartResponseTimer() after mExchangeMgr->GetSessionManager()->SystemLayer()");
+    assertChipStackLockedByCurrentThread();
+    ChipLogProgress(Controller, "ExchangeContext::StartResponseTimer() after assert");
 
     return lSystemLayer->StartTimer(mResponseTimeout, HandleResponseTimeout, this);
 }

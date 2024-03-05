@@ -114,7 +114,7 @@ static void FindOrEstablishConnectionTask(intptr_t context)
                         VerifyOrReturn(throwableObject != nullptr,
                                ChipLogError(AppServer, "MatterEndpointJNI::FindOrEstablishSessionTask() Could not create throwableObject"));
 
-                        SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
+                        //SessionContextJNI * __context = static_cast<SessionContextJNI *>(context);
                     });
                     
     }

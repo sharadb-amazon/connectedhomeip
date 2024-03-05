@@ -160,5 +160,10 @@ public final class CastingApp {
   static {
     System.loadLibrary("TvCastingApp");
     System.out.println("TvCastingApp loaded");
+
+    System.out.println("CHIPController loading");
+    System.loadLibrary("CHIPController");
+    System.out.println("CHIPController loaded");
+
   }
 }
