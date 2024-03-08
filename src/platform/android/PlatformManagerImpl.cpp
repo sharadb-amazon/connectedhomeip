@@ -42,6 +42,8 @@ CHIP_ERROR PlatformManagerImpl::_InitChipStack()
 {
     CHIP_ERROR err;
 
+    ChipLogProgress(NotSpecified, "PlatformManagerImpl::_InitChipStack() called");
+    
     // Initialize the configuration system.
     err = Internal::AndroidConfig::Init();
     SuccessOrExit(err);

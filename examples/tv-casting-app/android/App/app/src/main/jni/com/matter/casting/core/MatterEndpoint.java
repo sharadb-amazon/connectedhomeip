@@ -86,6 +86,11 @@ public class MatterEndpoint implements Endpoint {
 
   public void testGetCluster()
   {
+    System.out.println("CHIPController loading");
+    System.loadLibrary("CHIPController");
+    System.out.println("CHIPController loaded");
+
+
     getDeviceProxy(new SuccessCallback<Long>() {
       @Override
       public void handle(Long deviceProxyPtr) {
