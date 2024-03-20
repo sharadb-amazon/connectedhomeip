@@ -107,6 +107,10 @@ shared_library("jni") {
     ]
 
     deps += [ "${chip_root}/src/controller:nodatamodel" ]
+  } else {
+    defines += [ "CHIP_DEVICE_CONFIG_DYNAMIC_SERVER=0" ]
+
+    deps += [ "${chip_root}/src/controller/data_model" ]
   }
 
   if (matter_enable_java_compilation) {
