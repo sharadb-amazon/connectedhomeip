@@ -158,9 +158,9 @@ client's lifecycle:
     the Matter specification's "Onboarding Payload" section for more details on
     commissioning data.
 
-    On Linux, define a function `InitCommissionableDataProvider` to initialize
-    initialize a `LinuxCommissionableDataProvider` that can provide the required
-    values to the `CastingApp`.
+    On Linux, define a function `InitCommissionableDataProvider` to initialize a
+    `LinuxCommissionableDataProvider` that can provide the required values to
+    the `CastingApp`.
 
     ```c
     CHIP_ERROR InitCommissionableDataProvider(LinuxCommissionableDataProvider & provider, LinuxDeviceOptions & options) {
@@ -696,7 +696,8 @@ discover available endpoints supported by a Casting Player.
 ### Connect to a Casting Player
 
 _{Complete Connection examples: [Linux](linux/simple-app-helper.cpp) |
-[iOS](darwin/TvCasting/TvCasting/MCConnectionExampleViewModel.swift)}_
+[Android](android/App/app/src/main/java/com/matter/casting/ConnectionExampleFragment.java)
+| [iOS](darwin/TvCasting/TvCasting/MCConnectionExampleViewModel.swift)}_
 
 Each `CastingPlayer` object created during
 [Discovery](#discover-casting-players) contains information such as

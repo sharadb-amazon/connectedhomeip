@@ -17,6 +17,8 @@
 package com.matter.casting.core;
 
 import com.matter.casting.support.DeviceTypeStruct;
+import com.matter.casting.support.MatterCallback;
+import com.matter.casting.support.MatterError;
 import java.util.List;
 import java.util.Objects;
 
@@ -38,6 +40,9 @@ public class MatterEndpoint implements Endpoint {
 
   @Override
   public native CastingPlayer getCastingPlayer();
+
+  public native void getDeviceProxy(
+      MatterCallback<Long> successCallback, MatterCallback<MatterError> failureCallback);
 
   @Override
   public String toString() {

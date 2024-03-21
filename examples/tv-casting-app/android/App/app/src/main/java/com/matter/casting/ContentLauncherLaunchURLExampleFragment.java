@@ -23,10 +23,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import chip.devicecontroller.ChipClusters;
 import com.R;
 import com.matter.casting.core.CastingPlayer;
 import com.matter.casting.core.Endpoint;
+import com.matter.casting.core.MatterEndpoint;
+import com.matter.casting.support.MatterCallback;
+import com.matter.casting.support.MatterError;
 import java.util.List;
+import java.util.Optional;
 
 /** A {@link Fragment} to send Content Launcher LaunchURL command from the TV Casting App. */
 public class ContentLauncherLaunchURLExampleFragment extends Fragment {
@@ -73,7 +78,42 @@ public class ContentLauncherLaunchURLExampleFragment extends Fragment {
             return;
           }
 
-          // TODO: add command invocation API call
+          // TODO: complete command invocation API implementation
+          ((MatterEndpoint) endpoint)
+              .getDeviceProxy(
+                  new MatterCallback<Long>() {
+                    @Override
+                    public void handle(Long device) {
+                      Log.d(TAG, "getDeviceProxy success. Device: " + device);
+
+                      if (device != null) {
+                        ChipClusters.ContentLauncherCluster cluster =
+                            new ChipClusters.ContentLauncherCluster(device, endpoint.getId());
+                        Log.d(TAG, "Content launcher cluster created " + cluster);
+                        cluster.launchURL(
+                            new ChipClusters.ContentLauncherCluster.LauncherResponseCallback() {
+                              @Override
+                              public void onSuccess(Integer status, Optional<String> data) {
+                                Log.d(TAG, "Content launcher success " + status + data);
+                              }
+
+                              @Override
+                              public void onError(Exception error) {
+                                Log.e(TAG, "Content launcher failure " + error);
+                              }
+                            },
+                            "my test url",
+                            Optional.of("my display str"),
+                            Optional.empty());
+                      }
+                    }
+                  },
+                  new MatterCallback<MatterError>() {
+                    @Override
+                    public void handle(MatterError err) {
+                      Log.e(TAG, "getDeviceProxy err" + err);
+                    }
+                  });
         };
     return inflater.inflate(R.layout.fragment_content_launcher, container, false);
   }
