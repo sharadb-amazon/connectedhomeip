@@ -172,5 +172,6 @@ public final class CastingApp {
 
   static {
     System.loadLibrary("TvCastingApp");
+    System.loadLibrary("CHIPController");
   }
 }
