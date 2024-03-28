@@ -20,6 +20,7 @@ package com.matter.casting.core;
 import android.content.Context;
 import android.util.Log;
 import chip.appserver.ChipAppServer;
+//import chip.devicecontroller.ChipDeviceController;
 import chip.platform.AndroidBleManager;
 import chip.platform.AndroidChipPlatform;
 import chip.platform.ChipMdnsCallbackImpl;
@@ -97,7 +98,13 @@ public final class CastingApp {
       return MatterError.CHIP_ERROR_INVALID_ARGUMENT;
     }
 
-    MatterError err = finishInitialization(appParameters);
+      Log.d(TAG, "Loading CHIPController");
+      //ChipDeviceController.loadJni();
+      //System.loadLibrary("CHIPController");
+      Log.d(TAG, "Loading CHIPController finished");
+
+
+      MatterError err = finishInitialization(appParameters);
 
     if (err.hasNoError()) {
       chipAppServer = new ChipAppServer(); // get a reference to the Matter server now
@@ -172,6 +179,5 @@ public final class CastingApp {
 
   static {
     System.loadLibrary("TvCastingApp");
-    System.loadLibrary("CHIPController");
   }
 }
