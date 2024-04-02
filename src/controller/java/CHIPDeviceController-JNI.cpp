@@ -21,6 +21,8 @@
  *      Implementation of JNI bridge for CHIP Device Controller for Android apps
  *
  */
+#include "CHIPDeviceController-JNI.h"
+
 #include "AndroidCallbacks.h"
 #include "AndroidCommissioningWindowOpener.h"
 #include "AndroidCurrentFabricRemover.h"
@@ -72,6 +74,12 @@
 #define PTHREAD_NULL 0
 #endif // PTHREAD_NULL
 
+namespace {
+JavaVM * sJVM       = nullptr;
+pthread_t sIOThread = PTHREAD_NULL;
+chip::JniGlobalReference sChipDeviceControllerExceptionCls;
+} // namespace
+
 using namespace chip;
 using namespace chip::Inet;
 using namespace chip::Controller;
@@ -87,41 +95,35 @@ static CHIP_ERROR StopIOThread();
 static CHIP_ERROR N2J_PaseVerifierParams(JNIEnv * env, jlong setupPincode, jbyteArray pakeVerifier, jobject & outParams);
 static CHIP_ERROR N2J_NetworkLocation(JNIEnv * env, jstring ipAddress, jint port, jint interfaceIndex, jobject & outLocation);
 
-namespace {
-JavaVM * sJVM       = nullptr;
-pthread_t sIOThread = PTHREAD_NULL;
-chip::JniGlobalReference sChipDeviceControllerExceptionCls;
-} // namespace
-
 // NOTE: Remote device ID is in sync with the echo server device id
 // At some point, we may want to add an option to connect to a device without
 // knowing its id, because the ID can be learned on the first response that is received.
 chip::NodeId kLocalDeviceId  = chip::kTestControllerNodeId;
 chip::NodeId kRemoteDeviceId = chip::kTestDeviceNodeId;
 
-jint JNI_OnLoad(JavaVM * jvm, void * reserved)
+CHIP_ERROR AndroidDeviceControllerJNI_OnLoad(JavaVM * jvm, void * reserved)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     JNIEnv * env;
 
-    ChipLogProgress(Controller, "JNI_OnLoad() called");
+    ChipLogProgress(Controller, "AndroidDeviceControllerJNI_OnLoad() called");
 
     chip::Platform::MemoryInit();
 
     // Save a reference to the JVM.  Will need this to call back into Java.
-    JniReferences::GetInstance().SetJavaVm(jvm, "chip/devicecontroller/ChipDeviceController");
+    chip::JniReferences::GetInstance().SetJavaVm(jvm, "chip/devicecontroller/ChipDeviceController");
     sJVM = jvm;
 
     // Get a JNI environment object.
-    env = JniReferences::GetInstance().GetEnvForCurrentThread();
+    env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
     VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
 
     ChipLogProgress(Controller, "Loading Java class references.");
 
     // Get various class references need by the API.
     jclass controllerExceptionCls;
-    err = JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipDeviceControllerException",
-                                                        controllerExceptionCls);
+    err = chip::JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipDeviceControllerException",
+                                                              controllerExceptionCls);
     SuccessOrExit(err = sChipDeviceControllerExceptionCls.Init(controllerExceptionCls));
 
     ChipLogProgress(Controller, "Java class references loaded.");
@@ -138,11 +140,17 @@ jint JNI_OnLoad(JavaVM * jvm, void * reserved)
 exit:
     if (err != CHIP_NO_ERROR)
     {
-        JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
+        chip::JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
         chip::DeviceLayer::StackUnlock unlock;
         JNI_OnUnload(jvm, reserved);
     }
 
+    return err;
+}
+
+jint JNI_OnLoad(JavaVM * jvm, void * reserved)
+{
+    CHIP_ERROR err = AndroidDeviceControllerJNI_OnLoad(jvm, reserved);
     return (err == CHIP_NO_ERROR) ? JNI_VERSION_1_6 : JNI_ERR;
 }
 

@@ -80,6 +80,7 @@ android_library("java") {
   data_deps = [
     ":jni",
     "${chip_root}/build/chip/java:shared_cpplib",
+    "${chip_root}/src/controller/java:jni",
   ]
 
   sources = [

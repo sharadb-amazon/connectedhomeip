@@ -25,6 +25,7 @@
 #include "ChipAppServerDelegate.h"
 #include "ChipFabricProvider-JNI.h"
 #include "ChipThreadWork.h"
+#include <controller/java/CHIPDeviceController-JNI.h>
 #include <jni.h>
 #include <lib/core/CHIPError.h>
 #include <lib/support/CHIPJNIError.h>
@@ -87,6 +88,8 @@ jint AndroidAppServerJNI_OnLoad(JavaVM * jvm, void * reserved)
     err = AndroidChipPlatformJNI_OnLoad(jvm, reserved);
     SuccessOrExit(err);
     err = AndroidChipFabricProviderJNI_OnLoad(jvm, reserved);
+    SuccessOrExit(err);
+    err = AndroidDeviceControllerJNI_OnLoad(jvm, reserved);
     SuccessOrExit(err);
 
 exit:
