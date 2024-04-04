@@ -466,8 +466,9 @@ android_library("chipclusterID") {
   ]
 }
 
-android_library("android_interaction_model") {
+java_library("android_interaction_model") {
   sources = [
+    "src/chip/devicecontroller/ChipClusterException.java",
     "src/chip/devicecontroller/ChipInteractionClient.java",
     "src/chip/devicecontroller/ExtendableInvokeCallback.java",
     "src/chip/devicecontroller/ExtendableInvokeCallbackJni.java",
@@ -496,8 +497,6 @@ android_library("android_interaction_model") {
     "src/chip/devicecontroller/model/NodeState.java",
     "src/chip/devicecontroller/model/Status.java",
   ]
-
-  sources += [ "src/chip/devicecontroller/ChipClusterException.java" ]
 
   if (matter_enable_tlv_decoder_api) {
     sources += [ "src/chip/devicecontroller/ChipTLVValueDecoder.java" ]
