@@ -62,7 +62,7 @@ jint AndroidAppServerJNI_OnLoad(JavaVM * jvm, void * reserved)
     CHIP_ERROR err = CHIP_NO_ERROR;
     JNIEnv * env;
 
-    ChipLogProgress(AppServer, "JNI_OnLoad() called");
+    ChipLogProgress(AppServer, "ChipAppServer JNI_OnLoad() called");
 
     chip::Platform::MemoryInit();
 

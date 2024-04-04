@@ -106,7 +106,7 @@ jint JNI_OnLoad(JavaVM * jvm, void * reserved)
     CHIP_ERROR err = CHIP_NO_ERROR;
     JNIEnv * env;
 
-    ChipLogProgress(Controller, "JNI_OnLoad() called");
+    ChipLogProgress(Controller, "CHIPDeviceController JNI_OnLoad() called");
 
     chip::Platform::MemoryInit();
 
