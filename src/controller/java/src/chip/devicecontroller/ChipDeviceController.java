@@ -1369,15 +1369,6 @@ public class ChipDeviceController {
     return computePaseVerifier(deviceControllerPtr, devicePtr, setupPincode, iterations, salt);
   }
 
-  public void shutdownCommissioning() {
-    shutdownCommissioning(deviceControllerPtr);
-  }
-
-  public static native byte[] validateAndExtractCSR(byte[] csrElements, byte[] csrNonce);
-
-  private native PaseVerifierParams computePaseVerifier(
-      long deviceControllerPtr, long devicePtr, long setupPincode, long iterations, byte[] salt);
-
   static native void subscribe(
       long deviceControllerPtr,
       long callbackHandle,
@@ -1426,6 +1417,15 @@ public class ChipDeviceController {
       List<InvokeElement> invokeElementList,
       int timedRequestTimeoutMs,
       int imTimeoutMs);
+
+  public void shutdownCommissioning() {
+    shutdownCommissioning(deviceControllerPtr);
+  }
+
+  public static native byte[] validateAndExtractCSR(byte[] csrElements, byte[] csrNonce);
+
+  private native PaseVerifierParams computePaseVerifier(
+      long deviceControllerPtr, long devicePtr, long setupPincode, long iterations, byte[] salt);
 
   private native long newDeviceController(ControllerParams params);
 

@@ -42,6 +42,42 @@ if (!matter_enable_java_compilation) {
   import("${build_root}/config/android_abi.gni")
 }
 
+source_set("android_chip_im") {
+  sources = [
+    "AndroidCallbacks-JNI.cpp",
+    "AndroidCallbacks.cpp",
+    "AndroidCallbacks.h",
+    "AndroidConnectionFailureExceptions.cpp",
+    "AndroidConnectionFailureExceptions.h",
+    "AndroidControllerExceptions.cpp",
+    "AndroidControllerExceptions.h",
+    "AndroidInteractionClient.cpp",
+    "AndroidInteractionClient.h",
+    "BaseCHIPCluster-JNI.cpp",
+    "CHIPAttributeTLVValueDecoder.h",
+    "CHIPEventTLVValueDecoder.h",
+    "CHIPInteractionClient-JNI.cpp",
+  ]
+
+  if (matter_enable_tlv_decoder_api) {
+    defines = [ "USE_JAVA_TLV_ENCODE_DECODE" ]
+
+    sources += [
+      "CHIPTLVValueDecoder-JNI.cpp",
+      "zap-generated/CHIPAttributeTLVValueDecoder.cpp",
+      "zap-generated/CHIPEventTLVValueDecoder.cpp",
+    ]
+  }
+
+  public_deps = [
+    "${chip_root}/src/app/data-model:heap",
+    "${chip_root}/src/app/server/java:jni",
+    "${chip_root}/src/lib",
+    "${chip_root}/src/lib/support/jsontlv",
+    "${chip_root}/third_party/inipp",
+  ]
+}
+
 shared_library("jni") {
   output_name = "libCHIPController"
 
@@ -56,33 +92,21 @@ shared_library("jni") {
   check_includes = false
 
   sources = [
-    "AndroidCallbacks-JNI.cpp",
-    "AndroidCallbacks.cpp",
-    "AndroidCallbacks.h",
     "AndroidCheckInDelegate.cpp",
     "AndroidCheckInDelegate.h",
     "AndroidClusterExceptions.cpp",
     "AndroidClusterExceptions.h",
     "AndroidCommissioningWindowOpener.cpp",
     "AndroidCommissioningWindowOpener.h",
-    "AndroidConnectionFailureExceptions.cpp",
-    "AndroidConnectionFailureExceptions.h",
-    "AndroidControllerExceptions.cpp",
-    "AndroidControllerExceptions.h",
     "AndroidCurrentFabricRemover.cpp",
     "AndroidCurrentFabricRemover.h",
     "AndroidDeviceControllerWrapper.cpp",
     "AndroidDeviceControllerWrapper.h",
-    "AndroidInteractionClient.cpp",
-    "AndroidInteractionClient.h",
     "AndroidOperationalCredentialsIssuer.cpp",
     "AndroidOperationalCredentialsIssuer.h",
     "AttestationTrustStoreBridge.cpp",
     "AttestationTrustStoreBridge.h",
-    "BaseCHIPCluster-JNI.cpp",
-    "CHIPAttributeTLVValueDecoder.h",
     "CHIPDeviceController-JNI.cpp",
-    "CHIPEventTLVValueDecoder.h",
     "DeviceAttestation-JNI.cpp",
     "DeviceAttestationDelegateBridge.cpp",
     "DeviceAttestationDelegateBridge.h",
@@ -92,6 +116,7 @@ shared_library("jni") {
   ]
 
   deps = [
+    ":android_chip_im",
     ":controller_config",
     "${chip_root}/src/app/icd/client:handler",
     "${chip_root}/src/app/icd/client:manager",
@@ -471,6 +496,7 @@ android_library("java") {
     "src/chip/devicecontroller/ChipCommandType.java",
     "src/chip/devicecontroller/ChipDeviceController.java",
     "src/chip/devicecontroller/ChipDeviceControllerException.java",
+    "src/chip/devicecontroller/ChipInteractionClient.java",
     "src/chip/devicecontroller/CommissioningWindowStatus.java",
     "src/chip/devicecontroller/ConnectionFailureException.java",
     "src/chip/devicecontroller/ControllerParams.java",
