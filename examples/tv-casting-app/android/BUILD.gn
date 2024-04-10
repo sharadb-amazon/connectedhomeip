@@ -55,7 +55,7 @@ shared_library("jni") {
     "${chip_root}/examples/tv-casting-app/tv-casting-common",
     "${chip_root}/src/app/data-model:heap",
     "${chip_root}/src/app/server/java:jni",
-    "${chip_root}/src/controller/java:android_chip_im",
+    "${chip_root}/src/controller/java:android_chip_im_jni",
     "${chip_root}/src/lib",
     "${chip_root}/third_party/inipp",
   ]
@@ -73,6 +73,7 @@ android_library("java") {
   deps = [
     ":android",
     "${chip_root}/src/app/server/java",
+    "${chip_root}/src/controller/java:android_chip_im",
     "${chip_root}/src/platform/android:java",
     "${chip_root}/third_party/android_deps:annotation",
   ]
@@ -120,77 +121,6 @@ android_library("java") {
     "App/app/src/main/jni/com/matter/casting/support/MatterCallback.java",
     "App/app/src/main/jni/com/matter/casting/support/MatterError.java",
   ]
-
-  # Android CHIP IM .java files
-  sources += [
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipClusterException.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipInteractionClient.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ExtendableInvokeCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ExtendableInvokeCallbackJni.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/GetConnectedDeviceCallbackJni.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/InvokeCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/InvokeCallbackJni.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ReportCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ReportCallbackJni.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/ResubscriptionAttemptCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/StatusException.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/SubscriptionEstablishedCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/WriteAttributesCallback.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/WriteAttributesCallbackJni.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/AttributeState.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/AttributeWriteRequest.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/ChipAttributePath.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/ChipEventPath.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/ChipPathId.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/ClusterState.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/DataVersionFilter.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/EndpointState.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/EventState.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/InvokeElement.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/InvokeResponseData.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/NoInvokeResponseData.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/NodeState.java",
-    "${chip_root}/src/controller/java/src/chip/devicecontroller/model/Status.java",
-  ]
-
-  if (matter_enable_tlv_decoder_api) {
-    sources += [ "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipTLVValueDecoder.java" ]
-  }
-
-  if (matter_enable_java_generated_api) {
-    sources += [
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ChipClusters.java",
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ChipEventStructs.java",
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ChipStructs.java",
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ClusterInfoMapping.java",
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ClusterReadMapping.java",
-      "${chip_root}/src/controller/java/generated/java/chip/devicecontroller/ClusterWriteMapping.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/ClusterCommandCallback.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/ClusterInfo.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/CommandParameterInfo.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/CommandResponseInfo.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/DelegatedClusterCallback.java",
-      "${chip_root}/src/controller/java/src/chip/clusterinfo/InteractionInfo.java",
-      "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipTLVType.java",
-    ]
-  }
-
-  deps += [
-    "${chip_root}/src/controller/java/:chipcluster",
-    "${chip_root}/src/controller/java/:chipclusterID",
-    "${chip_root}/third_party/java_deps:annotation",
-  ]
-
-  if (matter_enable_java_compilation) {
-    deps += [
-      "${chip_root}/third_party/java_deps:json",
-      "${chip_root}/third_party/java_deps/stub_src",
-    ]
-  } else {
-    deps += [ "${chip_root}/src/controller/java/:android" ]
-
-    data_deps += [ "${chip_root}/build/chip/java:shared_cpplib" ]
-  }
 
   javac_flags = [
     "-Xlint:deprecation",

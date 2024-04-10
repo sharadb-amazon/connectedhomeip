@@ -16,9 +16,58 @@
  *
  */
 #include "AndroidInteractionClient.h"
+#include "CHIPInteractionClient-JNI.h"
+#include <lib/support/CHIPMem.h>
 
 #define JNI_METHOD(RETURN, METHOD_NAME)                                                                                            \
     extern "C" JNIEXPORT RETURN JNICALL Java_chip_devicecontroller_ChipInteractionClient_##METHOD_NAME
+
+/*jint JNI_OnLoad(JavaVM * jvm, void * reserved)
+{
+    return JNI_VERSION_1_6;
+    //return AndroidChipInteractionJNI_OnLoad(jvm, reserved);
+}*/
+
+jint AndroidChipInteractionJNI_OnLoad(JavaVM * jvm, void * reserved)
+{
+    CHIP_ERROR err = CHIP_NO_ERROR;
+    JNIEnv * env;
+
+    ChipLogProgress(Controller, "ChipInteractionClient JNI_OnLoad() called");
+
+    chip::Platform::MemoryInit();
+
+    // Save a reference to the JVM.  Will need this to call back into Java.
+    chip::JniReferences::GetInstance().SetJavaVm(jvm, "chip/devicecontroller/ChipInteractionClient");
+
+    // Get a JNI environment object.
+    env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
+    // temporarily commented out
+    //VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+    //VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+
+    ChipLogProgress(Controller, "ChipInteractionClient Loading Java class references.");
+
+    // Get various class references need by the API.
+    jclass controllerExceptionCls;
+    err = chip::JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipClusterException",
+                                                        controllerExceptionCls);
+    // temporarily commented out
+    //SuccessOrExit(err = sChipDeviceControllerExceptionCls.Init(controllerExceptionCls));
+
+    ChipLogProgress(Controller, "ChipInteractionClient Java class references loaded.");
+
+exit:
+    if (err != CHIP_NO_ERROR)
+    {
+    // temporarily commented out
+        //JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
+        //chip::DeviceLayer::StackUnlock unlock;
+        //JNI_OnUnload(jvm, reserved);
+    }
+
+    return (err == CHIP_NO_ERROR) ? JNI_VERSION_1_6 : JNI_ERR;
+}
 
 JNI_METHOD(void, subscribe)
 (JNIEnv * env, jobject self, jlong handle, jlong callbackHandle, jlong devicePtr, jobject attributePathList, jobject eventPathList,

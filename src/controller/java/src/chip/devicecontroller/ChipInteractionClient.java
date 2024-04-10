@@ -57,4 +57,14 @@ public class ChipInteractionClient {
       List<InvokeElement> invokeElementList,
       int timedRequestTimeoutMs,
       int imTimeoutMs);
+
+  public static void loadJni() {
+    System.out.println("ChipInteractionClient loadJni called");
+  }
+
+  static {
+    /*System.out.println("Loading CHIPInteractionModel");
+    System.loadLibrary("CHIPInteractionModel");
+    System.out.println("Loading CHIPInteractionModel done");*/
+  }
 }

@@ -489,6 +489,7 @@ class AndroidBuilder(Builder):
                 jars = {
                     "AndroidPlatform.jar": "third_party/connectedhomeip/src/platform/android/AndroidPlatform.jar",
                     "CHIPAppServer.jar": "third_party/connectedhomeip/src/app/server/java/CHIPAppServer.jar",
+                    "CHIPInteractionModel.jar": "third_party/connectedhomeip/src/controller/java/CHIPInteractionModel.jar",
                     "TvCastingApp.jar": "TvCastingApp.jar",
                 }
 
@@ -585,6 +586,12 @@ class AndroidBuilder(Builder):
                     "tv-sever-content-app-debug.apk": os.path.join(
                         self.output_dir, "content-app", "outputs", "apk", "debug", "content-app-debug.apk"
                     )
+                }
+            elif self.app == AndroidApp.TV_CASTING_APP:
+                outputs = {
+                    self.app.AppName() + "app-debug.apk": os.path.join(
+                        self.output_dir, "tv-casting-app", "app", "outputs", "apk", "debug", "app-debug.apk"
+                    ),
                 }
             elif self.app == AndroidApp.VIRTUAL_DEVICE_APP:
                 outputs = {

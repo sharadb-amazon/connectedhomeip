@@ -25,6 +25,7 @@
 #include <app/data-model/ListLargeSystemExtensions.h>
 #include <app/server/Server.h>
 #include <app/server/java/AndroidAppServerWrapper.h>
+#include <controller/java/CHIPInteractionClient-JNI.h>
 #include <credentials/DeviceAttestationCredsProvider.h>
 #include <credentials/examples/DeviceAttestationCredsExample.h>
 #include <inet/InetInterface.h>
@@ -44,7 +45,13 @@ TvCastingAppJNI TvCastingAppJNI::sInstance;
 
 jint JNI_OnLoad(JavaVM * jvm, void * reserved)
 {
-    return AndroidAppServerJNI_OnLoad(jvm, reserved);
+    jint ret = AndroidAppServerJNI_OnLoad(jvm, reserved);
+    if (ret != JNI_VERSION_1_6)
+    {
+        return ret;
+    }
+
+    return AndroidChipInteractionJNI_OnLoad(jvm, reserved);
 }
 
 void JNI_OnUnload(JavaVM * jvm, void * reserved)
