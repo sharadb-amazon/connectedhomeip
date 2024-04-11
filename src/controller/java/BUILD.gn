@@ -42,7 +42,7 @@ if (!matter_enable_java_compilation) {
   import("${build_root}/config/android_abi.gni")
 }
 
-static_library("android_chip_im_jni") {
+source_set("android_chip_im_jni_src") {
   output_name = "libCHIPInteractionModel"
 
   sources = [
@@ -64,7 +64,6 @@ static_library("android_chip_im_jni") {
 
   if (matter_enable_tlv_decoder_api) {
     defines = [ "USE_JAVA_TLV_ENCODE_DECODE" ]
-
     sources += [
       "CHIPTLVValueDecoder-JNI.cpp",
       "zap-generated/CHIPAttributeTLVValueDecoder.cpp",
@@ -79,12 +78,20 @@ static_library("android_chip_im_jni") {
     "${chip_root}/src/lib/support/jsontlv",
     "${chip_root}/third_party/inipp",
   ]
+}
 
-  deps = []
+static_library("android_chip_im_jni") {
+  output_name = "libCHIPInteractionModel"
 
-  if (matter_enable_tlv_decoder_api) {
-    defines += [ "USE_JAVA_TLV_ENCODE_DECODE" ]
-  }
+  public_deps = [
+    "${chip_root}/src/app/data-model:heap",
+    "${chip_root}/src/app/server/java:jni",
+    "${chip_root}/src/lib",
+    "${chip_root}/src/lib/support/jsontlv",
+    "${chip_root}/third_party/inipp",
+  ]
+
+  deps = [ ":android_chip_im_jni_src" ]
 
   if (chip_build_controller_dynamic_server) {
     defines += [ "CHIP_CONFIG_SKIP_APP_SPECIFIC_GENERATED_HEADER_INCLUDES=1" ]
@@ -113,11 +120,10 @@ static_library("android_chip_im_jni") {
       "-Wconversion",
     ]
 
-    output_dir = "${root_out_dir}/lib/jni"
+    #output_dir = "${root_out_dir}/lib/jni"
   } else {
     deps += [ "${chip_root}/src/platform/android" ]
-
-    output_dir = "${root_out_dir}/lib/jni/${android_abi}"
+    #output_dir = "${root_out_dir}/lib/jni/${android_abi}"
   }
 
   if (current_os == "mac") {

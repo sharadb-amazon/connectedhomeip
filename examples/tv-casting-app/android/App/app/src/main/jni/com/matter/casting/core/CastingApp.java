@@ -20,7 +20,7 @@ package com.matter.casting.core;
 import android.content.Context;
 import android.util.Log;
 import chip.appserver.ChipAppServer;
-//import chip.devicecontroller.ChipInteractionClient;
+import chip.devicecontroller.ChipInteractionClient;
 import chip.platform.AndroidBleManager;
 import chip.platform.AndroidChipPlatform;
 import chip.platform.ChipMdnsCallbackImpl;
@@ -48,7 +48,7 @@ public final class CastingApp {
   private NsdManagerServiceResolver.NsdManagerResolverAvailState nsdManagerResolverAvailState;
   private ChipAppServer chipAppServer;
 
-  private CastingApp() { //ChipInteractionClient.loadJni();
+  private CastingApp() { // ChipInteractionClient.loadJni();
   }
 
   public static CastingApp getInstance() {
@@ -103,7 +103,7 @@ public final class CastingApp {
 
     if (err.hasNoError()) {
       chipAppServer = new ChipAppServer(); // get a reference to the Matter server now
-      //ChipInteractionClient.loadJni();
+      ChipInteractionClient.loadJni();
       mState = CastingAppState.NOT_RUNNING; // initialization done, set state to NOT_RUNNING
     }
     return err;

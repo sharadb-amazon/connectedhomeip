@@ -55,7 +55,7 @@ shared_library("jni") {
     "${chip_root}/examples/tv-casting-app/tv-casting-common",
     "${chip_root}/src/app/data-model:heap",
     "${chip_root}/src/app/server/java:jni",
-    "${chip_root}/src/controller/java:android_chip_im_jni",
+    "${chip_root}/src/controller/java:android_chip_im_jni_src",
     "${chip_root}/src/lib",
     "${chip_root}/third_party/inipp",
   ]
@@ -141,6 +141,7 @@ group("default") {
     ":java",
     ":jni",
     "${chip_root}/src/app/server/java",
+    "${chip_root}/src/controller/java:android_chip_im",
     "${chip_root}/src/platform/android:java",
   ]
 }

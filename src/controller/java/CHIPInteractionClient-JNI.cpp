@@ -15,8 +15,8 @@
  *   limitations under the License.
  *
  */
-#include "AndroidInteractionClient.h"
 #include "CHIPInteractionClient-JNI.h"
+#include "AndroidInteractionClient.h"
 #include <lib/support/CHIPMem.h>
 
 #define JNI_METHOD(RETURN, METHOD_NAME)                                                                                            \
@@ -43,27 +43,27 @@ jint AndroidChipInteractionJNI_OnLoad(JavaVM * jvm, void * reserved)
     // Get a JNI environment object.
     env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
     // temporarily commented out
-    //VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
-    //VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+    // VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+    // VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
 
     ChipLogProgress(Controller, "ChipInteractionClient Loading Java class references.");
 
     // Get various class references need by the API.
     jclass controllerExceptionCls;
     err = chip::JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipClusterException",
-                                                        controllerExceptionCls);
+                                                              controllerExceptionCls);
     // temporarily commented out
-    //SuccessOrExit(err = sChipDeviceControllerExceptionCls.Init(controllerExceptionCls));
+    // SuccessOrExit(err = sChipDeviceControllerExceptionCls.Init(controllerExceptionCls));
 
     ChipLogProgress(Controller, "ChipInteractionClient Java class references loaded.");
 
 exit:
     if (err != CHIP_NO_ERROR)
     {
-    // temporarily commented out
-        //JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
-        //chip::DeviceLayer::StackUnlock unlock;
-        //JNI_OnUnload(jvm, reserved);
+        // temporarily commented out
+        // JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
+        // chip::DeviceLayer::StackUnlock unlock;
+        // JNI_OnUnload(jvm, reserved);
     }
 
     return (err == CHIP_NO_ERROR) ? JNI_VERSION_1_6 : JNI_ERR;

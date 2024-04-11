@@ -62,9 +62,9 @@ public class ChipInteractionClient {
     System.out.println("ChipInteractionClient loadJni called");
   }
 
-  static {
-    /*System.out.println("Loading CHIPInteractionModel");
+  /*static {
+    System.out.println("Loading CHIPInteractionModel");
     System.loadLibrary("CHIPInteractionModel");
-    System.out.println("Loading CHIPInteractionModel done");*/
-  }
+    System.out.println("Loading CHIPInteractionModel done");
+  }*/
 }
