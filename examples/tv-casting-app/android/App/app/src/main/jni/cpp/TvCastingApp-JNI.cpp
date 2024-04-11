@@ -46,17 +46,14 @@ TvCastingAppJNI TvCastingAppJNI::sInstance;
 jint JNI_OnLoad(JavaVM * jvm, void * reserved)
 {
     jint ret = AndroidAppServerJNI_OnLoad(jvm, reserved);
-    if (ret != JNI_VERSION_1_6)
-    {
-        return ret;
-    }
-
+    VerifyOrReturnValue(ret != JNI_ERR, ret);
     return AndroidChipInteractionJNI_OnLoad(jvm, reserved);
 }
 
 void JNI_OnUnload(JavaVM * jvm, void * reserved)
 {
-    return AndroidAppServerJNI_OnUnload(jvm, reserved);
+    AndroidChipInteractionJNI_OnUnload(jvm, reserved);
+    AndroidAppServerJNI_OnUnload(jvm, reserved);
 }
 
 JNI_METHOD(jboolean, preInitJni)(JNIEnv *, jobject, jobject jAppParameters)

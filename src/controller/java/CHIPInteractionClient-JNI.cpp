@@ -17,23 +17,20 @@
  */
 #include "CHIPInteractionClient-JNI.h"
 #include "AndroidInteractionClient.h"
+
+#include <lib/support/CHIPJNIError.h>
 #include <lib/support/CHIPMem.h>
+#include <platform/CHIPDeviceLayer.h>
 
 #define JNI_METHOD(RETURN, METHOD_NAME)                                                                                            \
     extern "C" JNIEXPORT RETURN JNICALL Java_chip_devicecontroller_ChipInteractionClient_##METHOD_NAME
-
-/*jint JNI_OnLoad(JavaVM * jvm, void * reserved)
-{
-    return JNI_VERSION_1_6;
-    //return AndroidChipInteractionJNI_OnLoad(jvm, reserved);
-}*/
 
 jint AndroidChipInteractionJNI_OnLoad(JavaVM * jvm, void * reserved)
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
     JNIEnv * env;
 
-    ChipLogProgress(Controller, "ChipInteractionClient JNI_OnLoad() called");
+    ChipLogProgress(Controller, "AndroidChipInteractionJNI_OnLoad called");
 
     chip::Platform::MemoryInit();
 
@@ -42,31 +39,35 @@ jint AndroidChipInteractionJNI_OnLoad(JavaVM * jvm, void * reserved)
 
     // Get a JNI environment object.
     env = chip::JniReferences::GetInstance().GetEnvForCurrentThread();
-    // temporarily commented out
-    // VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
-    // VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+    VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
+    VerifyOrExit(env != nullptr, err = CHIP_JNI_ERROR_NO_ENV);
 
-    ChipLogProgress(Controller, "ChipInteractionClient Loading Java class references.");
+    ChipLogProgress(Controller, "Loading Java class references.");
 
     // Get various class references need by the API.
     jclass controllerExceptionCls;
-    err = chip::JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipClusterException",
+    err = chip::JniReferences::GetInstance().GetLocalClassRef(env, "chip/devicecontroller/ChipDeviceControllerException",
                                                               controllerExceptionCls);
-    // temporarily commented out
-    // SuccessOrExit(err = sChipDeviceControllerExceptionCls.Init(controllerExceptionCls));
+    VerifyOrReturnValue(err == CHIP_NO_ERROR, JNI_ERR);
 
-    ChipLogProgress(Controller, "ChipInteractionClient Java class references loaded.");
+    ChipLogProgress(Controller, "Java class references loaded.");
 
 exit:
     if (err != CHIP_NO_ERROR)
     {
-        // temporarily commented out
-        // JniReferences::GetInstance().ThrowError(env, sChipDeviceControllerExceptionCls, err);
-        // chip::DeviceLayer::StackUnlock unlock;
-        // JNI_OnUnload(jvm, reserved);
+        chip::JniReferences::GetInstance().ThrowError(env, controllerExceptionCls, err);
+        chip::DeviceLayer::StackUnlock unlock;
+        JNI_OnUnload(jvm, reserved);
     }
 
     return (err == CHIP_NO_ERROR) ? JNI_VERSION_1_6 : JNI_ERR;
+}
+
+void AndroidChipInteractionJNI_OnUnload(JavaVM * jvm, void * reserved)
+{
+    chip::DeviceLayer::StackLock lock;
+    ChipLogProgress(AppServer, "AndroidChipInteractionJNI_OnUnload() called");
+    chip::Platform::MemoryShutdown();
 }
 
 JNI_METHOD(void, subscribe)

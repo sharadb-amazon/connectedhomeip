@@ -1,6 +1,6 @@
 /*
  *
- *    Copyright (c) 2021 Project CHIP Authors
+ *    Copyright (c) 2024 Project CHIP Authors
  *    All rights reserved.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,3 +20,5 @@
 #include <jni.h>
 
 jint AndroidChipInteractionJNI_OnLoad(JavaVM * jvm, void * reserved);
+
+void AndroidChipInteractionJNI_OnUnload(JavaVM * jvm, void * reserved);

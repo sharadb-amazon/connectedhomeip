@@ -42,9 +42,7 @@ if (!matter_enable_java_compilation) {
   import("${build_root}/config/android_abi.gni")
 }
 
-source_set("android_chip_im_jni_src") {
-  output_name = "libCHIPInteractionModel"
-
+source_set("android_chip_im_jni") {
   sources = [
     "AndroidCallbacks-JNI.cpp",
     "AndroidCallbacks.cpp",
@@ -71,68 +69,10 @@ source_set("android_chip_im_jni_src") {
     ]
   }
 
-  public_deps = [
-    "${chip_root}/src/app/data-model:heap",
-    "${chip_root}/src/app/server/java:jni",
+  deps = [
     "${chip_root}/src/lib",
     "${chip_root}/src/lib/support/jsontlv",
-    "${chip_root}/third_party/inipp",
   ]
-}
-
-static_library("android_chip_im_jni") {
-  output_name = "libCHIPInteractionModel"
-
-  public_deps = [
-    "${chip_root}/src/app/data-model:heap",
-    "${chip_root}/src/app/server/java:jni",
-    "${chip_root}/src/lib",
-    "${chip_root}/src/lib/support/jsontlv",
-    "${chip_root}/third_party/inipp",
-  ]
-
-  deps = [ ":android_chip_im_jni_src" ]
-
-  if (chip_build_controller_dynamic_server) {
-    defines += [ "CHIP_CONFIG_SKIP_APP_SPECIFIC_GENERATED_HEADER_INCLUDES=1" ]
-
-    deps += [ "${chip_root}/src/controller:nodatamodel" ]
-  } else {
-    #deps += [ "${chip_root}/src/controller/data_model" ]
-  }
-
-  if (matter_enable_java_compilation) {
-    defines += [ "JAVA_MATTER_CONTROLLER_TEST" ]
-
-    include_dirs = java_matter_controller_dependent_paths
-    include_dirs += [ "${chip_root}/zzz_generated/controller-clusters" ]
-
-    deps += [ "${chip_root}/third_party/inipp" ]
-
-    if (current_os == "mac") {
-      deps += [ "${chip_root}/src/platform/Darwin" ]
-    } else {
-      deps += [ "${chip_root}/src/platform/Linux" ]
-    }
-
-    cflags = [
-      "-Wno-unknown-pragmas",
-      "-Wconversion",
-    ]
-
-    #output_dir = "${root_out_dir}/lib/jni"
-  } else {
-    deps += [ "${chip_root}/src/platform/android" ]
-    #output_dir = "${root_out_dir}/lib/jni/${android_abi}"
-  }
-
-  if (current_os == "mac") {
-    ldflags = [ "-Wl,-dead_strip" ]
-  } else {
-    ldflags = [ "-Wl,--gc-sections" ]
-  }
-
-  public_configs = [ "${chip_root}/src:includes" ]
 }
 
 shared_library("jni") {
@@ -173,7 +113,7 @@ shared_library("jni") {
   ]
 
   deps = [
-    ":android_chip_im",
+    ":android_chip_im_jni",
     ":controller_config",
     "${chip_root}/src/app/icd/client:handler",
     "${chip_root}/src/app/icd/client:manager",
@@ -534,12 +474,13 @@ android_library("chipclusterID") {
   ]
 }
 
+# Android CHIP IM .java files
 android_library("android_chip_im") {
   output_name = "CHIPInteractionModel.jar"
 
-  # Android CHIP IM .java files
   sources = [
     "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipClusterException.java",
+    "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipDeviceControllerException.java",
     "${chip_root}/src/controller/java/src/chip/devicecontroller/ChipInteractionClient.java",
     "${chip_root}/src/controller/java/src/chip/devicecontroller/ExtendableInvokeCallback.java",
     "${chip_root}/src/controller/java/src/chip/devicecontroller/ExtendableInvokeCallbackJni.java",
@@ -608,8 +549,6 @@ android_library("android_chip_im") {
     data_deps = [ "${chip_root}/build/chip/java:shared_cpplib" ]
   }
 
-  data_deps += [ ":android_chip_im_jni" ]
-
   javac_flags = [
     "-Xlint:deprecation",
     "-parameters",  # Store infomation about method parameters
@@ -620,6 +559,7 @@ android_library("java") {
   output_name = "CHIPController.jar"
 
   deps = [
+    ":android_chip_im",
     ":chipcluster",
     ":chipclusterID",
     "${chip_root}/third_party/java_deps:annotation",

@@ -43,7 +43,10 @@ public:
         ChipLogProgress(AppServer, "MatterCallbackJNI::SetUp called");
         VerifyOrReturnError(env != nullptr, CHIP_JNI_ERROR_NO_ENV, ChipLogError(AppServer, "JNIEnv was null!"));
 
-        mCallbackObject.Reset();
+        if (mCallbackObject.HasValidObjectRef())
+        {
+            mCallbackObject.Reset();
+        }
         ReturnErrorOnFailure(mCallbackObject.Init(inCallback));
 
         jclass mClazz = env->GetObjectClass(mCallbackObject.ObjectRef());

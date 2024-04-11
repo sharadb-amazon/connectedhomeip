@@ -55,7 +55,7 @@ shared_library("jni") {
     "${chip_root}/examples/tv-casting-app/tv-casting-common",
     "${chip_root}/src/app/data-model:heap",
     "${chip_root}/src/app/server/java:jni",
-    "${chip_root}/src/controller/java:android_chip_im_jni_src",
+    "${chip_root}/src/controller/java:android_chip_im_jni",
     "${chip_root}/src/lib",
     "${chip_root}/third_party/inipp",
   ]
@@ -122,10 +122,7 @@ android_library("java") {
     "App/app/src/main/jni/com/matter/casting/support/MatterError.java",
   ]
 
-  javac_flags = [
-    "-Xlint:deprecation",
-    "-parameters",  # Store infomation about method parameters
-  ]
+  javac_flags = [ "-Xlint:deprecation" ]
 
   # TODO: add classpath support (we likely need to add something like
   #  ..../platforms/android-26/android.jar to access BLE items)

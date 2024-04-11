@@ -243,6 +243,7 @@ class AndroidBuilder(Builder):
 
         jars = {
             "CHIPController.jar": "src/controller/java/CHIPController.jar",
+            "CHIPInteractionModel.jar": "src/controller/java/CHIPInteractionModel.jar",
             "OnboardingPayload.jar": "src/controller/java/OnboardingPayload.jar",
             "AndroidPlatform.jar": "src/platform/android/AndroidPlatform.jar",
             "libMatterJson.jar": "src/controller/java/libMatterJson.jar",
@@ -587,12 +588,6 @@ class AndroidBuilder(Builder):
                         self.output_dir, "content-app", "outputs", "apk", "debug", "content-app-debug.apk"
                     )
                 }
-            elif self.app == AndroidApp.TV_CASTING_APP:
-                outputs = {
-                    self.app.AppName() + "app-debug.apk": os.path.join(
-                        self.output_dir, "tv-casting-app", "app", "outputs", "apk", "debug", "app-debug.apk"
-                    ),
-                }
             elif self.app == AndroidApp.VIRTUAL_DEVICE_APP:
                 outputs = {
                     self.app.AppName() + "app-debug.apk": os.path.join(
@@ -612,6 +607,9 @@ class AndroidBuilder(Builder):
                 ),
                 "CHIPController.jar": os.path.join(
                     self.output_dir, "lib", "src/controller/java/CHIPController.jar"
+                ),
+                "CHIPInteractionModel.jar": os.path.join(
+                    self.output_dir, "lib", "src/controller/java/CHIPInteractionModel.jar"
                 ),
                 "libMatterTlv.jar": os.path.join(
                     self.output_dir, "lib", "src/controller/java/libMatterTlv.jar"
