@@ -72,10 +72,11 @@ void AndroidChipInteractionJNI_OnUnload(JavaVM * jvm, void * reserved)
 
 JNI_METHOD(void, subscribe)
 (JNIEnv * env, jobject self, jlong handle, jlong callbackHandle, jlong devicePtr, jobject attributePathList, jobject eventPathList,
- jint minInterval, jint maxInterval, jboolean keepSubscriptions, jboolean isFabricFiltered, jint imTimeoutMs)
+ jobject dataVersionFilterList, jint minInterval, jint maxInterval, jboolean keepSubscriptions, jboolean isFabricFiltered,
+ jint imTimeoutMs, jobject eventMin)
 {
-    CHIP_ERROR err = subscribe(env, handle, callbackHandle, devicePtr, attributePathList, eventPathList, nullptr, minInterval,
-                               maxInterval, keepSubscriptions, isFabricFiltered, imTimeoutMs, nullptr);
+    CHIP_ERROR err = subscribe(env, handle, callbackHandle, devicePtr, attributePathList, eventPathList, dataVersionFilterList,
+                               minInterval, maxInterval, keepSubscriptions, isFabricFiltered, imTimeoutMs, eventMin);
     if (err != CHIP_NO_ERROR)
     {
         ChipLogError(Controller, "JNI IM Subscribe Error: %" CHIP_ERROR_FORMAT, err.Format());
@@ -84,10 +85,10 @@ JNI_METHOD(void, subscribe)
 
 JNI_METHOD(void, read)
 (JNIEnv * env, jobject self, jlong handle, jlong callbackHandle, jlong devicePtr, jobject attributePathList, jobject eventPathList,
- jboolean isFabricFiltered, jint imTimeoutMs)
+ jobject dataVersionFilterList, jboolean isFabricFiltered, jint imTimeoutMs, jobject eventMin)
 {
-    CHIP_ERROR err = read(env, handle, callbackHandle, devicePtr, attributePathList, eventPathList, nullptr, isFabricFiltered,
-                          imTimeoutMs, nullptr);
+    CHIP_ERROR err = read(env, handle, callbackHandle, devicePtr, attributePathList, eventPathList, dataVersionFilterList,
+                          isFabricFiltered, imTimeoutMs, eventMin);
     if (err != CHIP_NO_ERROR)
     {
         ChipLogError(Controller, "JNI IM Read Error: %" CHIP_ERROR_FORMAT, err.Format());
@@ -125,5 +126,15 @@ JNI_METHOD(void, extendableInvoke)
     if (err != CHIP_NO_ERROR)
     {
         ChipLogError(Controller, "JNI IM Batch Invoke Error: %" CHIP_ERROR_FORMAT, err.Format());
+    }
+}
+
+JNI_METHOD(void, shutdownSubscriptions)
+(JNIEnv * env, jobject self, jlong handle, jobject fabricIndex, jobject peerNodeId, jobject subscriptionId)
+{
+    CHIP_ERROR err = shutdownSubscriptions(env, handle, fabricIndex, peerNodeId, subscriptionId);
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(Controller, "Failed to shutdown subscriptions with Error: %" CHIP_ERROR_FORMAT, err.Format());
     }
 }
