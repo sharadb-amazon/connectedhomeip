@@ -133,6 +133,8 @@ core::Endpoint * convertEndpointFromJavaToCpp(jobject jEndpointObject)
     return reinterpret_cast<core::Endpoint *>(_cppEndpointValue);
 }
 
+matter::casting::memory::Strong<core::CastingPlayer> savedPlayer;
+
 jobject convertCastingPlayerFromCppToJava(matter::casting::memory::Strong<core::CastingPlayer> player)
 {
     ChipLogProgress(AppServer, "convertCastingPlayerFromCppToJava() called");
@@ -196,6 +198,12 @@ jobject convertCastingPlayerFromCppToJava(matter::casting::memory::Strong<core::
     }
     // Set the value of the _cppCastingPlayer field in the Java object to the C++ CastingPlayer pointer.
     jfieldID longFieldId = env->GetFieldID(matterCastingPlayerJavaClass, "_cppCastingPlayer", "J");
+    ChipLogProgress(AppServer, "convertCastingPlayerFromCppToJava on player deviceName=%s nodeId=0x" ChipLogFormatX64 " fabricIndex=%d", player->GetDeviceName(),
+                     ChipLogValueX64(player->GetNodeId()), player->GetFabricIndex());
+    ChipLogProgress(AppServer, "Logging player");
+    player->LogDetail();
+    //ChipLogProgress(AppServer, "convertCastingPlayerFromCppToJava() saving Player");
+    //savedPlayer = player;
     env->SetLongField(jMatterCastingPlayer, longFieldId, reinterpret_cast<jlong>(player.get()));
     return jMatterCastingPlayer;
 }
@@ -255,7 +263,7 @@ jobject convertClusterFromCppToJava(matter::casting::memory::Strong<core::BaseCl
         ChipLogError(AppServer, "convertClusterFromCppToJava: Could not create cluster's Java object");
         return jMatterCluster;
     }
-    // Set the value of the _cppEndpoint field in the Java object to the C++ Endpoint pointer.
+    // Set the value of the _cppCluster field in the Java object to the C++ Cluster pointer.
     jfieldID longFieldId = env->GetFieldID(clusterJavaClass, "_cppCluster", "J");
     env->SetLongField(jMatterCluster, longFieldId, reinterpret_cast<jlong>(cluster.get()));
     return jMatterCluster;

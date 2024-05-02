@@ -42,7 +42,7 @@ public:
     /**
      * @brief Reads and returns a vector of all CastingPlayers found in the cache
      */
-    std::vector<core::CastingPlayer> ReadAll();
+    std::vector<std::shared_ptr<core::CastingPlayer>> ReadAll();
 
     /**
      * @brief If castingPlayer is found in the cache, this will delete it. If it is not found, this method is a no-op
@@ -67,7 +67,7 @@ private:
     /**
      * @brief Writes the vector of CastingPlayers to the cache. This method will overwrite any pre-existing cached data.
      */
-    CHIP_ERROR WriteAll(std::vector<core::CastingPlayer> castingPlayers);
+    CHIP_ERROR WriteAll(std::vector<std::shared_ptr<core::CastingPlayer>> castingPlayers);
 
     enum CastingStoreTLVTag
     {

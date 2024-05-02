@@ -175,7 +175,7 @@ void ChipDeviceEventHandler::HandleBindingsChangedViaCluster(const chip::DeviceL
                          "ChipDeviceEventHandler::HandleBindingsChangedViaCluster accessingFabricIndex: %d did not match bindings",
                          event->BindingsChanged.fabricIndex);
             CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(CHIP_ERROR_INCORRECT_STATE,
-                                                                  CastingPlayer::GetTargetCastingPlayer());
+                                                                  CastingPlayer::GetTargetCastingPlayer().get());
             return;
         }
     }

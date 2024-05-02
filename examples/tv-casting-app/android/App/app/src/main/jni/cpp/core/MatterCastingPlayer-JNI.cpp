@@ -123,6 +123,9 @@ JNI_METHOD(jobject, getEndpoints)
     VerifyOrReturnValue(castingPlayer != nullptr, nullptr,
                         ChipLogError(AppServer, "MatterCastingPlayer-JNI::getEndpoints() castingPlayer == nullptr"));
 
+    ChipLogProgress(AppServer, "Logging player");
+    castingPlayer->LogDetail();
+
     const std::vector<memory::Strong<Endpoint>> endpoints = castingPlayer->GetEndpoints();
     jobject jEndpointList                                 = nullptr;
     chip::JniReferences::GetInstance().CreateArrayList(jEndpointList);

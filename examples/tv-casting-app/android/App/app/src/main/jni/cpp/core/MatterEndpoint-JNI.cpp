@@ -71,6 +71,10 @@ JNI_METHOD(jint, getVendorId)
     ChipLogProgress(AppServer, "MatterEndpoint-JNI::getVendorId() called");
     Endpoint * endpoint = support::convertEndpointFromJavaToCpp(thiz);
     VerifyOrReturnValue(endpoint != nullptr, -1, ChipLogError(AppServer, "MatterEndpoint-JNI::getVendorId() endpoint == nullptr"));
+
+    ChipLogProgress(AppServer, "Logging player");
+    endpoint->GetCastingPlayer()->LogDetail();
+
     return endpoint->GetVendorId();
 }
 
@@ -95,6 +99,9 @@ JNI_METHOD(void, getDeviceProxy)
 
     ReturnOnFailure(MatterEndpointJNIMgr().mGetDeviceProxySuccessHandler.SetUp(env, jSuccessCallback));
     ReturnOnFailure(MatterEndpointJNIMgr().mGetDeviceProxyFailureHandler.SetUp(env, jFailureCallback));
+
+    ChipLogProgress(AppServer, "Logging player");
+    endpoint->GetCastingPlayer()->LogDetail();
 
     endpoint->GetCastingPlayer()->FindOrEstablishSession(
         nullptr,

@@ -55,13 +55,13 @@ class Endpoint : public std::enable_shared_from_this<Endpoint>
 {
 
 private:
-    CastingPlayer * mCastingPlayer;
+    std::weak_ptr<CastingPlayer> mCastingPlayer;
 
     EndpointAttributes mAttributes;
     std::map<chip::ClusterId, memory::Strong<BaseCluster>> mClusters;
 
 public:
-    Endpoint(CastingPlayer * castingPlayer, const EndpointAttributes & attributes)
+    Endpoint(std::weak_ptr<CastingPlayer> castingPlayer, const EndpointAttributes & attributes)
     {
         this->mCastingPlayer = castingPlayer;
         this->mAttributes    = attributes;
@@ -73,7 +73,7 @@ public:
     Endpoint(Endpoint & other)       = delete;
     void operator=(const Endpoint &) = delete;
 
-    CastingPlayer * GetCastingPlayer() const { return mCastingPlayer; }
+    std::shared_ptr<CastingPlayer> GetCastingPlayer() const { return mCastingPlayer.lock(); }
 
     /**
      * @brief Compares based on the Id

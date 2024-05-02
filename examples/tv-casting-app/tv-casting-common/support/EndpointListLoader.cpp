@@ -129,13 +129,14 @@ void EndpointListLoader::Complete()
     if (mPendingAttributeReads == 0)
     {
         ChipLogProgress(AppServer, "EndpointListLoader::Complete Loading %lu endpoint(s)", mNewEndpointsToLoad);
+        std::shared_ptr<CastingPlayer> castingPlayer = std::make_shared<CastingPlayer>(*(CastingPlayer::GetTargetCastingPlayer()));
         for (unsigned long i = 0; i < mNewEndpointsToLoad; i++)
         {
             EndpointAttributes endpointAttributes = mEndpointAttributesList[i];
             std::shared_ptr<Endpoint> endpoint =
-                std::make_shared<Endpoint>(CastingPlayer::GetTargetCastingPlayer(), endpointAttributes);
+                std::make_shared<Endpoint>(castingPlayer, endpointAttributes);
             endpoint->RegisterClusters(mEndpointServerLists[i]);
-            CastingPlayer::GetTargetCastingPlayer()->RegisterEndpoint(endpoint);
+            castingPlayer->RegisterEndpoint(endpoint);
         }
 
         ChipLogProgress(AppServer, "EndpointListLoader::Complete finished Loading %lu endpoints", mNewEndpointsToLoad);
@@ -150,16 +151,16 @@ void EndpointListLoader::Complete()
         mNewEndpointsToLoad  = 0;
 
         // done loading endpoints, store TargetCastingPlayer
-        CHIP_ERROR err = support::CastingStore::GetInstance()->AddOrUpdate(*CastingPlayer::GetTargetCastingPlayer());
+        CHIP_ERROR err = support::CastingStore::GetInstance()->AddOrUpdate(*castingPlayer);
         if (err != CHIP_NO_ERROR)
         {
             ChipLogError(AppServer, "CastingStore::AddOrUpdate() failed. Err: %" CHIP_ERROR_FORMAT, err.Format());
         }
 
         // callback client OnCompleted
-        VerifyOrReturn(CastingPlayer::GetTargetCastingPlayer()->mOnCompleted,
+        VerifyOrReturn(castingPlayer->mOnCompleted,
                        ChipLogError(AppServer, "EndpointListLoader::Complete mOnCompleted() not found"));
-        CastingPlayer::GetTargetCastingPlayer()->mOnCompleted(CHIP_NO_ERROR, CastingPlayer::GetTargetCastingPlayer());
+        castingPlayer->mOnCompleted(CHIP_NO_ERROR, castingPlayer.get());
     }
 }
 

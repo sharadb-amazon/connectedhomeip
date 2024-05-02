@@ -98,7 +98,7 @@ public:
     /**
      * @brief Get the CastingPlayer object targeted currently (may not be connected)
      */
-    static CastingPlayer * GetTargetCastingPlayer() { return mTargetCastingPlayer; }
+    static std::shared_ptr<CastingPlayer> GetTargetCastingPlayer() { return mTargetCastingPlayer; }
 
     /**
      * @brief Compares based on the Id
@@ -197,7 +197,7 @@ private:
     std::vector<memory::Strong<Endpoint>> mEndpoints;
     ConnectionState mConnectionState = CASTING_PLAYER_NOT_CONNECTED;
     CastingPlayerAttributes mAttributes;
-    static CastingPlayer * mTargetCastingPlayer;
+    static std::shared_ptr<CastingPlayer> mTargetCastingPlayer;
     unsigned long long int mCommissioningWindowTimeoutSec = kCommissioningWindowTimeoutSec;
     ConnectCallback mOnCompleted                          = {};
 
@@ -222,7 +222,7 @@ private:
      * @return true - cachedCastingPlayer contains at least one endpoint that matches all the (non-default) values in
      * desiredEndpointFilter, false otherwise
      */
-    bool ContainsDesiredEndpoint(core::CastingPlayer * cachedCastingPlayer, EndpointFilter desiredEndpointFilter);
+    bool ContainsDesiredEndpoint(std::shared_ptr<core::CastingPlayer> cachedCastingPlayer, EndpointFilter desiredEndpointFilter);
 
     // ChipDeviceEventHandler handles chip::DeviceLayer::ChipDeviceEvent events and helps the CastingPlayer class commission with
     // and connect to a CastingPlayer
@@ -240,7 +240,7 @@ public:
     ~ConnectionContext();
 
     void * mClientContext                                                                    = nullptr;
-    core::CastingPlayer * mTargetCastingPlayer                                               = nullptr;
+    std::shared_ptr<core::CastingPlayer> mTargetCastingPlayer                                               = nullptr;
     chip::OnDeviceConnected mOnDeviceConnectedFn                                             = nullptr;
     chip::OnDeviceConnectionFailure mOnDeviceConnectionFailureFn                             = nullptr;
     chip::Callback::Callback<chip::OnDeviceConnected> * mOnConnectedCallback                 = nullptr;
