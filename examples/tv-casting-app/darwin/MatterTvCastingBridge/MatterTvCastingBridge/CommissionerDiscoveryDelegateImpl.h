@@ -106,7 +106,8 @@ private:
         for (size_t i = 0; i < kMaxCachedVideoPlayers && thiz->mCachedTargetVideoPlayerInfos[i].IsInitialized(); i++) {
             // do NOT surface this cached Player if we don't have its MACAddress
             if (thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress() == nullptr
-                && thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress()->size() == 0) {
+                || thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress()->data() == nullptr
+                || thiz->mCachedTargetVideoPlayerInfos[i].GetMACAddress()->size() == 0) {
                 ChipLogProgress(NotSpecified,
                     "CommissionerDiscoveryDelegateImpl().ReportSleepingCommissioners() Skipping Player with hostName %s but no "
                     "MACAddress",
@@ -141,7 +142,8 @@ private:
                 continue;
             }
 
-            // DO surface this cached Player (as asleep)
+            // DO surface this cached Player (as asleep) since it supports STR mode (previously reported a WakeOnLan
+            // cluster:MACAddress)
             DiscoveredNodeData * objCDiscoveredNodeData =
                 [ConversionUtils convertToDiscoveredNodeDataFrom:&thiz->mCachedTargetVideoPlayerInfos[i]];
             objCDiscoveredNodeData.getConnectableVideoPlayer.isAsleep = true;

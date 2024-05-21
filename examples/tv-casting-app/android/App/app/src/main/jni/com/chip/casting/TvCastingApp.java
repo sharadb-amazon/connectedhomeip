@@ -232,7 +232,7 @@ public class TvCastingApp {
     for (VideoPlayer player : cachedVideoPlayers) {
       Log.d(TAG, "Cached Video Player: " + player);
       // do NOT surface this cached Player if we don't have its MACAddress
-      if (player.getMACAddress() == null) {
+      if (player.getMACAddress() == null || player.getMACAddress().isEmpty()) {
         Log.d(
             TAG,
             "TvCastingApp.reportSleepingVideoPlayerCommissioners Skipping Player with hostName"
@@ -273,7 +273,8 @@ public class TvCastingApp {
         continue;
       }
 
-      // DO surface this cached Player (as asleep)
+      // DO surface this cached Player (as asleep) since it previously reported a WakeOnLan
+      // cluster:MACAddress
       Log.d(TAG, "Reporting sleeping player with hostName " + player.getHostName());
       player.setIsAsleep(true);
       discoverySuccessCallback.handle(new DiscoveredNodeData(player));
