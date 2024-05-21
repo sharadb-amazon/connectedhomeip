@@ -497,7 +497,8 @@ CHIP_ERROR CastingServer::VerifyOrEstablishConnection(TargetVideoPlayerInfo & ta
     }
 
     CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo = mCachedTargetVideoPlayerInfo[cacheIndex];
-    uint32_t delay                                             = 0;
+    CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.SetIsAsleep(targetVideoPlayerInfo.IsAsleep());
+    uint32_t delay = 0;
     if (CastingServer::GetInstance()->mActiveTargetVideoPlayerInfo.IsAsleep())
     {
         ChipLogProgress(AppServer, "CastingServer::VerifyOrEstablishConnection(): Sending WoL to sleeping VideoPlayer and waiting");
