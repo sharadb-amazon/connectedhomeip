@@ -72,7 +72,7 @@
 //#define CHIP_DEVICE_CONFIG_STR_CACHE_LAST_DISCOVERED_HOURS 7 * 24
 
 // time (in sec) assumed to be required for player to wake up after sending WoL magic packet
-#define CHIP_DEVICE_CONFIG_STR_WAKE_UP_DELAY_SEC 10
+#define CHIP_DEVICE_CONFIG_STR_WAKE_UP_DELAY_SEC 8
 
 // delay (in sec) before which we assume undiscovered cached players may be in STR mode
 #define CHIP_DEVICE_CONFIG_STR_DISCOVERY_DELAY_SEC 3
