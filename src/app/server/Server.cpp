@@ -417,6 +417,10 @@ void Server::ScheduleFactoryReset()
 
 void Server::Shutdown()
 {
+    DeviceLayer::ChipDeviceEvent event;
+    event.Type = DeviceLayer::DeviceEventType::kServerShuttingDown;
+    chip::DeviceLayer::PlatformMgr().PostEvent(&event);
+
     mCASEServer.Shutdown();
     mCASESessionManager.Shutdown();
     app::DnssdServer::Instance().SetCommissioningModeProvider(nullptr);

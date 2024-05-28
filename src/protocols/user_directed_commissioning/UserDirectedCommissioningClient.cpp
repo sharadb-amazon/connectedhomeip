@@ -25,6 +25,8 @@
 
 #include "UserDirectedCommissioning.h"
 
+#include <platform/CHIPDeviceLayer.h>
+
 #include <unistd.h>
 
 namespace chip {
@@ -41,19 +43,55 @@ CHIP_ERROR UserDirectedCommissioningClient::SendUDCMessage(TransportMgrBase * tr
     }
     ChipLogProgress(Inet, "Sending UDC msg");
 
-    // send UDC message 5 times per spec (no ACK on this message)
-    for (unsigned int i = 0; i < 5; i++)
-    {
-        err = transportMgr->SendMessage(peerAddress, payload.CloneData());
-        if (err != CHIP_NO_ERROR)
-        {
-            ChipLogError(AppServer, "UDC SendMessage failed: %" CHIP_ERROR_FORMAT, err.Format());
-            return err;
-        }
-        usleep(100 * 1000); // 100ms
-    }
-    ChipLogProgress(Inet, "UDC msg send status %" CHIP_ERROR_FORMAT, err.Format());
+    UDCClientContext * udcClientContext = new UDCClientContext();
+    udcClientContext->mUdcAttemptsRemaining =
+        CHIP_DEVICE_CONFIG_TOTAL_UDC_MSG_COUNT; // repeat sending UDC message per spec (no ACK on this message)
+    udcClientContext->mTransportMgr      = transportMgr;
+    udcClientContext->mTargetPayload     = payload.CloneData();
+    udcClientContext->mTargetPeerAddress = peerAddress;
+
+    ReturnErrorOnFailure(
+        DeviceLayer::PlatformMgrImpl().AddEventHandler(DeviceEventCallback, reinterpret_cast<intptr_t>(udcClientContext)));
+    ReturnErrorOnFailure(DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(0), SendUDCTask, udcClientContext));
+
     return err;
+}
+
+void UserDirectedCommissioningClient::DeviceEventCallback(const DeviceLayer::ChipDeviceEvent * event, intptr_t arg)
+{
+    if (event->Type == DeviceLayer::DeviceEventType::kServerShuttingDown)
+    {
+        ChipLogProgress(Inet, "Server shutting down. Canceling SendUDCTask");
+        DeviceLayer::SystemLayer().CancelTimer(SendUDCTask, reinterpret_cast<void *>(arg));
+    }
+}
+
+void UserDirectedCommissioningClient::SendUDCTask(System::Layer * aSystemLayer, void * aAppState)
+{
+    VerifyOrReturn(aAppState != nullptr);
+    UDCClientContext * udcClientContext = reinterpret_cast<UDCClientContext *>(aAppState);
+
+    // Schedule next UDC msg, if any, after a delay
+    udcClientContext->mUdcAttemptsRemaining--;
+    if (udcClientContext->mUdcAttemptsRemaining > 0)
+    {
+        DeviceLayer::SystemLayer().StartTimer(System::Clock::Milliseconds32(CHIP_DEVICE_CONFIG_UDC_MSG_DELAY_MS), SendUDCTask,
+                                              udcClientContext);
+    }
+
+    // send UDC message
+    ChipLogProgress(Inet, "Sending UDC message, attempts remaining %d", udcClientContext->mUdcAttemptsRemaining);
+    CHIP_ERROR err = udcClientContext->mTransportMgr->SendMessage(udcClientContext->mTargetPeerAddress,
+                                                                  udcClientContext->mTargetPayload.CloneData());
+    if (err != CHIP_NO_ERROR)
+    {
+        ChipLogError(Inet, "UDC SendMessage failed: %" CHIP_ERROR_FORMAT, err.Format());
+    }
+
+    if (udcClientContext->mUdcAttemptsRemaining == 0)
+    {
+        delete udcClientContext;
+    }
 }
 
 CHIP_ERROR UserDirectedCommissioningClient::EncodeUDCMessage(const System::PacketBufferHandle & payload)
