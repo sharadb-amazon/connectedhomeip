@@ -32,7 +32,7 @@ namespace app {
 CHIP_ERROR EventPathIBs::Parser::CheckSchemaValidity() const
 {
     CHIP_ERROR err = CHIP_NO_ERROR;
-    size_t NumPath = 0;
+    //size_t NumPath = 0;
     TLV::TLVReader reader;
 
     PRETTY_PRINT("EventPathIBs =");
@@ -55,7 +55,7 @@ CHIP_ERROR EventPathIBs::Parser::CheckSchemaValidity() const
             PRETTY_PRINT_DECDEPTH();
         }
 
-        ++NumPath;
+        //++NumPath;
     }
 
     PRETTY_PRINT("],");

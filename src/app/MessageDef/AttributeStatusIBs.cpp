@@ -48,7 +48,7 @@ AttributeStatusIBs::Builder & AttributeStatusIBs::Builder::EndOfAttributeStatuse
 CHIP_ERROR AttributeStatusIBs::Parser::CheckSchemaValidity() const
 {
     CHIP_ERROR err            = CHIP_NO_ERROR;
-    size_t NumAttributeStatus = 0;
+    //size_t NumAttributeStatus = 0;
     TLV::TLVReader reader;
 
     PRETTY_PRINT("AttributeStatusIBs =");
@@ -69,7 +69,7 @@ CHIP_ERROR AttributeStatusIBs::Parser::CheckSchemaValidity() const
             PRETTY_PRINT_DECDEPTH();
         }
 
-        ++NumAttributeStatus;
+        //++NumAttributeStatus;
     }
 
     PRETTY_PRINT("],");
