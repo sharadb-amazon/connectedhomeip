@@ -1,4 +1,4 @@
-package com.chip.casting.app;
+package com.matter.casting;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -9,15 +9,13 @@ import com.R;
 import com.chip.casting.AppParameters;
 import com.chip.casting.DiscoveredNodeData;
 import com.chip.casting.TvCastingApp;
+import com.chip.casting.app.CertTestFragment;
+import com.chip.casting.app.CommissionerDiscoveryFragment;
+import com.chip.casting.app.ConnectionFragment;
+import com.chip.casting.app.ContentLauncherFragment;
+import com.chip.casting.app.MediaPlaybackFragment;
+import com.chip.casting.app.SelectClusterFragment;
 import com.chip.casting.util.GlobalCastingConstants;
-import com.matter.casting.ActionSelectorFragment;
-import com.matter.casting.ApplicationBasicReadVendorIDExampleFragment;
-import com.matter.casting.ConnectionExampleFragment;
-import com.matter.casting.ContentLauncherLaunchURLExampleFragment;
-import com.matter.casting.DiscoveryExampleFragment;
-import com.matter.casting.InitializationExample;
-import com.matter.casting.MediaPlaybackSubscribeToCurrentStateExampleFragment;
-import com.matter.casting.PreferencesConfigurationManager;
 import com.matter.casting.core.CastingPlayer;
 import java.util.Random;
 

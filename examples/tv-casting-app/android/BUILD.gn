@@ -85,6 +85,7 @@ android_library("java") {
   ]
 
   sources = [
+    "App/app/src/compat/jni/com/chip/casting/TvCastingApp.java",
     "App/app/src/main/jni/com/chip/casting/AppParameters.java",
     "App/app/src/main/jni/com/chip/casting/CommissioningCallbacks.java",
     "App/app/src/main/jni/com/chip/casting/ContentApp.java",
@@ -100,7 +101,6 @@ android_library("java") {
     "App/app/src/main/jni/com/chip/casting/SubscriptionEstablishedCallback.java",
     "App/app/src/main/jni/com/chip/casting/SuccessCallback.java",
     "App/app/src/main/jni/com/chip/casting/TargetNavigatorTypes.java",
-    "App/app/src/main/jni/com/chip/casting/TvCastingApp.java",
     "App/app/src/main/jni/com/chip/casting/VideoPlayer.java",
   ]
 
