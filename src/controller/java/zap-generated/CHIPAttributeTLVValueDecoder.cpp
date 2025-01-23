@@ -35,6 +35,9 @@ jobject DecodeAttributeValue(const app::ConcreteAttributePath & aPath, TLV::TLVR
     JNIEnv * env   = JniReferences::GetInstance().GetEnvForCurrentThread();
     CHIP_ERROR err = CHIP_NO_ERROR;
 
+    /*ChipLogProgress(AppServer, "CHIPAttributeTLVValueDecoder.DecodeAttributeValue called Expected:%d %d Actual:%d %d",
+        app::Clusters::ApplicationBasic::Id, app::Clusters::ApplicationBasic::Attributes::VendorID::Id, aPath.mClusterId, aPath.mAttributeId);*/
+
     switch (aPath.mClusterId)
     {
     case app::Clusters::Identify::Id: {
@@ -2571,12 +2574,15 @@ jobject DecodeAttributeValue(const app::ConcreteAttributePath & aPath, TLV::TLVR
             return value;
         }
         case Attributes::VendorID::Id: {
+            ChipLogProgress(AppServer, "CHIPAttributeTLVValueDecoder.DecodeAttributeValue for BasicInformation Attributes::VendorID::Id")
+
             using TypeInfo = Attributes::VendorID::TypeInfo;
             TypeInfo::DecodableType cppValue;
             *aError = app::DataModel::Decode(aReader, cppValue);
             if (*aError != CHIP_NO_ERROR)
             {
                 return nullptr;
+                ChipLogProgress(AppServer, "BasicInformation: Decode failed...")
             }
             jobject value;
             std::string valueClassName     = "java/lang/Integer";
@@ -38720,11 +38726,14 @@ jobject DecodeAttributeValue(const app::ConcreteAttributePath & aPath, TLV::TLVR
             return value;
         }
         case Attributes::VendorID::Id: {
+            ChipLogProgress(AppServer, "CHIPAttributeTLVValueDecoder.DecodeAttributeValue Attributes::VendorID::Id")
+
             using TypeInfo = Attributes::VendorID::TypeInfo;
             TypeInfo::DecodableType cppValue;
             *aError = app::DataModel::Decode(aReader, cppValue);
             if (*aError != CHIP_NO_ERROR)
             {
+                ChipLogError(AppServer, "CHIPAttributeTLVValueDecoder.DecodeAttributeValue app::DataModel::Decode failed")
                 return nullptr;
             }
             jobject value;
@@ -38733,6 +38742,7 @@ jobject DecodeAttributeValue(const app::ConcreteAttributePath & aPath, TLV::TLVR
             jint jnivalue                  = static_cast<jint>(cppValue);
             chip::JniReferences::GetInstance().CreateBoxedObject<jint>(valueClassName.c_str(), valueCtorSignature.c_str(), jnivalue,
                                                                        value);
+            ChipLogProgress(AppServer, "CHIPAttributeTLVValueDecoder.DecodeAttributeValue returning")
             return value;
         }
         case Attributes::ApplicationName::Id: {

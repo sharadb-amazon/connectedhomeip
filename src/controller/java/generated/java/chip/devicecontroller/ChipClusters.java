@@ -158,9 +158,9 @@ public class ChipClusters {
       ChipInteractionClient.invoke(0, jniCallback.getCallbackHandle(), devicePtr, element, timedRequestTimeoutMs, timeoutMillis.orElse(0L).intValue());
     }
 
-    private static native byte[] encodeToTlv(BaseTLVType value);
+    public static native byte[] encodeToTlv(BaseTLVType value);
 
-    static native BaseTLVType decodeFromTlv(byte[] tlv);
+    public static native BaseTLVType decodeFromTlv(byte[] tlv);
 
     @Deprecated
     public void deleteCluster(long chipClusterPtr) {}

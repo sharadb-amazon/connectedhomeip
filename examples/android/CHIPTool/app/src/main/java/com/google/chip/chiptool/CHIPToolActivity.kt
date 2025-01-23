@@ -42,6 +42,7 @@ import matter.onboardingpayload.OnboardingPayloadParser
 import matter.onboardingpayload.UnrecognizedQrCodeException
 import org.json.JSONObject
 
+
 class CHIPToolActivity :
   AppCompatActivity(),
   BarcodeFragment.Callback,

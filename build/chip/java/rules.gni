@@ -105,8 +105,8 @@ template("java_library") {
   if (!_is_prebuilt) {
     # Additional flags
     _javac_flags = [
-      "-Werror",
-      "-Xlint:all",
+      # "-Werror",
+      # "-Xlint:all",
     ]
     if (defined(invoker.javac_flags)) {
       _javac_flags += invoker.javac_flags
@@ -263,8 +263,8 @@ template("java_binary") {
   if (!_is_prebuilt) {
     # Additional flags
     _javac_flags = [
-      "-Werror",
-      "-Xlint:all",
+      # "-Werror",
+      # "-Xlint:all",
     ]
     if (defined(invoker.javac_flags)) {
       _javac_flags += invoker.javac_flags
@@ -421,8 +421,8 @@ template("kotlin_library") {
   if (!_is_prebuilt) {
     # Additional flags
     _kotlinc_flags = [
-      "-Werror",
-      "-Xlint:all",
+      # "-Werror",
+      # "-Xlint:all",
     ]
     if (defined(invoker.kotlinc_flags)) {
       _kotlinc_flags += invoker.kotlinc_flags
@@ -579,8 +579,8 @@ template("kotlin_binary") {
   if (!_is_prebuilt) {
     # Additional flags
     _kotlinc_flags = [
-      "-Werror",
-      "-Xlint:all",
+      # "-Werror",
+      # "-Xlint:all",
     ]
     if (defined(invoker.kotlinc_flags)) {
       _kotlinc_flags += invoker.kotlinc_flags

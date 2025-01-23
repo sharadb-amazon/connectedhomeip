@@ -26,6 +26,17 @@ import com.matter.controller.commands.icd.*
 import com.matter.controller.commands.ota.PairOnNetworkLongOtaOverBdxCommand
 import com.matter.controller.commands.pairing.*
 
+import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.ChipTLVType.BaseTLVType
+import chip.devicecontroller.ChipTLVType.EmptyType
+import chip.devicecontroller.ChipTLVType.StringType
+import chip.devicecontroller.ChipTLVType.StructElement
+import chip.devicecontroller.ChipTLVType.StructType
+import matter.tlv.TlvReader
+
+import java.util.Optional
+
 private fun getDiscoveryCommands(
   controller: ChipDeviceController,
   credentialsIssuer: CredentialsIssuer
@@ -99,6 +110,38 @@ private fun getOtaCommands(
   return listOf(
     PairOnNetworkLongOtaOverBdxCommand(controller, credentialsIssuer),
   )
+}
+
+class MyCluster(devicePtr: Long, endpointId: Int) :
+ChipClusters.ContentLauncherCluster(devicePtr, endpointId) {
+
+fun launchURL(contentURL: String?, displayString: Optional<String?>, brandingInformation: Optional<ChipStructs.ContentLauncherClusterBrandingInformationStruct?>, timedInvokeTimeoutMs: Int): String {
+val commandId = 1L
+
+val elements = ArrayList<StructElement>()
+val contentURLFieldID = 0L
+val contentURLtlvValue: BaseTLVType = StringType(contentURL)
+elements.add(StructElement(contentURLFieldID, contentURLtlvValue))
+
+val displayStringFieldID = 1L
+val displayStringtlvValue: BaseTLVType = displayString
+    ?.orElse(null) // Convert Optional<String?> to String?
+    ?.let { nonOptionalDisplayString -> StringType(nonOptionalDisplayString ?: "") } // Ensure non-null
+    ?: EmptyType()
+
+elements.add(StructElement(displayStringFieldID, displayStringtlvValue))
+
+val brandingInformationFieldID = 2L
+val brandingInformationtlvValue: BaseTLVType = brandingInformation
+    ?.orElse(null) // Unwrap the Optional, returning null if empty
+    ?.let { nonOptionalBrandingInformation -> nonOptionalBrandingInformation.encodeTlv() }
+    ?: EmptyType()
+elements.add(StructElement(brandingInformationFieldID, brandingInformationtlvValue))
+
+val commandArgs = StructType(elements)
+val tlvEncoding = encodeToTlv(commandArgs);
+return TlvReader(tlvEncoding).toJsonString()
+}
 }
 
 fun main(args: Array<String>) {

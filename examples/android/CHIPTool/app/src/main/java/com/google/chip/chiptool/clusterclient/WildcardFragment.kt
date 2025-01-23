@@ -14,8 +14,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipDeviceController
 import chip.devicecontroller.ChipIdLookup
+import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.ChipTLVType
+import chip.devicecontroller.ChipTLVType.BaseTLVType
+import chip.devicecontroller.ChipTLVType.StructType
+import chip.devicecontroller.ChipTLVType.TLVType
+import chip.devicecontroller.ChipTLVType.UIntType
+import chip.devicecontroller.ChipTLVValueDecoder
 import chip.devicecontroller.ExtendableInvokeCallback
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.ResubscriptionAttemptCallback
@@ -34,16 +42,19 @@ import com.google.chip.chiptool.ChipClient
 import com.google.chip.chiptool.R
 import com.google.chip.chiptool.databinding.WildcardFragmentBinding
 import com.google.chip.chiptool.util.toAny
-import java.lang.StringBuilder
-import java.util.Optional
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import matter.jsontlv.fromJsonString
 import matter.jsontlv.putJsonString
+import matter.jsontlv.toJsonString
 import matter.tlv.AnonymousTag
 import matter.tlv.TlvReader
 import matter.tlv.TlvWriter
+import org.json.JSONObject
+import java.util.Optional
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+
 
 class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCallback {
   private var _binding: WildcardFragmentBinding? = null
@@ -154,6 +165,133 @@ class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCall
       }
     }
 
+  class MyCluster(devicePtr: Long, endpointId: Int) :
+          ChipClusters.ContentLauncherCluster(devicePtr, endpointId) {
+
+
+    data class AttributeData(
+            val chipAttributePath: ChipAttributePath,
+            val rawValue: String?
+    )
+
+    fun getAttributeDataList(jsonString: String): List<AttributeData> {
+      val jsonObject = JSONObject(jsonString)
+      val attributeReports = jsonObject
+              .getJSONObject("reportData")
+              .getJSONArray("attributeReports")
+
+      val attributeDataList = mutableListOf<AttributeData>()
+
+      for (i in 0 until attributeReports.length()) {
+        val attributeReport = attributeReports.getJSONObject(i).getJSONObject("attributeData")
+        val path = attributeReport.getJSONObject("path")
+        val endpointId = path.getInt("endpointId")
+        val clusterId = path.getLong("clusterId")
+        val attributeId = path.getLong("attributeId")
+
+        val chipAttributePath = ChipAttributePath.newInstance(endpointId, clusterId, attributeId)
+        val rawValue = attributeReport.opt("value") // Extract the raw value
+
+        attributeDataList.add(AttributeData(chipAttributePath, rawValue.toString()))
+      }
+
+      attributeDataList.forEach { attributeData ->
+        // check if it is ApplicationBasic:VendorId
+        if(attributeData.chipAttributePath.clusterId.id == 40L && attributeData.chipAttributePath.attributeId.id == 2L) {
+          val attributeDataString = attributeData.rawValue.toString()
+
+          val attributeDataTlvBytes = TlvWriter().fromJsonString(attributeDataString)
+          val attributeDataTlv:BaseTLVType = decodeFromTlv(attributeDataTlvBytes)
+
+          val type = attributeDataTlv.type()
+          val value: Int = ChipTLVValueDecoder.decodeAttributeValue(attributeData.chipAttributePath, attributeDataTlvBytes)
+
+
+          /*if(attributeDataTlv.type() == TLVType.Struct) {
+            attributeDataTlv.
+            val attributeDataStructType: StructType = attributeDataTlv.value(StructType::class.java)
+            //ChipStructs.BasicInf
+          }
+          if (element.value(BaseTLVType::class.java).type() === TLVType.UInt) {
+            val castingValue: UIntType = element.value(UIntType::class.java)
+            vendorID = castingValue.value<Int>(Int::class.java)
+          }*/
+
+        }
+      }
+
+      return attributeDataList
+    }
+
+    fun generateCommandJson(
+            nodeId: Long,
+            endpointId: ChipPathId,
+            clusterId: ChipPathId,
+            commandId: ChipPathId,
+            commandArgsValue: String
+    ): String {
+      val commandArgsJson = JSONObject(commandArgsValue) // Parse the input JSON string
+
+      // Construct the command JSON
+      val commandJson = JSONObject().apply {
+        put("nodeId", nodeId)
+        put("invokeRequest", JSONObject().apply {
+          put("invokeRequests", listOf(
+                  JSONObject().apply {
+                    put("path", JSONObject().apply {
+                      put("endpointId", endpointId.id)
+                      put("clusterId", clusterId.id)
+                      put("commandId", commandId.id)
+                    })
+                    put("value", commandArgsJson)
+                  }
+          ))
+        })
+      }
+
+      return commandJson.toString() // Return the generated JSON as a string
+    }
+
+    fun getLaunchURLCommandJson(contentURL: String?, displayString: Optional<String>, brandingInformation: Optional<ChipStructs.ContentLauncherClusterBrandingInformationStruct>, timedInvokeTimeoutMs: Int): String {
+      val nodeId = 5L
+      val commandId = 0L
+      val endpointId = 1L
+      val clusterId = 1290L
+
+      val elements = ArrayList<ChipTLVType.StructElement>()
+      val contentURLFieldID = 0L
+      val contentURLtlvValue: ChipTLVType.BaseTLVType = ChipTLVType.StringType(contentURL)
+      elements.add(ChipTLVType.StructElement(contentURLFieldID, contentURLtlvValue))
+
+      val displayStringFieldID = 1L
+      val displayStringtlvValue: ChipTLVType.BaseTLVType = displayString
+              ?.orElse(null) // Convert Optional<String?> to String?
+              ?.let { nonOptionalDisplayString ->
+                ChipTLVType.StringType(nonOptionalDisplayString ?: "")
+              } // Ensure non-null
+              ?: ChipTLVType.EmptyType()
+
+      elements.add(ChipTLVType.StructElement(displayStringFieldID, displayStringtlvValue))
+
+      val brandingInformationFieldID = 2L
+      val brandingInformationtlvValue: ChipTLVType.BaseTLVType = brandingInformation
+              ?.orElse(null) // Unwrap the Optional, returning null if empty
+              ?.let { nonOptionalBrandingInformation -> nonOptionalBrandingInformation.encodeTlv() }
+              ?: ChipTLVType.EmptyType()
+      elements.add(ChipTLVType.StructElement(brandingInformationFieldID, brandingInformationtlvValue))
+
+      val commandArgs = ChipTLVType.StructType(elements)
+
+      //return TlvReader(encodeToTlv(commandArgs)).toJsonString()
+      val commandArgsTlv = encodeToTlv(commandArgs);
+      val commandArgsJson = TlvReader(commandArgsTlv).toJsonString()
+
+      val commandJson = generateCommandJson(nodeId, ChipPathId.forId(endpointId), ChipPathId.forId(clusterId),
+              ChipPathId.forId(commandId), commandArgsJson)
+      return commandJson
+    }
+  }
+
   override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
@@ -196,6 +334,14 @@ class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCall
 
     addressUpdateFragment =
       childFragmentManager.findFragmentById(R.id.addressUpdateFragment) as AddressUpdateFragment
+
+    var cluster = MyCluster(242342, 1)
+    cluster.getLaunchURLCommandJson("myurl", Optional.of("mydisplaystring"),
+            Optional.empty<ChipStructs.ContentLauncherClusterBrandingInformationStruct>(), 2)
+
+    val attributeReportsJson = """{"nodeId":1,"reportData":{"attributeReports":[{"attributeData":{"path":{"attributeId":2,"clusterId":40,"endpointId":1},"value":{"2:UINT":1}}}]}}"""
+
+    val attributeDataList = cluster.getAttributeDataList(attributeReportsJson)
 
     return binding.root
   }

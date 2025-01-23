@@ -23,13 +23,14 @@ extern CHIP_ERROR ParseEventPath(jobject eventPath, EndpointId & outEndpointId, 
 
 JNI_METHOD(jobject, decodeAttributeValue)(JNIEnv * env, jclass clazz, jobject attributePath, jbyteArray jTlv)
 {
+    ChipLogProgress(Controller, "decodeAttributeValue called");
     EndpointId endpointId;
     ClusterId clusterId;
     AttributeId attributeId;
     CHIP_ERROR err = ParseAttributePath(attributePath, endpointId, clusterId, attributeId);
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogProgress(Controller, "decode error attributePath");
+        ChipLogProgress(Controller, "decode error attributePath, could not parse");
         return nullptr;
     }
 
@@ -45,7 +46,7 @@ JNI_METHOD(jobject, decodeAttributeValue)(JNIEnv * env, jclass clazz, jobject at
 
     if (err != CHIP_NO_ERROR)
     {
-        ChipLogProgress(Controller, "decode error attributeValue");
+        ChipLogProgress(Controller, "decode error attributeValue, could not decode");
         return nullptr;
     }
 
