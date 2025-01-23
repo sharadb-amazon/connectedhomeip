@@ -25,3 +25,7 @@ chip_project_config_include_dirs =
 chip_project_config_include_dirs += [ "${chip_root}/config/standalone" ]
 chip_stack_lock_tracking = "fatal"
 chip_build_controller_dynamic_server = true
+
+matter_enable_java_generated_api = true
+
+matter_enable_tlv_decoder_api = true

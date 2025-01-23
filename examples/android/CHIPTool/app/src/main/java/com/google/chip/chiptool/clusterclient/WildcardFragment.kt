@@ -14,6 +14,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipClusters.ContentLauncherCluster
 import chip.devicecontroller.ChipDeviceController
 import chip.devicecontroller.ChipIdLookup
 import chip.devicecontroller.ExtendableInvokeCallback
@@ -41,6 +43,7 @@ import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import matter.jsontlv.putJsonString
+import matter.jsontlv.toJsonString
 import matter.tlv.AnonymousTag
 import matter.tlv.TlvReader
 import matter.tlv.TlvWriter
@@ -196,6 +199,10 @@ class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCall
 
     addressUpdateFragment =
       childFragmentManager.findFragmentById(R.id.addressUpdateFragment) as AddressUpdateFragment
+
+    val commandArgs = ContentLauncherCluster().constructLaunchURLArgs("contentUrl", Optional.of("displayString"), Optional.empty(), 0)
+    val commandArgsTlv = ChipClusters.BaseChipCluster.encodeToTlv(commandArgs);
+    Log.d(TAG, "ContentLauncherCluster.LaunchURL command args (in JSON): " + TlvReader(commandArgsTlv).toJsonString())
 
     return binding.root
   }
