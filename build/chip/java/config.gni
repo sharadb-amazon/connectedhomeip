@@ -23,7 +23,7 @@ declare_args() {
   # If the 'matter_enable_java_generated_api' feature is enabled, this feature must be enabled.
   matter_enable_tlv_decoder_api = true
 
-  matter_enable_java_compilation = false
+  matter_enable_java_compilation = true
   if (java_home != "" && (current_os == "linux" || current_os == "mac")) {
     java_matter_controller_dependent_paths += [ "${java_home}/include/" ]
 
@@ -35,8 +35,8 @@ declare_args() {
           [ "${java_home}/include/linux/" ]
     }
 
-    matter_enable_java_generated_api = false
-    matter_enable_tlv_decoder_api = false
+    matter_enable_java_generated_api = true
+    matter_enable_tlv_decoder_api = true
     matter_enable_java_compilation = true
   }
 }
