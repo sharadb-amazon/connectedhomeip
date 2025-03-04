@@ -23,6 +23,12 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.collections.MutableMap
 
+import java.util.Optional
+import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipClusters.ContentLauncherCluster
+import matter.jsontlv.toJsonString
+import matter.tlv.TlvReader
+
 class CommandManager {
   private val clusters: MutableMap<String, List<Command>> = HashMap()
 
@@ -151,6 +157,10 @@ class CommandManager {
       Level.INFO,
       "  +-------------------------------------------------------------------------------------+"
     )
+
+    val commandArgs = ContentLauncherCluster().constructLaunchURLArgs("contentUrl", Optional.of("displayString"), Optional.empty(), 0)
+    val commandArgsTlv = ChipClusters.BaseChipCluster.encodeToTlv(commandArgs);
+    logger.log(Level.INFO, "ContentLauncherCluster.LaunchURL command args (in JSON): " + TlvReader(commandArgsTlv).toJsonString())
   }
 
   private fun showCluster(clusterName: String, commands: List<Command>) {
