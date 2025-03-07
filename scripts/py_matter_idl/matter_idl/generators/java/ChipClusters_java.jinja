@@ -408,6 +408,25 @@ public class ChipClusters {
     }
 {%- endif %}
 
+    public static StructType create{{command.name}}Params(
+{%- if command.input_param -%}
+{%- for field in (cluster.structs | named(command.input_param)).fields -%}
+{%- set encodable = field | asEncodable(typeLookup) -%}
+{% if not loop.first %}, {% endif %}{{encode_value(cluster, encodable, 0)}} {{field.name | lowfirst_except_acronym}}
+{%- endfor -%}
+{%- endif -%}) {
+      ArrayList<StructElement> elements = new ArrayList<>();
+{%- if command.input_param -%}
+{%- for field in (cluster.structs | named(command.input_param)).fields -%}
+{%- set encodable = field | asEncodable(typeLookup) %}
+      final long {{field.name | lowfirst_except_acronym}}FieldID = {{field.code}}L;
+      BaseTLVType {{field.name | lowfirst_except_acronym}}tlvValue = {{encode_tlv(cluster, encodable, (field.name | lowfirst_except_acronym), 0)}};
+      elements.add(new StructElement({{field.name | lowfirst_except_acronym}}FieldID, {{field.name | lowfirst_except_acronym}}tlvValue));
+{% endfor -%}
+{%- endif %}
+      return new StructType(elements);
+    }
+
     public void {{command.name | lowfirst_except_acronym}}({{callbackName}}Callback callback
 {%- if command.input_param -%}
 {%- for field in (cluster.structs | named(command.input_param)).fields -%}
@@ -418,16 +437,14 @@ public class ChipClusters {
     , int timedInvokeTimeoutMs) {
       final long commandId = {{command.code}}L;
 
-      ArrayList<StructElement> elements = new ArrayList<>();
-{%- if command.input_param -%}
+      StructType commandArgs = create{{command.name}}Params(
+      {%- if command.input_param -%}
 {%- for field in (cluster.structs | named(command.input_param)).fields -%}
-{%- set encodable = field | asEncodable(typeLookup) %}
-      final long {{field.name | lowfirst_except_acronym}}FieldID = {{field.code}}L;
-      BaseTLVType {{field.name | lowfirst_except_acronym}}tlvValue = {{encode_tlv(cluster, encodable, (field.name | lowfirst_except_acronym), 0)}};
-      elements.add(new StructElement({{field.name | lowfirst_except_acronym}}FieldID, {{field.name | lowfirst_except_acronym}}tlvValue));
-{% endfor -%}
-{%- endif %}
-      StructType commandArgs = new StructType(elements);
+{%- set encodable = field | asEncodable(typeLookup) -%}
+{% if not loop.first %}, {% endif %}{{field.name | lowfirst_except_acronym}}
+{%- endfor -%}
+{%- endif -%});
+
       invoke(new InvokeCallbackImpl(callback) {
           @Override
           public void onResponse(StructType invokeStructValue) {
