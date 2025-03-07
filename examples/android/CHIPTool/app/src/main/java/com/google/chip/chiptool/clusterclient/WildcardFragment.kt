@@ -45,6 +45,18 @@ import matter.tlv.AnonymousTag
 import matter.tlv.TlvReader
 import matter.tlv.TlvWriter
 
+import matter.tlv.ContextSpecificTag
+import chip.devicecontroller.ChipClusters
+import chip.devicecontroller.ChipClusters.ContentLauncherCluster
+import chip.devicecontroller.ChipClusters.ThreadNetworkDirectoryCluster
+import chip.devicecontroller.ChipStructs
+import chip.devicecontroller.cluster.structs.BasicInformationClusterCapabilityMinimaStruct
+import chip.devicecontroller.cluster.structs.TargetNavigatorClusterTargetInfoStruct
+import com.google.chip.chiptool.clusterclient.clusterinteraction.TLVToJsonConverter
+import matter.jsontlv.fromJsonString
+import matter.jsontlv.toJsonString
+import java.util.Arrays
+
 class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCallback {
   private var _binding: WildcardFragmentBinding? = null
   private val binding
@@ -196,6 +208,40 @@ class WildcardFragment : Fragment(), AddressUpdateFragment.ICDCheckInMessageCall
 
     addressUpdateFragment =
       childFragmentManager.findFragmentById(R.id.addressUpdateFragment) as AddressUpdateFragment
+
+    val launchUrlCommandArgs = ContentLauncherCluster().constructLaunchURLArgs("contentUrl", Optional.of("displayString"), Optional.empty(), 0)
+    Log.d(TAG, "TLVToJsonConverter - LaunchURL command args (in JSON): " + TLVToJsonConverter().convertStructToJson(launchUrlCommandArgs))
+    Log.d(TAG, "ContentLauncherCluster.LaunchURL command args (in JSON): " + TlvReader(ChipClusters.BaseChipCluster.encodeToTlv(launchUrlCommandArgs)).toJsonString())
+
+    val removeNetworkCommandArgs = ThreadNetworkDirectoryCluster().constructRemoveNetworkArgs("extendedPanId".toByteArray(), 0)
+    Log.d(TAG, "TLVToJsonConverter - RemoveNetwork command args (in JSON): " + TLVToJsonConverter().convertStructToJson(removeNetworkCommandArgs))
+    Log.d(TAG, "ThreadNetworkDirectoryCluster.RemoveNetwork command args (in JSON): " + TlvReader(ChipClusters.BaseChipCluster.encodeToTlv(removeNetworkCommandArgs)).toJsonString())
+
+    val parameter: ChipStructs.ContentLauncherClusterParameterStruct = ChipStructs.ContentLauncherClusterParameterStruct(5, "value",
+            Optional.empty<ArrayList<ChipStructs.ContentLauncherClusterAdditionalInfoStruct>>())
+
+    val launchContentCommandArgs = ContentLauncherCluster().constructLaunchContentArgs(
+            ChipStructs.ContentLauncherClusterContentSearchStruct(arrayListOf(parameter)),
+            true,
+            Optional.of("data"),
+            Optional.empty(),
+            Optional.of(true),
+            0)
+
+    Log.d(TAG, "TLVToJsonConverter - LaunchContent command args (in JSON): " + TLVToJsonConverter().convertStructToJson(launchContentCommandArgs))
+    Log.d(TAG, "ContentLauncherCluster.LaunchContent command args (in JSON): " + TlvReader(ChipClusters.BaseChipCluster.encodeToTlv(launchContentCommandArgs)).toJsonString())
+
+    val attributeValueJson = """
+      {
+        "0:STRING" : "Amazon"
+      }
+      """
+    val tlvReader = TlvReader(TlvWriter().fromJsonString(attributeValueJson))
+    tlvReader.enterStructure(AnonymousTag)
+
+    val attributeValue = tlvReader.getString(ContextSpecificTag(0))
+    tlvReader.exitContainer()
+    Log.d(TAG, "Decoded attribute Value (BasicInformation.VendorName): " + attributeValue)
 
     return binding.root
   }
